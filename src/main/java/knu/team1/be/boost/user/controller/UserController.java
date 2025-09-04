@@ -4,6 +4,7 @@ import java.util.UUID;
 import knu.team1.be.boost.user.dto.UserResponseDto;
 import knu.team1.be.boost.user.dto.UserUpdateRequestDto;
 import knu.team1.be.boost.user.service.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/users")
 public class UserController {
 
@@ -20,10 +22,6 @@ public class UserController {
 
     private final UUID userId = UUID.fromString(
         "a1b2c3d4-e5f6-7890-1234-567890abcdef"); // 테스트용 userId 임의 생성 -> 카카오 로그인 구현
-
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
 
     @GetMapping("/me")
     public ResponseEntity<UserResponseDto> getMyInfo() {
