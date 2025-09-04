@@ -1,11 +1,11 @@
-package knu.team1.be.boost.user.entity;
+package knu.team1.be.boost.member.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import knu.team1.be.boost.entity.BaseEntity;
-import knu.team1.be.boost.user.vo.OauthInfo;
+import knu.team1.be.boost.member.vo.OauthInfo;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,11 +16,11 @@ import org.hibernate.annotations.SQLRestriction;
 @Entity
 @Getter
 @SuperBuilder
-@Table(name = "users")
+@Table(name = "members")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@SQLDelete(sql = "UPDATE users SET deleted = true WHERE id = ?")
+@SQLDelete(sql = "UPDATE members SET deleted = true WHERE id = ?")
 @SQLRestriction("deleted = false")
-public class User extends BaseEntity {
+public class Member extends BaseEntity {
 
     @Embedded
     private OauthInfo oauthInfo;
@@ -31,7 +31,7 @@ public class User extends BaseEntity {
     @Column(name = "profile_emoji", nullable = false)
     private String profileEmoji;
 
-    public void updateUser(String name, String profileEmoji) {
+    public void updateMember(String name, String profileEmoji) {
         if (name != null) {
             this.name = name;
         }

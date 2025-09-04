@@ -25,7 +25,7 @@ public class GlobalExceptionHandler {
     // 같은 유형의 예외는 일괄 처리
 
     // 404: 도메인 NotFound
-    @ExceptionHandler(UserNotFoundException.class)
+    @ExceptionHandler(MemberNotFoundException.class)
     public ProblemDetail handleNotFound(RuntimeException e, HttpServletRequest req) {
         return ErrorResponses.of(
             HttpStatus.NOT_FOUND,

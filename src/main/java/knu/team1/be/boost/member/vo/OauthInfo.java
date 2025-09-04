@@ -1,4 +1,4 @@
-package knu.team1.be.boost.user.vo;
+package knu.team1.be.boost.member.vo;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
