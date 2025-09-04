@@ -1,5 +1,8 @@
 package knu.team1.be.boost.file.entity;
 
+import lombok.Getter;
+
+@Getter
 public enum FileType {
     PDF("application/pdf", "pdf");
 
@@ -9,14 +12,6 @@ public enum FileType {
     FileType(String mimeType, String extension) {
         this.mimeType = mimeType;
         this.extension = extension;
-    }
-
-    public String getMimeType() {
-        return mimeType;
-    }
-
-    public String getExtension() {
-        return extension;
     }
 
     public static FileType fromContentType(String contentType) {
