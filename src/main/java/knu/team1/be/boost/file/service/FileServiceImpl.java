@@ -10,8 +10,12 @@ import knu.team1.be.boost.file.dto.FileResponse;
 import knu.team1.be.boost.file.entity.File;
 import knu.team1.be.boost.file.entity.FileType;
 import knu.team1.be.boost.file.entity.vo.StorageKey;
+import knu.team1.be.boost.file.exception.FileAlreadyUploadCompletedException;
+import knu.team1.be.boost.file.exception.FileNotFoundException;
+import knu.team1.be.boost.file.exception.FileNotReadyException;
 import knu.team1.be.boost.file.repository.FileRespository;
 import knu.team1.be.boost.task.entity.Task;
+import knu.team1.be.boost.task.exception.TaskNotFoundException;
 import knu.team1.be.boost.task.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -72,10 +76,10 @@ public class FileServiceImpl implements FileService {
         // TODO: 다운로드 요청자가 해당 프로젝트 팀원인지 검증
 
         File file = fileRepository.findById(fileId)
-            .orElseThrow(() -> new IllegalArgumentException("파일을 찾을 수 없습니다: " + fileId));
+            .orElseThrow(() -> new FileNotFoundException(fileId));
 
         if (!file.isComplete()) {
-            throw new IllegalArgumentException("아직 다운로드할 수 없는 상태의 파일입니다.");
+            throw new FileNotReadyException(fileId);
         }
 
         GetObjectRequest getReq = GetObjectRequest.builder()
@@ -98,10 +102,10 @@ public class FileServiceImpl implements FileService {
     public FileCompleteResponse completeUpload(UUID fileId,
         FileCompleteRequest request) {
         File file = fileRepository.findById(fileId)
-            .orElseThrow(() -> new IllegalArgumentException("파일을 찾을 수 없습니다: " + fileId));
+            .orElseThrow(() -> new FileNotFoundException(fileId));
 
         if (file.isComplete()) {
-            throw new IllegalStateException("이미 업로드 완료된 파일입니다.");
+            throw new FileAlreadyUploadCompletedException(fileId);
         }
 
         file.getMetadata()
@@ -109,7 +113,7 @@ public class FileServiceImpl implements FileService {
 
         UUID taskId = UUID.fromString(request.taskId());
         Task task = taskRepository.findById(taskId)
-            .orElseThrow(() -> new IllegalArgumentException("할 일을 찾을 수 없습니다: " + taskId));
+            .orElseThrow(() -> new TaskNotFoundException(taskId));
 
         file.assignTask(task);
         file.complete();

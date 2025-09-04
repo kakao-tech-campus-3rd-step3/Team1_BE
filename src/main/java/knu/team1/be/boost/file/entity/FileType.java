@@ -25,7 +25,7 @@ public enum FileType {
                 return type;
             }
         }
-        throw new IllegalArgumentException(contentType + " 은 지원하지 않는 파일 타입 입니다!");
+        throw new IllegalArgumentException("지원하지 않는 파일 형식입니다: " + contentType);
     }
 
 }
