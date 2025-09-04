@@ -22,16 +22,17 @@ public class GlobalExceptionHandler {
         return URI.create(req.getRequestURI());
     }
 
-//    // 같은 유형의 예외는 아래와 같이 일괄 처리
+    // 같은 유형의 예외는 일괄 처리
 
-//    // 404: 도메인 NotFound
-//    @ExceptionHandler({
-//        UserNotFoundException.class,
-//        TodoNotFoundException.class
-//    })
-//    public ProblemDetail handleNotFound(RuntimeException e, HttpServletRequest req) {
-//        return ErrorResponses.of(HttpStatus.NOT_FOUND, e.getMessage(), instance(req));
-//    }
+    // 404: 도메인 NotFound
+    @ExceptionHandler(UserNotFoundException.class)
+    public ProblemDetail handleNotFound(RuntimeException e, HttpServletRequest req) {
+        return ErrorResponses.of(
+            HttpStatus.NOT_FOUND,
+            e.getMessage(),
+            instance(req)
+        );
+    }
 
     // 400: Bean Validation
     @ExceptionHandler(MethodArgumentNotValidException.class)
