@@ -6,12 +6,16 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import knu.team1.be.boost.file.dto.FileCompleteRequest;
+import knu.team1.be.boost.file.dto.FileCompleteResponse;
 import knu.team1.be.boost.file.dto.FileRequest;
 import knu.team1.be.boost.file.dto.FileResponse;
 import knu.team1.be.boost.file.entity.File;
 import knu.team1.be.boost.file.entity.FileStatus;
 import knu.team1.be.boost.file.entity.FileType;
 import knu.team1.be.boost.file.repository.FileRespository;
+import knu.team1.be.boost.task.entity.Task;
+import knu.team1.be.boost.task.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +35,7 @@ public class FileServiceImpl implements FileService {
 
     private final S3Presigner s3Presigner;
     private final FileRespository fileRepository;
+    private final TaskRepository taskRepository;
 
     @Value("${boost.aws.bucket}")
     private String bucket;
@@ -122,6 +127,43 @@ public class FileServiceImpl implements FileService {
             "GET",
             headers,
             expireSeconds
+        );
+    }
+
+    @Override
+    @Transactional
+    public FileCompleteResponse completeUpload(UUID fileId,
+        FileCompleteRequest fileCompleteRequest) {
+
+        File file = fileRepository.findById(fileId)
+            .orElseThrow(() -> new IllegalArgumentException("파일을 찾을 수 없습니다: " + fileId));
+
+        if (file.getStatus() == FileStatus.COMPLETED) {
+            throw new IllegalStateException("이미 업로드 완료된 파일입니다.");
+        }
+
+        if (!file.getOriginalFilename().equals(fileCompleteRequest.filename())) {
+            throw new IllegalArgumentException("파일명이 일치하지 않습니다.");
+        }
+        if (!file.getContentType().equals(fileCompleteRequest.contentType())) {
+            throw new IllegalArgumentException("ContentType이 일치하지 않습니다.");
+        }
+        if (!file.getSizeBytes().equals(fileCompleteRequest.sizeBytes())) {
+            throw new IllegalArgumentException("파일 크기가 일치하지 않습니다.");
+        }
+
+        UUID taskId = UUID.fromString(fileCompleteRequest.taskId());
+        Task task = taskRepository.findById(taskId)
+            .orElseThrow(() -> new IllegalArgumentException("할 일을 찾을 수 없습니다: " + taskId));
+        file.assignTask(task);
+
+        file.complete();
+
+        return new FileCompleteResponse(
+            file.getId().toString(),
+            fileCompleteRequest.taskId(),
+            file.getStatus().name().toLowerCase(),
+            file.getCompletedAt()
         );
     }
 

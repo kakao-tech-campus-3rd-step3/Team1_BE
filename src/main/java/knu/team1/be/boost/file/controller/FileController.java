@@ -5,11 +5,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.UUID;
+import knu.team1.be.boost.file.dto.FileCompleteRequest;
+import knu.team1.be.boost.file.dto.FileCompleteResponse;
 import knu.team1.be.boost.file.dto.FileRequest;
 import knu.team1.be.boost.file.dto.FileResponse;
 import knu.team1.be.boost.file.service.FileService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -55,5 +58,18 @@ public class FileController {
         FileResponse fileResponse = fileService.downloadFile(fileId);
 
         return ResponseEntity.ok(fileResponse);
+    }
+
+    @Operation(
+        summary = "업로드 완료 콜백",
+        description = "파일 업로드가 완료되었음을 서버에 알리고 상태를 COMPLETED로 갱신합니다."
+    )
+    @PatchMapping("/{fileId}/complete")
+    public ResponseEntity<FileCompleteResponse> completeUpload(
+        @PathVariable UUID fileId,
+        @Valid @RequestBody FileCompleteRequest fileCompleteRequest
+    ) {
+        FileCompleteResponse response = fileService.completeUpload(fileId, fileCompleteRequest);
+        return ResponseEntity.ok(response);
     }
 }

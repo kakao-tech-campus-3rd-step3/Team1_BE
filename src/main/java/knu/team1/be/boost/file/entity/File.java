@@ -68,4 +68,15 @@ public class File extends BaseEntity {
     @Column(name = "completed_at")
     private LocalDateTime completedAt;
 
+    public void complete() {
+        if (this.status == FileStatus.COMPLETED) {
+            return;
+        }
+        this.status = FileStatus.COMPLETED;
+        this.completedAt = LocalDateTime.now();
+    }
+
+    public void assignTask(Task task) {
+        this.task = task;
+    }
 }
