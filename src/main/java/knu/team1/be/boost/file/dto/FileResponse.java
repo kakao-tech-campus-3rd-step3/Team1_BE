@@ -20,12 +20,12 @@ public record FileResponse(
     public static FileResponse forUpload(File file, PresignedPutObjectRequest presigned,
         int expiresInSeconds) {
         Map<String, String> headers = new HashMap<>();
-        headers.put("Content-Type", file.getContentType());
+        headers.put("Content-Type", file.getMetadata().contentType());
         headers.put("x-amz-server-side-encryption", "AES256");
 
         return new FileResponse(
             file.getId(),
-            file.getStorageKey(),
+            file.getStorageKey().value(),
             presigned.url().toString(),
             "PUT",
             headers,
@@ -37,7 +37,7 @@ public record FileResponse(
         int expiresInSeconds) {
         return new FileResponse(
             file.getId(),
-            file.getStorageKey(),
+            file.getStorageKey().value(),
             presigned.url().toString(),
             "GET",
             Collections.emptyMap(),

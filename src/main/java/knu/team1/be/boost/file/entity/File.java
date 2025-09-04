@@ -1,6 +1,7 @@
 package knu.team1.be.boost.file.entity;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -9,13 +10,14 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import knu.team1.be.boost.entity.BaseEntity;
 import knu.team1.be.boost.file.dto.FileRequest;
+import knu.team1.be.boost.file.entity.vo.FileMetadata;
+import knu.team1.be.boost.file.entity.vo.StorageKey;
 import knu.team1.be.boost.task.entity.Task;
 import knu.team1.be.boost.user.entity.User;
 import lombok.AccessLevel;
@@ -45,22 +47,15 @@ public class File extends BaseEntity {
     @JoinColumn(name = "task_id")
     private Task task;
 
-    @Lob
-    @Column(name = "original_filename", nullable = false)
-    private String originalFilename;
+    @Embedded
+    private FileMetadata metadata;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false)
     private FileType type;
 
-    @Column(name = "content_type", nullable = false, length = 100)
-    private String contentType;
-
-    @Column(name = "size_bytes", nullable = false)
-    private Integer sizeBytes;
-
-    @Column(name = "storage_key", nullable = false)
-    private String storageKey;
+    @Embedded
+    private StorageKey storageKey;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
@@ -69,15 +64,15 @@ public class File extends BaseEntity {
     @Column(name = "completed_at")
     private LocalDateTime completedAt;
 
-    public static File pendingUpload(FileRequest request, FileType fileType, String key) {
+    public static File pendingUpload(FileRequest req, FileType fileType, StorageKey key) {
         return File.builder()
-            .user(null) // TODO: 인증 붙이면 채우기
-            .originalFilename(request.filename())
+            .user(null) // TODO: 인증 붙이면 세팅
+            .task(null)
+            .metadata(FileMetadata.of(req.filename(), req.contentType(), req.sizeBytes()))
             .type(fileType)
-            .contentType(request.contentType())
-            .sizeBytes(request.sizeBytes())
             .storageKey(key)
             .status(FileStatus.PENDING)
+            .completedAt(null)
             .build();
     }
 
