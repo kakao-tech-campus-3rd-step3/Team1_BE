@@ -61,6 +61,7 @@ public class File extends BaseEntity {
     @Column(name = "storage_key", nullable = false)
     private String storageKey;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private FileStatus status = FileStatus.PENDING;
 
