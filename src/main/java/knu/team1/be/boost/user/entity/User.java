@@ -1,11 +1,13 @@
 package knu.team1.be.boost.user.entity;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import knu.team1.be.boost.entity.BaseEntity;
+import knu.team1.be.boost.user.vo.OauthInfo;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,11 +24,8 @@ import org.hibernate.annotations.SQLRestriction;
 @SQLRestriction("deleted = false")
 public class User extends BaseEntity {
 
-    @Column(name = "provider", nullable = false)
-    private String provider;
-
-    @Column(name = "provider_id", unique = true, nullable = false)
-    private String providerId;
+    @Embedded
+    private OauthInfo oauthInfo;
 
     @Column(name = "name", nullable = false)
     private String name;
