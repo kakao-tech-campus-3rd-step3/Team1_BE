@@ -8,7 +8,6 @@ public record UserResponseDto(
     UUID id,
     String name,
     String profileEmoji,
-    String role,
     LocalDateTime createdAt,
     LocalDateTime updatedAt
 ) {
@@ -18,7 +17,6 @@ public record UserResponseDto(
             user.getId(),
             user.getName(),
             user.getProfileEmoji(),
-            user.getRole().name(),
             user.getCreatedAt(),
             user.getUpdatedAt()
         );

@@ -3,8 +3,6 @@ package knu.team1.be.boost.user.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import knu.team1.be.boost.entity.BaseEntity;
 import knu.team1.be.boost.user.vo.OauthInfo;
@@ -32,8 +30,4 @@ public class User extends BaseEntity {
 
     @Column(name = "profile_emoji", nullable = false)
     private String profileEmoji;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false)
-    private Role role;
 }
