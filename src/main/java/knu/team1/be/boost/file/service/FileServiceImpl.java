@@ -41,9 +41,6 @@ public class FileServiceImpl implements FileService {
     @Value("${boost.aws.bucket}")
     private String bucket;
 
-    @Value("${boost.aws.region}")
-    private String region;
-
     @Value("${boost.aws.upload.expire-seconds}")
     private int expireSeconds;
 
