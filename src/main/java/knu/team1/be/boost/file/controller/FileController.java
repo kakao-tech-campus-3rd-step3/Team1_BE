@@ -39,8 +39,7 @@ public class FileController {
         @Valid @RequestBody FileRequest request
     ) {
         FileResponse fileResponse = fileService.uploadFile(request);
-
-        URI location = URI.create("/api/file/" + fileResponse.fileId());
+        URI location = URI.create("/api/files/" + fileResponse.fileId());
 
         return ResponseEntity
             .created(location)
@@ -70,6 +69,7 @@ public class FileController {
         @Valid @RequestBody FileCompleteRequest request
     ) {
         FileCompleteResponse response = fileService.completeUpload(fileId, request);
+        
         return ResponseEntity.ok(response);
     }
 }
