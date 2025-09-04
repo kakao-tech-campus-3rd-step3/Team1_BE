@@ -46,17 +46,17 @@ public class FileServiceImpl implements FileService {
 
     @Override
     @Transactional
-    public FileResponse uploadFile(FileRequest fileRequest) {
-        FileType fileType = FileType.fromContentType(fileRequest.contentType());
+    public FileResponse uploadFile(FileRequest request) {
+        FileType fileType = FileType.fromContentType(request.contentType());
         StorageKey key = StorageKey.generate(LocalDateTime.now(), fileType.getExtension());
 
-        File file = File.pendingUpload(fileRequest, fileType, key);
+        File file = File.pendingUpload(request, fileType, key);
         File saved = fileRepository.save(file);
 
         PutObjectRequest putReq = PutObjectRequest.builder()
             .bucket(bucket)
             .key(key.value())
-            .contentType(fileRequest.contentType())
+            .contentType(request.contentType())
             .serverSideEncryption(ServerSideEncryption.AES256)
             .build();
 
@@ -97,7 +97,7 @@ public class FileServiceImpl implements FileService {
     @Override
     @Transactional
     public FileCompleteResponse completeUpload(UUID fileId,
-        FileCompleteRequest fileCompleteRequest) {
+        FileCompleteRequest request) {
         File file = fileRepository.findById(fileId)
             .orElseThrow(() -> new IllegalArgumentException("파일을 찾을 수 없습니다: " + fileId));
 
@@ -106,10 +106,9 @@ public class FileServiceImpl implements FileService {
         }
 
         file.getMetadata()
-            .validateMatches(fileCompleteRequest.filename(), fileCompleteRequest.contentType(),
-                fileCompleteRequest.sizeBytes());
+            .validateMatches(request.filename(), request.contentType(), request.sizeBytes());
 
-        UUID taskId = UUID.fromString(fileCompleteRequest.taskId());
+        UUID taskId = UUID.fromString(request.taskId());
         Task task = taskRepository.findById(taskId)
             .orElseThrow(() -> new IllegalArgumentException("할 일을 찾을 수 없습니다: " + taskId));
 

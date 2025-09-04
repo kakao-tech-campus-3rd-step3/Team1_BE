@@ -8,9 +8,9 @@ import knu.team1.be.boost.file.dto.FileResponse;
 
 public interface FileService {
 
-    FileResponse uploadFile(FileRequest fileRequest);
+    FileResponse uploadFile(FileRequest request);
 
     FileResponse downloadFile(UUID fileId);
 
-    FileCompleteResponse completeUpload(UUID fileId, FileCompleteRequest fileCompleteRequest);
+    FileCompleteResponse completeUpload(UUID fileId, FileCompleteRequest request);
 }

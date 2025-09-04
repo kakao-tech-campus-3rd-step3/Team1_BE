@@ -36,9 +36,9 @@ public class FileController {
     )
     @PostMapping("/upload-url")
     public ResponseEntity<FileResponse> uploadFile(
-        @Valid @RequestBody FileRequest fileRequest
+        @Valid @RequestBody FileRequest request
     ) {
-        FileResponse fileResponse = fileService.uploadFile(fileRequest);
+        FileResponse fileResponse = fileService.uploadFile(request);
 
         URI location = URI.create("/api/file/" + fileResponse.fileId());
 
@@ -67,9 +67,9 @@ public class FileController {
     @PatchMapping("/{fileId}/complete")
     public ResponseEntity<FileCompleteResponse> completeUpload(
         @PathVariable UUID fileId,
-        @Valid @RequestBody FileCompleteRequest fileCompleteRequest
+        @Valid @RequestBody FileCompleteRequest request
     ) {
-        FileCompleteResponse response = fileService.completeUpload(fileId, fileCompleteRequest);
+        FileCompleteResponse response = fileService.completeUpload(fileId, request);
         return ResponseEntity.ok(response);
     }
 }
