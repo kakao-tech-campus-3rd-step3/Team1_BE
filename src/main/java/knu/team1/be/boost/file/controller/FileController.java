@@ -31,7 +31,7 @@ public class FileController {
     }
 
     @Operation(
-        summary = "파일 메타 생성 + Presigned URL 발급",
+        summary = "파일 메타 생성 + 업로드 Presigned URL 발급",
         description = "files 테이블에 메타 정보를 생성하고, 업로드 가능한 S3 Presigned URL을 반환합니다."
     )
     @PostMapping("/upload-url")
@@ -69,7 +69,7 @@ public class FileController {
         @Valid @RequestBody FileCompleteRequest request
     ) {
         FileCompleteResponse response = fileService.completeUpload(fileId, request);
-        
+
         return ResponseEntity.ok(response);
     }
 }
