@@ -2,9 +2,6 @@ package knu.team1.be.boost.file.service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 import knu.team1.be.boost.file.dto.FileCompleteRequest;
 import knu.team1.be.boost.file.dto.FileCompleteResponse;
@@ -55,16 +52,7 @@ public class FileServiceImpl implements FileService {
 
         String key = createKey(extension);
 
-        File file = File.builder()
-            .user(null)     // TODO: 인증 붙이면 채우기
-            .originalFilename(fileRequest.filename())
-            .type(fileType)
-            .contentType(fileRequest.contentType())
-            .sizeBytes(fileRequest.sizeBytes())
-            .storageKey(key)
-            .status(FileStatus.PENDING)
-            .build();
-
+        File file = File.pendingUpload(fileRequest, fileType, key);
         File savedFile = fileRepository.save(file);
 
         PutObjectRequest putReq = PutObjectRequest.builder()
@@ -78,18 +66,7 @@ public class FileServiceImpl implements FileService {
             .putObjectRequest(putReq)
             .signatureDuration(Duration.ofSeconds(expireSeconds)));
 
-        Map<String, String> headers = new HashMap<>();
-        headers.put("Content-Type", fileRequest.contentType());
-        headers.put("x-amz-server-side-encryption", "AES256");
-
-        return new FileResponse(
-            savedFile.getId(),
-            key,
-            presigned.url().toString(),
-            "PUT",
-            headers,
-            expireSeconds
-        );
+        return FileResponse.forUpload(savedFile, presigned, expireSeconds);
     }
 
     @Override
@@ -118,16 +95,7 @@ public class FileServiceImpl implements FileService {
             .getObjectRequest(getReq)
             .signatureDuration(Duration.ofSeconds(expireSeconds)));
 
-        Map<String, String> headers = Collections.emptyMap();
-
-        return new FileResponse(
-            file.getId(),
-            key,
-            presigned.url().toString(),
-            "GET",
-            headers,
-            expireSeconds
-        );
+        return FileResponse.forDownload(file, presigned, expireSeconds);
     }
 
     @Override
@@ -159,12 +127,7 @@ public class FileServiceImpl implements FileService {
 
         file.complete();
 
-        return new FileCompleteResponse(
-            file.getId().toString(),
-            fileCompleteRequest.taskId(),
-            file.getStatus().name().toLowerCase(),
-            file.getCompletedAt()
-        );
+        return FileCompleteResponse.from(file, taskId);
     }
 
     private String createKey(String extension) {

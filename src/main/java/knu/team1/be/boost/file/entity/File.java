@@ -15,6 +15,7 @@ import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import knu.team1.be.boost.entity.BaseEntity;
+import knu.team1.be.boost.file.dto.FileRequest;
 import knu.team1.be.boost.task.entity.Task;
 import knu.team1.be.boost.user.entity.User;
 import lombok.AccessLevel;
@@ -67,6 +68,18 @@ public class File extends BaseEntity {
 
     @Column(name = "completed_at")
     private LocalDateTime completedAt;
+
+    public static File pendingUpload(FileRequest request, FileType fileType, String key) {
+        return File.builder()
+            .user(null) // TODO: 인증 붙이면 채우기
+            .originalFilename(request.filename())
+            .type(fileType)
+            .contentType(request.contentType())
+            .sizeBytes(request.sizeBytes())
+            .storageKey(key)
+            .status(FileStatus.PENDING)
+            .build();
+    }
 
     public void complete() {
         if (this.status == FileStatus.COMPLETED) {
