@@ -30,4 +30,9 @@ public class User extends BaseEntity {
 
     @Column(name = "profile_emoji", nullable = false)
     private String profileEmoji;
+
+    public void updateUser(String name, String profileEmoji) {
+        this.name = name;
+        this.profileEmoji = profileEmoji;
+    }
 }
