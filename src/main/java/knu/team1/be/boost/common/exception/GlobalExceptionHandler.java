@@ -8,6 +8,7 @@ import java.util.Optional;
 import knu.team1.be.boost.file.exception.FileAlreadyUploadCompletedException;
 import knu.team1.be.boost.file.exception.FileNotFoundException;
 import knu.team1.be.boost.file.exception.FileNotReadyException;
+import knu.team1.be.boost.file.exception.StorageServiceException;
 import knu.team1.be.boost.task.exception.TaskNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -120,6 +121,16 @@ public class GlobalExceptionHandler {
             : HttpStatus.UNSUPPORTED_MEDIA_TYPE;
 
         return ErrorResponses.of(status, e.getMessage(), instance(req));
+    }
+
+    // 500: 그외 외부 서버와의 오류
+    @ExceptionHandler(StorageServiceException.class)
+    public ProblemDetail handleStorage(StorageServiceException e, HttpServletRequest req) {
+        return ErrorResponses.of(
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            e.getMessage(),
+            instance(req)
+        );
     }
 
     // 500: 그외 모든 예외

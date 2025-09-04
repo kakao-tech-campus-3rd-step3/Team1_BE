@@ -1,6 +1,5 @@
 package knu.team1.be.boost.file.service;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import knu.team1.be.boost.file.dto.FileCompleteRequest;
@@ -13,6 +12,7 @@ import knu.team1.be.boost.file.entity.vo.StorageKey;
 import knu.team1.be.boost.file.exception.FileAlreadyUploadCompletedException;
 import knu.team1.be.boost.file.exception.FileNotFoundException;
 import knu.team1.be.boost.file.exception.FileNotReadyException;
+import knu.team1.be.boost.file.infra.s3.PresignedUrlFactory;
 import knu.team1.be.boost.file.repository.FileRespository;
 import knu.team1.be.boost.task.entity.Task;
 import knu.team1.be.boost.task.exception.TaskNotFoundException;
@@ -22,10 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.ServerSideEncryption;
-import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 
@@ -34,9 +30,9 @@ import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequ
 @RequiredArgsConstructor
 public class FileServiceImpl implements FileService {
 
-    private final S3Presigner s3Presigner;
     private final FileRespository fileRepository;
     private final TaskRepository taskRepository;
+    private final PresignedUrlFactory presignedUrlFactory;
 
     @Value("${boost.aws.bucket}")
     private String bucket;
@@ -53,16 +49,12 @@ public class FileServiceImpl implements FileService {
         File file = File.pendingUpload(request, fileType, key);
         File saved = fileRepository.save(file);
 
-        PutObjectRequest putReq = PutObjectRequest.builder()
-            .bucket(bucket)
-            .key(key.value())
-            .contentType(request.contentType())
-            .serverSideEncryption(ServerSideEncryption.AES256)
-            .build();
-
-        PresignedPutObjectRequest presigned = s3Presigner.presignPutObject(b -> b
-            .putObjectRequest(putReq)
-            .signatureDuration(Duration.ofSeconds(expireSeconds)));
+        PresignedPutObjectRequest presigned = presignedUrlFactory.forUpload(
+            bucket,
+            key.value(),
+            request.contentType(),
+            expireSeconds
+        );
 
         return FileResponse.forUpload(saved, presigned, expireSeconds);
     }
@@ -79,17 +71,13 @@ public class FileServiceImpl implements FileService {
             throw new FileNotReadyException(fileId);
         }
 
-        GetObjectRequest getReq = GetObjectRequest.builder()
-            .bucket(bucket)
-            .key(file.getStorageKey().value())
-            .responseContentDisposition(
-                "attachment; filename=\"" + file.getMetadata().originalFilename() + "\"")
-            .responseContentType(file.getMetadata().contentType())
-            .build();
-
-        PresignedGetObjectRequest presigned = s3Presigner.presignGetObject(b -> b
-            .getObjectRequest(getReq)
-            .signatureDuration(Duration.ofSeconds(expireSeconds)));
+        PresignedGetObjectRequest presigned = presignedUrlFactory.forDownload(
+            bucket,
+            file.getStorageKey().value(),
+            file.getMetadata().originalFilename(),
+            file.getMetadata().contentType(),
+            expireSeconds
+        );
 
         return FileResponse.forDownload(file, presigned, expireSeconds);
     }
