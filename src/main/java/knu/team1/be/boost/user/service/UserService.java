@@ -9,4 +9,6 @@ public interface UserService {
     UserResponseDto getUserInfo(UUID userId);
 
     UserResponseDto updateUserInfo(UUID userId, UserUpdateRequestDto requestDto);
+
+    void deleteUser(UUID userId);
 }

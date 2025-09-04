@@ -34,4 +34,12 @@ public class UserServiceImpl implements UserService {
         user.updateUser(requestDto.name(), requestDto.profileEmoji());
         return UserResponseDto.from(user);
     }
+
+    @Transactional
+    @Override
+    public void deleteUser(UUID userId) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new UserNotFoundException(userId));
+        userRepository.delete(user);
+    }
 }

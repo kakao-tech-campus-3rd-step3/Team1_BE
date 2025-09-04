@@ -5,6 +5,7 @@ import knu.team1.be.boost.user.dto.UserResponseDto;
 import knu.team1.be.boost.user.dto.UserUpdateRequestDto;
 import knu.team1.be.boost.user.service.UserService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -35,5 +36,11 @@ public class UserController {
         @RequestBody UserUpdateRequestDto requestDto) {
         UserResponseDto updatedUserInfo = userService.updateUserInfo(userId, requestDto);
         return ResponseEntity.ok(updatedUserInfo);
+    }
+
+    @DeleteMapping("/me")
+    public ResponseEntity<Void> deleteMyAccount() {
+        userService.deleteUser(userId);
+        return ResponseEntity.noContent().build();
     }
 }
