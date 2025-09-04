@@ -32,7 +32,11 @@ public class User extends BaseEntity {
     private String profileEmoji;
 
     public void updateUser(String name, String profileEmoji) {
-        this.name = name;
-        this.profileEmoji = profileEmoji;
+        if (name != null) {
+            this.name = name;
+        }
+        if (profileEmoji != null) {
+            this.profileEmoji = profileEmoji;
+        }
     }
 }
