@@ -76,6 +76,10 @@ public class File extends BaseEntity {
             .build();
     }
 
+    public boolean isComplete() {
+        return this.status == FileStatus.COMPLETED;
+    }
+
     public void complete() {
         if (this.status == FileStatus.COMPLETED) {
             return;

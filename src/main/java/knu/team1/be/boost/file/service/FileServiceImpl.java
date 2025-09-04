@@ -8,7 +8,6 @@ import knu.team1.be.boost.file.dto.FileCompleteResponse;
 import knu.team1.be.boost.file.dto.FileRequest;
 import knu.team1.be.boost.file.dto.FileResponse;
 import knu.team1.be.boost.file.entity.File;
-import knu.team1.be.boost.file.entity.FileStatus;
 import knu.team1.be.boost.file.entity.FileType;
 import knu.team1.be.boost.file.entity.vo.StorageKey;
 import knu.team1.be.boost.file.repository.FileRespository;
@@ -75,7 +74,7 @@ public class FileServiceImpl implements FileService {
         File file = fileRepository.findById(fileId)
             .orElseThrow(() -> new IllegalArgumentException("파일을 찾을 수 없습니다: " + fileId));
 
-        if (file.getStatus() != FileStatus.COMPLETED) {
+        if (!file.isComplete()) {
             throw new IllegalArgumentException("아직 다운로드할 수 없는 상태의 파일입니다.");
         }
 
@@ -101,7 +100,7 @@ public class FileServiceImpl implements FileService {
         File file = fileRepository.findById(fileId)
             .orElseThrow(() -> new IllegalArgumentException("파일을 찾을 수 없습니다: " + fileId));
 
-        if (file.getStatus() == FileStatus.COMPLETED) {
+        if (file.isComplete()) {
             throw new IllegalStateException("이미 업로드 완료된 파일입니다.");
         }
 
