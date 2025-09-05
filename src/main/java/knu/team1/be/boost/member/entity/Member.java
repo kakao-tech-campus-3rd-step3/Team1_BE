@@ -5,7 +5,7 @@ import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import knu.team1.be.boost.entity.BaseEntity;
+import knu.team1.be.boost.common.entity.BaseEntity;
 import knu.team1.be.boost.member.vo.OauthInfo;
 import lombok.AccessLevel;
 import lombok.Getter;

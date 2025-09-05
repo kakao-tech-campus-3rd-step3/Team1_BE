@@ -1,4 +1,4 @@
-package knu.team1.be.boost.entity;
+package knu.team1.be.boost.common.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;

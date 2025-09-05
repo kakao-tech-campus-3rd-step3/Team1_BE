@@ -10,7 +10,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
-import knu.team1.be.boost.entity.BaseEntity;
+import knu.team1.be.boost.common.entity.BaseEntity;
 import knu.team1.be.boost.file.dto.FileRequest;
 import knu.team1.be.boost.file.entity.vo.FileMetadata;
 import knu.team1.be.boost.file.entity.vo.StorageKey;
