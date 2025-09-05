@@ -7,6 +7,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -33,6 +34,7 @@ public abstract class BaseEntity {
     private LocalDateTime updatedAt;
 
     @Column(name = "deleted", nullable = false)
+    @Builder.Default
     private boolean deleted = false;
 
 }
