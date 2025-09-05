@@ -13,7 +13,7 @@ import knu.team1.be.boost.file.exception.FileAlreadyUploadCompletedException;
 import knu.team1.be.boost.file.exception.FileNotFoundException;
 import knu.team1.be.boost.file.exception.FileNotReadyException;
 import knu.team1.be.boost.file.infra.s3.PresignedUrlFactory;
-import knu.team1.be.boost.file.repository.FileRespository;
+import knu.team1.be.boost.file.repository.FileRepository;
 import knu.team1.be.boost.task.entity.Task;
 import knu.team1.be.boost.task.exception.TaskNotFoundException;
 import knu.team1.be.boost.task.repository.TaskRepository;
@@ -30,7 +30,7 @@ import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequ
 @RequiredArgsConstructor
 public class FileServiceImpl implements FileService {
 
-    private final FileRespository fileRepository;
+    private final FileRepository fileRepository;
     private final TaskRepository taskRepository;
     private final PresignedUrlFactory presignedUrlFactory;
 

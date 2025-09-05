@@ -4,6 +4,6 @@ import java.util.UUID;
 import knu.team1.be.boost.file.entity.File;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface FileRespository extends JpaRepository<File, UUID> {
+public interface FileRepository extends JpaRepository<File, UUID> {
 
 }
