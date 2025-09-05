@@ -5,6 +5,11 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import knu.team1.be.boost.file.exception.FileAlreadyUploadCompletedException;
+import knu.team1.be.boost.file.exception.FileNotFoundException;
+import knu.team1.be.boost.file.exception.FileNotReadyException;
+import knu.team1.be.boost.file.exception.StorageServiceException;
+import knu.team1.be.boost.task.exception.TaskNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -57,6 +62,16 @@ public class GlobalExceptionHandler {
         );
     }
 
+    // 400: 잘못된 요청
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ProblemDetail handleIllegalArgument(IllegalArgumentException e, HttpServletRequest req) {
+        return ErrorResponses.of(
+            HttpStatus.BAD_REQUEST,
+            e.getMessage(),
+            URI.create(req.getRequestURI())
+        );
+    }
+
     // 400: 타입 불일치
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ProblemDetail handleTypeMismatch(MethodArgumentTypeMismatchException e,
@@ -78,6 +93,24 @@ public class GlobalExceptionHandler {
         );
     }
 
+    // 404: 도메인 NotFound
+    @ExceptionHandler({
+        FileNotFoundException.class,
+        TaskNotFoundException.class
+    })
+    public ProblemDetail handleNotFound(RuntimeException e, HttpServletRequest req) {
+        return ErrorResponses.of(HttpStatus.NOT_FOUND, e.getMessage(), instance(req));
+    }
+
+    // 409: 리소스 상태 충돌
+    @ExceptionHandler({
+        FileAlreadyUploadCompletedException.class,
+        FileNotReadyException.class
+    })
+    public ProblemDetail handleAlreadyCompleted(RuntimeException e, HttpServletRequest req) {
+        return ErrorResponses.of(HttpStatus.CONFLICT, e.getMessage(), instance(req));
+    }
+
     // 405/415 등: 스펙 위반
     @ExceptionHandler({
         HttpRequestMethodNotSupportedException.class,
@@ -89,6 +122,16 @@ public class GlobalExceptionHandler {
             : HttpStatus.UNSUPPORTED_MEDIA_TYPE;
 
         return ErrorResponses.of(status, e.getMessage(), instance(req));
+    }
+
+    // 500: 그외 외부 서버와의 오류
+    @ExceptionHandler(StorageServiceException.class)
+    public ProblemDetail handleStorage(StorageServiceException e, HttpServletRequest req) {
+        return ErrorResponses.of(
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            e.getMessage(),
+            instance(req)
+        );
     }
 
     // 500: 그외 모든 예외

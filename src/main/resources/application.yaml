@@ -31,3 +31,10 @@ springdoc:
     enabled: true
 server:
   shutdown: graceful
+
+boost:
+  aws:
+    bucket: boost-s3-bucket-storage
+    region: ap-northeast-2
+    upload:
+      expire-seconds: 900
