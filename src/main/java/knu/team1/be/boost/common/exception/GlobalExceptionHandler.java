@@ -29,16 +29,6 @@ public class GlobalExceptionHandler {
 
     // 같은 유형의 예외는 일괄 처리
 
-    // 404: 도메인 NotFound
-    @ExceptionHandler(MemberNotFoundException.class)
-    public ProblemDetail handleNotFound(RuntimeException e, HttpServletRequest req) {
-        return ErrorResponses.of(
-            HttpStatus.NOT_FOUND,
-            e.getMessage(),
-            instance(req)
-        );
-    }
-
     // 400: Bean Validation
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ProblemDetail handleValidation(
@@ -96,7 +86,8 @@ public class GlobalExceptionHandler {
     // 404: 도메인 NotFound
     @ExceptionHandler({
         FileNotFoundException.class,
-        TaskNotFoundException.class
+        TaskNotFoundException.class,
+        MemberNotFoundException.class
     })
     public ProblemDetail handleNotFound(RuntimeException e, HttpServletRequest req) {
         return ErrorResponses.of(HttpStatus.NOT_FOUND, e.getMessage(), instance(req));
