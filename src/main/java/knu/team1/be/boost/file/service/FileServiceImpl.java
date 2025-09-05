@@ -56,6 +56,8 @@ public class FileServiceImpl implements FileService {
             expireSeconds
         );
 
+        log.info("파일 업로드 presigned URL 발급 성공 - fileId={}, filename={}",
+            saved.getId(), saved.getMetadata().originalFilename());
         return FileResponse.forUpload(saved, presigned, expireSeconds);
     }
 
@@ -65,9 +67,13 @@ public class FileServiceImpl implements FileService {
         // TODO: 다운로드 요청자가 해당 프로젝트 팀원인지 검증
 
         File file = fileRepository.findById(fileId)
-            .orElseThrow(() -> new FileNotFoundException(fileId));
+            .orElseThrow(() -> {
+                log.warn("파일 다운로드 실패 - 존재하지 않는 fileId={}", fileId);
+                return new FileNotFoundException(fileId);
+            });
 
         if (!file.isComplete()) {
+            log.warn("파일 다운로드 실패 - 업로드 미완료 fileId={}", fileId);
             throw new FileNotReadyException(fileId);
         }
 
@@ -79,6 +85,8 @@ public class FileServiceImpl implements FileService {
             expireSeconds
         );
 
+        log.info("파일 다운로드 presigned URL 발급 성공 - fileId={}, filename={}",
+            file.getId(), file.getMetadata().originalFilename());
         return FileResponse.forDownload(file, presigned, expireSeconds);
     }
 
@@ -87,9 +95,13 @@ public class FileServiceImpl implements FileService {
     public FileCompleteResponse completeUpload(UUID fileId,
         FileCompleteRequest request) {
         File file = fileRepository.findById(fileId)
-            .orElseThrow(() -> new FileNotFoundException(fileId));
+            .orElseThrow(() -> {
+                log.warn("파일 업로드 완료 실패 - 존재하지 않는 fileId={}", fileId);
+                return new FileNotFoundException(fileId);
+            });
 
         if (file.isComplete()) {
+            log.warn("파일 업로드 완료 실패 - 이미 업로드 완료 처리된 파일 fileId={}", fileId);
             throw new FileAlreadyUploadCompletedException(fileId);
         }
 
@@ -98,11 +110,16 @@ public class FileServiceImpl implements FileService {
 
         UUID taskId = UUID.fromString(request.taskId());
         Task task = taskRepository.findById(taskId)
-            .orElseThrow(() -> new TaskNotFoundException(taskId));
+            .orElseThrow(() -> {
+                log.warn("파일 업로드 완료 실패 - 존재하지 않는 taskId={}, fileId={}", taskId, fileId);
+                return new TaskNotFoundException(taskId);
+            });
 
         file.assignTask(task);
         file.complete();
 
+        log.info("파일 업로드 완료 처리 성공 - fileId={}, taskId={}, filename={}",
+            fileId, taskId, request.filename());
         return FileCompleteResponse.from(file, taskId);
     }
 }
