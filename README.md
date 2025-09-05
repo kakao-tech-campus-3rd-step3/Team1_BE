@@ -21,6 +21,11 @@
 
 <br/>
 
+## 📐 아키텍처
+![aws2 최종](https://github.com/user-attachments/assets/7cdb6a16-9cfe-4f79-ba67-a0ed6d1e5594)
+
+<br/>
+
 ## 🛠️ 기술 스택 (Spring Backend)
 
 | 구분            | 기술                                                                                                                                                                                                                                                                                                                           |
@@ -38,6 +43,8 @@
 | **CI/CD**     | ![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white)                                                                                                                                                                                                 |
 | **개발 환경**     | ![IntelliJ IDEA](https://img.shields.io/badge/IntelliJ_IDEA-000000?style=for-the-badge&logo=intellijidea&logoColor=white) ![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white) ![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white) |
 | **협업 도구**     | ![Notion](https://img.shields.io/badge/Notion-000000?style=for-the-badge&logo=notion&logoColor=white) ![Figma](https://img.shields.io/badge/Figma-F24E1E?style=for-the-badge&logo=figma&logoColor=white)                                                                                                                     |
+
+<br/>
 
 ## 프로젝트 초기 설정
 
