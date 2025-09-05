@@ -92,8 +92,7 @@ public class FileServiceImpl implements FileService {
 
     @Override
     @Transactional
-    public FileCompleteResponse completeUpload(UUID fileId,
-        FileCompleteRequest request) {
+    public FileCompleteResponse completeUpload(UUID fileId, FileCompleteRequest request) {
         File file = fileRepository.findById(fileId)
             .orElseThrow(() -> {
                 log.warn("파일 업로드 완료 실패 - 존재하지 않는 fileId={}", fileId);
