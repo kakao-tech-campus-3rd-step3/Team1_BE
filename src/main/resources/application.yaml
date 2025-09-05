@@ -1,6 +1,8 @@
 spring:
   application:
     name: boost
+  lifecycle:
+    timeout-per-shutdown-phase: 10s
 
   datasource:
     url: jdbc:h2:mem:testdb
@@ -27,6 +29,8 @@ springdoc:
   api-docs:
     path: /api-docs
     enabled: true
+server:
+  shutdown: graceful
 
 boost:
   aws:
