@@ -14,8 +14,8 @@ import knu.team1.be.boost.entity.BaseEntity;
 import knu.team1.be.boost.file.dto.FileRequest;
 import knu.team1.be.boost.file.entity.vo.FileMetadata;
 import knu.team1.be.boost.file.entity.vo.StorageKey;
+import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.task.entity.Task;
-import knu.team1.be.boost.user.entity.User;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -31,8 +31,8 @@ import org.hibernate.annotations.SQLDelete;
 public class File extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")   // TODO: 인증 붙이면 nullable = false 활성화
-    private User user;
+    @JoinColumn(name = "member_id")   // TODO: 인증 붙이면 nullable = false 활성화
+    private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "task_id")
@@ -57,7 +57,7 @@ public class File extends BaseEntity {
 
     public static File pendingUpload(FileRequest req, FileType fileType, StorageKey key) {
         return File.builder()
-            .user(null) // TODO: 인증 붙이면 세팅
+            .member(null) // TODO: 인증 붙이면 세팅
             .task(null)
             .metadata(FileMetadata.of(req.filename(), req.contentType(), req.sizeBytes()))
             .type(fileType)
