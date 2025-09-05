@@ -5,7 +5,7 @@ import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import knu.team1.be.boost.common.entity.BaseEntity;
+import knu.team1.be.boost.common.entity.SoftDeletableEntity;
 import knu.team1.be.boost.member.vo.OauthInfo;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -26,7 +26,7 @@ import org.hibernate.annotations.SQLRestriction;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SQLDelete(sql = "UPDATE members SET deleted = true WHERE id = ?")
 @SQLRestriction("deleted = false")
-public class Member extends BaseEntity {
+public class Member extends SoftDeletableEntity {
 
     @Embedded
     private OauthInfo oauthInfo;
