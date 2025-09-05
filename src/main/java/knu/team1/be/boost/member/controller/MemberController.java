@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import java.util.UUID;
 import knu.team1.be.boost.member.dto.MemberResponseDto;
 import knu.team1.be.boost.member.dto.MemberUpdateRequestDto;
@@ -48,7 +49,8 @@ public class MemberController {
     })
     @PatchMapping("/me")
     public ResponseEntity<MemberResponseDto> updateMyInfo(
-        @RequestBody MemberUpdateRequestDto requestDto) {
+        @Valid @RequestBody MemberUpdateRequestDto requestDto
+    ) {
         MemberResponseDto updatedMemberInfo = memberService.updateMember(memberId, requestDto);
         return ResponseEntity.ok(updatedMemberInfo);
     }
