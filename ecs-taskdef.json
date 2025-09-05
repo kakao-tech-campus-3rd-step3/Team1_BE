@@ -1,0 +1,35 @@
+{
+  "family": "boost-task-jh",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["EC2"],
+  "cpu": "1024",
+  "executionRoleArn": "arn:aws:iam::994523636482:role/ecsTaskExecutionRole-jh",
+  "taskRoleArn": "arn:aws:iam::994523636482:role/ecsTaskRoleS3-seo",
+  "containerDefinitions": [
+    {
+      "name": "app",
+      "image": "994523636482.dkr.ecr.ap-northeast-2.amazonaws.com/boost-ecr:latest",
+      "essential": true,
+      "portMappings": [
+        { "containerPort": 8080, "protocol": "tcp" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/boost-task-jh",
+          "awslogs-region": "ap-northeast-2",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "environment": [
+        {
+          "name": "JAVA_TOOL_OPTIONS",
+          "value": "-XX:MaxRAMPercentage=70 -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError"
+        }
+      ],
+      "memoryReservation": 512,
+      "memory": 768,
+      "stopTimeout": 10
+    }
+  ]
+}
