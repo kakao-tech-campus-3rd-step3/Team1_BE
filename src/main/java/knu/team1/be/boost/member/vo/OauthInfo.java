@@ -16,7 +16,7 @@ public class OauthInfo {
     @Column(name = "provider", nullable = false)
     private String provider;
 
-    @Column(name = "provider_id", unique = true, nullable = false)
+    @Column(name = "provider_id", nullable = false)
     private String providerId;
 
     public OauthInfo(String provider, String providerId) {
