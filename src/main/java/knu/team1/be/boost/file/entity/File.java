@@ -17,6 +17,7 @@ import knu.team1.be.boost.file.entity.vo.StorageKey;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.task.entity.Task;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -50,6 +51,7 @@ public class File extends SoftDeletableEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
+    @Builder.Default
     private FileStatus status = FileStatus.PENDING;
 
     @Column(name = "completed_at")
