@@ -10,7 +10,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
-import knu.team1.be.boost.common.entity.BaseEntity;
+import knu.team1.be.boost.common.entity.SoftDeletableEntity;
 import knu.team1.be.boost.file.dto.FileRequest;
 import knu.team1.be.boost.file.entity.vo.FileMetadata;
 import knu.team1.be.boost.file.entity.vo.StorageKey;
@@ -29,7 +29,7 @@ import org.hibernate.annotations.SQLDelete;
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SQLDelete(sql = "UPDATE file SET deleted = true WHERE id = ?")
-public class File extends BaseEntity {
+public class File extends SoftDeletableEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")   // TODO: 인증 붙이면 nullable = false 활성화
