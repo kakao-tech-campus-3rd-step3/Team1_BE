@@ -22,6 +22,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
@@ -29,6 +30,7 @@ import org.hibernate.annotations.SQLDelete;
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SQLDelete(sql = "UPDATE file SET deleted = true WHERE id = ?")
+@SQLRestriction("deleted = false")
 public class File extends SoftDeletableEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
