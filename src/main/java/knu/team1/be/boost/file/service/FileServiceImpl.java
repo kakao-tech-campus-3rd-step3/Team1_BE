@@ -12,6 +12,7 @@ import knu.team1.be.boost.file.entity.vo.StorageKey;
 import knu.team1.be.boost.file.exception.FileAlreadyUploadCompletedException;
 import knu.team1.be.boost.file.exception.FileNotFoundException;
 import knu.team1.be.boost.file.exception.FileNotReadyException;
+import knu.team1.be.boost.file.exception.FileTooLargeException;
 import knu.team1.be.boost.file.infra.s3.PresignedUrlFactory;
 import knu.team1.be.boost.file.repository.FileRepository;
 import knu.team1.be.boost.task.entity.Task;
@@ -22,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.unit.DataSize;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 
@@ -40,9 +42,19 @@ public class FileServiceImpl implements FileService {
     @Value("${boost.aws.upload.expire-seconds}")
     private int expireSeconds;
 
+    @Value("${boost.file.max-upload-size}")
+    private DataSize maxUploadSize;
+
     @Override
     @Transactional
     public FileResponse uploadFile(FileRequest request) {
+        long max = maxUploadSize.toBytes();
+        long size = request.sizeBytes();
+        if (request.sizeBytes() > max) {
+            log.warn("파일 업로드 실패 - 최대 크기 초과 size={}, max={}", size, max);
+            throw new FileTooLargeException(size, max);
+        }
+
         FileType fileType = FileType.fromContentType(request.contentType());
         StorageKey key = StorageKey.generate(LocalDateTime.now(), fileType.getExtension());
 
@@ -102,6 +114,14 @@ public class FileServiceImpl implements FileService {
         if (file.isComplete()) {
             log.warn("파일 업로드 완료 실패 - 이미 업로드 완료 처리된 파일 fileId={}", fileId);
             throw new FileAlreadyUploadCompletedException(fileId);
+        }
+
+        long max = maxUploadSize.toBytes();
+        long size = request.sizeBytes();
+        if (request.sizeBytes() > max) {
+            log.warn("파일 업로드 완료 실패 - 최대 크기 초과 fileId={}, size={}, max={}",
+                fileId, size, max);
+            throw new FileTooLargeException(size, max);
         }
 
         file.getMetadata()

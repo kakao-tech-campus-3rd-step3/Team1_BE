@@ -8,6 +8,7 @@ import java.util.Optional;
 import knu.team1.be.boost.file.exception.FileAlreadyUploadCompletedException;
 import knu.team1.be.boost.file.exception.FileNotFoundException;
 import knu.team1.be.boost.file.exception.FileNotReadyException;
+import knu.team1.be.boost.file.exception.FileTooLargeException;
 import knu.team1.be.boost.file.exception.StorageServiceException;
 import knu.team1.be.boost.task.exception.TaskNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -100,6 +101,16 @@ public class GlobalExceptionHandler {
     })
     public ProblemDetail handleAlreadyCompleted(RuntimeException e, HttpServletRequest req) {
         return ErrorResponses.of(HttpStatus.CONFLICT, e.getMessage(), instance(req));
+    }
+
+    // 413: 요청 본문이 서버가 허용하는 한도 초과한 경우
+    @ExceptionHandler(FileTooLargeException.class)
+    public ProblemDetail handleFileTooLarge(FileTooLargeException e, HttpServletRequest req) {
+        return ErrorResponses.of(
+            HttpStatus.PAYLOAD_TOO_LARGE,
+            e.getMessage(),
+            instance(req)
+        );
     }
 
     // 405/415 등: 스펙 위반
