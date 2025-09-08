@@ -10,6 +10,7 @@ import knu.team1.be.boost.file.dto.FileCompleteResponseDto;
 import knu.team1.be.boost.file.dto.FileRequestDto;
 import knu.team1.be.boost.file.dto.FileResponseDto;
 import knu.team1.be.boost.file.service.FileService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -21,14 +22,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Files", description = "파일 관련 API")
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/files")
 public class FileController {
 
     private final FileService fileService;
-
-    public FileController(FileService fileService) {
-        this.fileService = fileService;
-    }
 
     @Operation(
         summary = "파일 메타 생성 + 업로드 Presigned URL 발급",
