@@ -5,10 +5,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.UUID;
-import knu.team1.be.boost.file.dto.FileCompleteRequest;
-import knu.team1.be.boost.file.dto.FileCompleteResponse;
-import knu.team1.be.boost.file.dto.FileRequest;
-import knu.team1.be.boost.file.dto.FileResponse;
+import knu.team1.be.boost.file.dto.FileCompleteRequestDto;
+import knu.team1.be.boost.file.dto.FileCompleteResponseDto;
+import knu.team1.be.boost.file.dto.FileRequestDto;
+import knu.team1.be.boost.file.dto.FileResponseDto;
 import knu.team1.be.boost.file.service.FileService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,15 +35,15 @@ public class FileController {
         description = "files 테이블에 메타 정보를 생성하고, 업로드 가능한 S3 Presigned URL을 반환합니다."
     )
     @PostMapping("/upload-url")
-    public ResponseEntity<FileResponse> uploadFile(
-        @Valid @RequestBody FileRequest request
+    public ResponseEntity<FileResponseDto> uploadFile(
+        @Valid @RequestBody FileRequestDto request
     ) {
-        FileResponse fileResponse = fileService.uploadFile(request);
-        URI location = URI.create("/api/files/" + fileResponse.fileId());
+        FileResponseDto fileResponseDto = fileService.uploadFile(request);
+        URI location = URI.create("/api/files/" + fileResponseDto.fileId());
 
         return ResponseEntity
             .created(location)
-            .body(fileResponse);
+            .body(fileResponseDto);
     }
 
     @Operation(
@@ -51,12 +51,12 @@ public class FileController {
         description = "파일 ID를 기반으로 다운로드 가능한 S3 Presigned URL을 반환합니다."
     )
     @GetMapping("/{fileId}/download-url")
-    public ResponseEntity<FileResponse> downloadFile(
+    public ResponseEntity<FileResponseDto> downloadFile(
         @PathVariable UUID fileId
     ) {
-        FileResponse fileResponse = fileService.downloadFile(fileId);
+        FileResponseDto fileResponseDto = fileService.downloadFile(fileId);
 
-        return ResponseEntity.ok(fileResponse);
+        return ResponseEntity.ok(fileResponseDto);
     }
 
     @Operation(
@@ -64,11 +64,11 @@ public class FileController {
         description = "파일 업로드가 완료되었음을 서버에 알리고 상태를 COMPLETED로 갱신합니다."
     )
     @PatchMapping("/{fileId}/complete")
-    public ResponseEntity<FileCompleteResponse> completeUpload(
+    public ResponseEntity<FileCompleteResponseDto> completeUpload(
         @PathVariable UUID fileId,
-        @Valid @RequestBody FileCompleteRequest request
+        @Valid @RequestBody FileCompleteRequestDto request
     ) {
-        FileCompleteResponse response = fileService.completeUpload(fileId, request);
+        FileCompleteResponseDto response = fileService.completeUpload(fileId, request);
 
         return ResponseEntity.ok(response);
     }

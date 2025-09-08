@@ -6,7 +6,7 @@ import java.util.UUID;
 import knu.team1.be.boost.file.entity.File;
 
 @Schema(description = "파일 업로드 완료 응답 DTO")
-public record FileCompleteResponse(
+public record FileCompleteResponseDto(
 
     @Schema(description = "파일 ID (UUID 문자열)", example = "2f8f2a2e-4a63-4f3a-8d1b-2a4de6d6f8aa")
     String fileId,
@@ -21,8 +21,8 @@ public record FileCompleteResponse(
     LocalDateTime completedAt
 ) {
 
-    public static FileCompleteResponse from(File file, UUID taskId) {
-        return new FileCompleteResponse(
+    public static FileCompleteResponseDto from(File file, UUID taskId) {
+        return new FileCompleteResponseDto(
             file.getId().toString(),
             taskId.toString(),
             file.getStatus().name().toLowerCase(),

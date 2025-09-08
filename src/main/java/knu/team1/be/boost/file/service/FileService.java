@@ -1,16 +1,16 @@
 package knu.team1.be.boost.file.service;
 
 import java.util.UUID;
-import knu.team1.be.boost.file.dto.FileCompleteRequest;
-import knu.team1.be.boost.file.dto.FileCompleteResponse;
-import knu.team1.be.boost.file.dto.FileRequest;
-import knu.team1.be.boost.file.dto.FileResponse;
+import knu.team1.be.boost.file.dto.FileCompleteRequestDto;
+import knu.team1.be.boost.file.dto.FileCompleteResponseDto;
+import knu.team1.be.boost.file.dto.FileRequestDto;
+import knu.team1.be.boost.file.dto.FileResponseDto;
 
 public interface FileService {
 
-    FileResponse uploadFile(FileRequest request);
+    FileResponseDto uploadFile(FileRequestDto request);
 
-    FileResponse downloadFile(UUID fileId);
+    FileResponseDto downloadFile(UUID fileId);
 
-    FileCompleteResponse completeUpload(UUID fileId, FileCompleteRequest request);
+    FileCompleteResponseDto completeUpload(UUID fileId, FileCompleteRequestDto request);
 }
