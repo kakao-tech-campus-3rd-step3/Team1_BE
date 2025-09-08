@@ -22,6 +22,9 @@ public class PresignedUrlFactory {
 
     private final S3Presigner s3Presigner;
 
+    private static final int MAX_FILENAME_LENGTH = 255;
+    private static final String DEFAULT_FILENAME = "download";
+
     public PresignedPutObjectRequest forUpload(
         String bucket,
         String key,
@@ -80,7 +83,7 @@ public class PresignedUrlFactory {
     // 파일명 정규화
     private static String sanitizeFilename(String name) {
         if (name == null) {
-            return "download";
+            return DEFAULT_FILENAME;
         }
 
         String s = name
@@ -105,14 +108,13 @@ public class PresignedUrlFactory {
         s = s.replaceAll(" {2,}", " ");
 
         // 길이 제한
-        int max = 50;
-        if (s.length() > max) {
-            s = s.substring(0, max);
+        if (s.length() > MAX_FILENAME_LENGTH) {
+            s = s.substring(0, MAX_FILENAME_LENGTH);
         }
 
         // 빈 문자열 처리
         if (s.isBlank()) {
-            s = "download";
+            s = DEFAULT_FILENAME;
         }
         return s;
     }
