@@ -6,7 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import knu.team1.be.boost.common.entity.SoftDeletableEntity;
-import knu.team1.be.boost.member.vo.OauthInfo;
+import knu.team1.be.boost.member.entity.vo.OauthInfo;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -34,15 +34,15 @@ public class Member extends SoftDeletableEntity {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "profile_emoji", nullable = false)
-    private String profileEmoji;
+    @Column(name = "avatar", nullable = false)
+    private String avatar;
 
-    public void updateMember(String name, String profileEmoji) {
+    public void updateMember(String name, String avatar) {
         if (name != null) {
             this.name = name;
         }
-        if (profileEmoji != null) {
-            this.profileEmoji = profileEmoji;
+        if (avatar != null) {
+            this.avatar = avatar;
         }
     }
 }

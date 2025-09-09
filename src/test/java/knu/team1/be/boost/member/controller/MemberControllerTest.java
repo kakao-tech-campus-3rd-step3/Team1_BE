@@ -51,7 +51,7 @@ public class MemberControllerTest {
         MemberResponseDto responseDto = new MemberResponseDto(
             testMemberId,
             "테스트 유저",
-            "🤖",
+            "1111",
             LocalDateTime.now(),
             LocalDateTime.now()
         );
@@ -62,7 +62,7 @@ public class MemberControllerTest {
             .andDo(print())
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.name").value("테스트 유저"))
-            .andExpect(jsonPath("$.profileEmoji").value("🤖"));
+            .andExpect(jsonPath("$.avatar").value("1111"));
     }
 
     @Test
@@ -82,11 +82,11 @@ public class MemberControllerTest {
     @DisplayName("내 정보 수정 API 성공")
     void updateMyInfo_Success() throws Exception {
         // given
-        MemberUpdateRequestDto requestDto = new MemberUpdateRequestDto("수정된 이름", "😎");
+        MemberUpdateRequestDto requestDto = new MemberUpdateRequestDto("수정된 이름", "1111");
         MemberResponseDto responseDto = new MemberResponseDto(
             testMemberId,
             "수정된 이름",
-            "😎",
+            "1112",
             LocalDateTime.now(),
             LocalDateTime.now()
         );
@@ -100,14 +100,14 @@ public class MemberControllerTest {
             .andDo(print())
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.name").value("수정된 이름"))
-            .andExpect(jsonPath("$.profileEmoji").value("😎"));
+            .andExpect(jsonPath("$.avatar").value("1112"));
     }
 
     @Test
     @DisplayName("내 정보 수정 API 실패 - 존재하지 않는 회원")
     void updateMyInfo_Fail_MemberNotFound() throws Exception {
         // given
-        MemberUpdateRequestDto requestDto = new MemberUpdateRequestDto("수정된 이름", "😎");
+        MemberUpdateRequestDto requestDto = new MemberUpdateRequestDto("수정된 이름", "1112");
         given(memberService.updateMember(any(UUID.class), any(MemberUpdateRequestDto.class)))
             .willThrow(new MemberNotFoundException(testMemberId));
 

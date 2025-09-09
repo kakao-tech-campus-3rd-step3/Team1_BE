@@ -12,8 +12,8 @@ import knu.team1.be.boost.common.exception.MemberNotFoundException;
 import knu.team1.be.boost.member.dto.MemberResponseDto;
 import knu.team1.be.boost.member.dto.MemberUpdateRequestDto;
 import knu.team1.be.boost.member.entity.Member;
+import knu.team1.be.boost.member.entity.vo.OauthInfo;
 import knu.team1.be.boost.member.repository.MemberRepository;
-import knu.team1.be.boost.member.vo.OauthInfo;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,7 +36,7 @@ public class MemberServiceTest {
     private final Member testMember = Member.builder()
         .id(testUserId)
         .name("테스트 유저")
-        .profileEmoji("🤖")
+        .avatar("1111")
         .oauthInfo(testOauthInfo)
         .build();
 
@@ -52,7 +52,7 @@ public class MemberServiceTest {
         // then
         assertNotNull(responseDto);
         assertEquals("테스트 유저", responseDto.name());
-        assertEquals("🤖", responseDto.profileEmoji());
+        assertEquals("1111", responseDto.avatar());
     }
 
     @Test
@@ -72,7 +72,7 @@ public class MemberServiceTest {
     @DisplayName("회원 정보 수정 성공")
     void updateMember_Success() {
         // given
-        MemberUpdateRequestDto requestDto = new MemberUpdateRequestDto("수정된 이름", "😎");
+        MemberUpdateRequestDto requestDto = new MemberUpdateRequestDto("수정된 이름", "1112");
         given(memberRepository.findById(testUserId)).willReturn(Optional.of(testMember));
 
         // when
@@ -81,7 +81,7 @@ public class MemberServiceTest {
         // then
         assertNotNull(responseDto);
         assertEquals("수정된 이름", responseDto.name());
-        assertEquals("😎", responseDto.profileEmoji());
+        assertEquals("1112", responseDto.avatar());
     }
 
     @Test
@@ -89,7 +89,7 @@ public class MemberServiceTest {
     void updateMemberInfo_Fail_MemberNotFound() {
         // given
         UUID nonExistentUserId = UUID.randomUUID();
-        MemberUpdateRequestDto requestDto = new MemberUpdateRequestDto("수정된 이름", "😎");
+        MemberUpdateRequestDto requestDto = new MemberUpdateRequestDto("수정된 이름", "1112");
         given(memberRepository.findById(nonExistentUserId)).willReturn(Optional.empty());
 
         // when & then

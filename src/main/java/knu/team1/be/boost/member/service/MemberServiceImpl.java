@@ -29,7 +29,7 @@ public class MemberServiceImpl implements MemberService {
     public MemberResponseDto updateMember(UUID userId, MemberUpdateRequestDto requestDto) {
         Member member = memberRepository.findById(userId)
             .orElseThrow(() -> new MemberNotFoundException(userId));
-        member.updateMember(requestDto.name(), requestDto.profileEmoji());
+        member.updateMember(requestDto.name(), requestDto.avatar());
         return MemberResponseDto.from(member);
     }
 
