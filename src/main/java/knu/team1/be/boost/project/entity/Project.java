@@ -2,7 +2,11 @@ package knu.team1.be.boost.project.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
 import knu.team1.be.boost.common.entity.SoftDeletableEntity;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -25,6 +29,9 @@ public class Project extends SoftDeletableEntity {
 
     @Column(name = "default_reviewer_count", nullable = false)
     Integer defaultReviewerCount;
+
+    @OneToMany(mappedBy = "project", fetch = FetchType.LAZY)
+    private List<ProjectMember> projectMembers = new ArrayList<>();
 
     public void updateProject(String name, Integer defaultReviewerCount) {
         if (name != null) {

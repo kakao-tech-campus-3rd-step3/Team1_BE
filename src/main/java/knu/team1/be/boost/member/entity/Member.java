@@ -3,10 +3,15 @@ package knu.team1.be.boost.member.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import java.util.ArrayList;
+import java.util.List;
 import knu.team1.be.boost.common.entity.SoftDeletableEntity;
 import knu.team1.be.boost.member.vo.OauthInfo;
+import knu.team1.be.boost.project.entity.ProjectMember;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -36,6 +41,9 @@ public class Member extends SoftDeletableEntity {
 
     @Column(name = "profile_emoji", nullable = false)
     private String profileEmoji;
+
+    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
+    private List<ProjectMember> projectMembers = new ArrayList<>();
 
     public void updateMember(String name, String profileEmoji) {
         if (name != null) {
