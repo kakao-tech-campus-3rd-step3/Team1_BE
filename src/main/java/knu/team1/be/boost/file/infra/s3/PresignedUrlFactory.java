@@ -1,9 +1,11 @@
 package knu.team1.be.boost.file.infra.s3;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import knu.team1.be.boost.file.exception.StorageServiceException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ContentDisposition;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
@@ -19,6 +21,9 @@ import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequ
 public class PresignedUrlFactory {
 
     private final S3Presigner s3Presigner;
+
+    private static final int MAX_FILENAME_LENGTH = 255;
+    private static final String DEFAULT_FILENAME = "download";
 
     public PresignedPutObjectRequest forUpload(
         String bucket,
@@ -51,10 +56,18 @@ public class PresignedUrlFactory {
         int expireSeconds
     ) {
         try {
+            String safeName = sanitizeFilename(originalFilename);
+            String contentDisposition = ContentDisposition
+                .attachment()
+                // 파일명 RFC 6266/5987 형식으로 전달
+                .filename(safeName, StandardCharsets.UTF_8)
+                .build()
+                .toString();
+
             GetObjectRequest getReq = GetObjectRequest.builder()
                 .bucket(bucket)
                 .key(key)
-                .responseContentDisposition("attachment; filename=\"" + originalFilename + "\"")
+                .responseContentDisposition(contentDisposition)
                 .responseContentType(contentType)
                 .build();
 
@@ -65,5 +78,44 @@ public class PresignedUrlFactory {
             log.error("S3 다운로드 presigned URL 생성 실패 - key={}", key, e);
             throw new StorageServiceException("S3 다운로드 URL 생성에 실패했습니다.");
         }
+    }
+
+    // 파일명 정규화
+    private static String sanitizeFilename(String name) {
+        if (name == null) {
+            return DEFAULT_FILENAME;
+        }
+
+        String s = name
+            // 개행/제어문자 제거
+            .replaceAll("[\\r\\n\\t\\f\\u0000-\\u001F\\u007F]", "")
+            // 메타문자 처리
+            .replace("\"", "'")
+            .replace(";", "")
+            .replace("\\", "")
+            // 경로 구분자/트래버설 무력화
+            .replace("/", "_")
+            .replace(":", "_")
+            // 좌우 공백 제거
+            .trim();
+
+        // 반복되는 .. -> . 으로 치환
+        while (s.contains("..")) {
+            s = s.replace("..", ".");
+        }
+
+        // 내부 과도한 공백 제거
+        s = s.replaceAll(" {2,}", " ");
+
+        // 길이 제한
+        if (s.length() > MAX_FILENAME_LENGTH) {
+            s = s.substring(0, MAX_FILENAME_LENGTH);
+        }
+
+        // 빈 문자열 처리
+        if (s.isBlank()) {
+            s = DEFAULT_FILENAME;
+        }
+        return s;
     }
 }
