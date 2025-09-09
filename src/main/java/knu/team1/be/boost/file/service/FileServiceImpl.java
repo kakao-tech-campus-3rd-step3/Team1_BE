@@ -2,10 +2,10 @@ package knu.team1.be.boost.file.service;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
-import knu.team1.be.boost.file.dto.FileCompleteRequest;
-import knu.team1.be.boost.file.dto.FileCompleteResponse;
-import knu.team1.be.boost.file.dto.FileRequest;
-import knu.team1.be.boost.file.dto.FileResponse;
+import knu.team1.be.boost.file.dto.FileCompleteRequestDto;
+import knu.team1.be.boost.file.dto.FileCompleteResponseDto;
+import knu.team1.be.boost.file.dto.FileRequestDto;
+import knu.team1.be.boost.file.dto.FileResponseDto;
 import knu.team1.be.boost.file.entity.File;
 import knu.team1.be.boost.file.entity.FileType;
 import knu.team1.be.boost.file.entity.vo.StorageKey;
@@ -47,7 +47,7 @@ public class FileServiceImpl implements FileService {
 
     @Override
     @Transactional
-    public FileResponse uploadFile(FileRequest request) {
+    public FileResponseDto uploadFile(FileRequestDto request) {
         long max = maxUploadSize.toBytes();
         long size = request.sizeBytes();
         if (request.sizeBytes() > max) {
@@ -70,12 +70,12 @@ public class FileServiceImpl implements FileService {
 
         log.info("파일 업로드 presigned URL 발급 성공 - fileId={}, filename={}",
             saved.getId(), saved.getMetadata().originalFilename());
-        return FileResponse.forUpload(saved, presigned, expireSeconds);
+        return FileResponseDto.forUpload(saved, presigned, expireSeconds);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public FileResponse downloadFile(UUID fileId) {
+    public FileResponseDto downloadFile(UUID fileId) {
         // TODO: 다운로드 요청자가 해당 프로젝트 팀원인지 검증
 
         File file = fileRepository.findById(fileId)
@@ -99,12 +99,12 @@ public class FileServiceImpl implements FileService {
 
         log.info("파일 다운로드 presigned URL 발급 성공 - fileId={}, filename={}",
             file.getId(), file.getMetadata().originalFilename());
-        return FileResponse.forDownload(file, presigned, expireSeconds);
+        return FileResponseDto.forDownload(file, presigned, expireSeconds);
     }
 
     @Override
     @Transactional
-    public FileCompleteResponse completeUpload(UUID fileId, FileCompleteRequest request) {
+    public FileCompleteResponseDto completeUpload(UUID fileId, FileCompleteRequestDto request) {
         File file = fileRepository.findById(fileId)
             .orElseThrow(() -> {
                 log.warn("파일 업로드 완료 실패 - 존재하지 않는 fileId={}", fileId);
@@ -139,6 +139,6 @@ public class FileServiceImpl implements FileService {
 
         log.info("파일 업로드 완료 처리 성공 - fileId={}, taskId={}, filename={}",
             fileId, taskId, request.filename());
-        return FileCompleteResponse.from(file, taskId);
+        return FileCompleteResponseDto.from(file, taskId);
     }
 }

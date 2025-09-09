@@ -11,7 +11,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import knu.team1.be.boost.common.entity.SoftDeletableEntity;
-import knu.team1.be.boost.file.dto.FileRequest;
+import knu.team1.be.boost.file.dto.FileRequestDto;
 import knu.team1.be.boost.file.entity.vo.FileMetadata;
 import knu.team1.be.boost.file.entity.vo.StorageKey;
 import knu.team1.be.boost.member.entity.Member;
@@ -26,10 +26,10 @@ import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
-@Table(name = "file")
+@Table(name = "files")
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@SQLDelete(sql = "UPDATE file SET deleted = true WHERE id = ?")
+@SQLDelete(sql = "UPDATE files SET deleted = true WHERE id = ?")
 @SQLRestriction("deleted = false")
 public class File extends SoftDeletableEntity {
 
@@ -59,7 +59,7 @@ public class File extends SoftDeletableEntity {
     @Column(name = "completed_at")
     private LocalDateTime completedAt;
 
-    public static File pendingUpload(FileRequest req, FileType fileType, StorageKey key) {
+    public static File pendingUpload(FileRequestDto req, FileType fileType, StorageKey key) {
         return File.builder()
             .member(null) // TODO: 인증 붙이면 세팅
             .task(null)
