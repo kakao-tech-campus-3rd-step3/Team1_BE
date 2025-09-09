@@ -38,11 +38,7 @@ public class Member extends SoftDeletableEntity {
     private String avatar;
 
     public void updateMember(String name, String avatar) {
-        if (name != null) {
-            this.name = name;
-        }
-        if (avatar != null) {
-            this.avatar = avatar;
-        }
+        this.name = name;
+        this.avatar = avatar;
     }
 }

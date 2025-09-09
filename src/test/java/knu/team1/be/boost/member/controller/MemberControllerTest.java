@@ -5,7 +5,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -94,7 +94,7 @@ public class MemberControllerTest {
             any(MemberUpdateRequestDto.class))).willReturn(responseDto);
 
         // when & then
-        mockMvc.perform(patch("/api/members/me")
+        mockMvc.perform(put("/api/members/me")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
             .andDo(print())
@@ -112,7 +112,7 @@ public class MemberControllerTest {
             .willThrow(new MemberNotFoundException(testMemberId));
 
         // when & then
-        mockMvc.perform(patch("/api/members/me")
+        mockMvc.perform(put("/api/members/me")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
             .andDo(print())
