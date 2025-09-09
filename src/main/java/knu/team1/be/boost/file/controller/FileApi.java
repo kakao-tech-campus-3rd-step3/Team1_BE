@@ -8,10 +8,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.UUID;
-import knu.team1.be.boost.file.dto.FileCompleteRequest;
-import knu.team1.be.boost.file.dto.FileCompleteResponse;
-import knu.team1.be.boost.file.dto.FileRequest;
-import knu.team1.be.boost.file.dto.FileResponse;
+import knu.team1.be.boost.file.dto.FileCompleteRequestDto;
+import knu.team1.be.boost.file.dto.FileCompleteResponseDto;
+import knu.team1.be.boost.file.dto.FileRequestDto;
+import knu.team1.be.boost.file.dto.FileResponseDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -32,7 +32,7 @@ public interface FileApi {
         @ApiResponse(
             responseCode = "201",
             description = "파일 메타 생성 및 업로드 URL 발급 성공",
-            content = @Content(schema = @Schema(implementation = FileResponse.class))
+            content = @Content(schema = @Schema(implementation = FileResponseDto.class))
         ),
         @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
         @ApiResponse(responseCode = "413", description = "파일 크기 한도 초과", content = @Content),
@@ -40,7 +40,7 @@ public interface FileApi {
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
     @PostMapping("/upload-url")
-    ResponseEntity<FileResponse> uploadFile(@Valid @RequestBody FileRequest request);
+    ResponseEntity<FileResponseDto> uploadFile(@Valid @RequestBody FileRequestDto request);
 
     @Operation(
         summary = "다운로드 Presigned URL 발급",
@@ -50,7 +50,7 @@ public interface FileApi {
         @ApiResponse(
             responseCode = "200",
             description = "다운로드 URL 발급 성공",
-            content = @Content(schema = @Schema(implementation = FileResponse.class))
+            content = @Content(schema = @Schema(implementation = FileResponseDto.class))
         ),
         @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
         @ApiResponse(responseCode = "404", description = "파일을 찾을 수 없음", content = @Content),
@@ -59,7 +59,7 @@ public interface FileApi {
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
     @GetMapping("/{fileId}/download-url")
-    ResponseEntity<FileResponse> downloadFile(@PathVariable UUID fileId);
+    ResponseEntity<FileResponseDto> downloadFile(@PathVariable UUID fileId);
 
     @Operation(
         summary = "업로드 완료 콜백",
@@ -69,7 +69,7 @@ public interface FileApi {
         @ApiResponse(
             responseCode = "200",
             description = "업로드 완료 처리 성공",
-            content = @Content(schema = @Schema(implementation = FileCompleteResponse.class))
+            content = @Content(schema = @Schema(implementation = FileCompleteResponseDto.class))
         ),
         @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
         @ApiResponse(responseCode = "404", description = "파일 또는 할 일을 찾을 수 없음", content = @Content),
@@ -77,8 +77,8 @@ public interface FileApi {
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
     @PatchMapping("/{fileId}/complete")
-    ResponseEntity<FileCompleteResponse> completeUpload(
+    ResponseEntity<FileCompleteResponseDto> completeUpload(
         @PathVariable UUID fileId,
-        @Valid @RequestBody FileCompleteRequest request
+        @Valid @RequestBody FileCompleteRequestDto request
     );
 }
