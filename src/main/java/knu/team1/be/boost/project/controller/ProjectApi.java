@@ -36,7 +36,8 @@ public interface ProjectApi {
             content = @Content(schema = @Schema(implementation = ProjectResponseDto.class))
         ),
         @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content),
-        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content)
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
     ResponseEntity<ProjectResponseDto> createProject(
         @RequestBody @Valid ProjectCreateRequestDto requestDto
@@ -53,7 +54,8 @@ public interface ProjectApi {
         @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content),
         @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
         @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
-        @ApiResponse(responseCode = "404", description = "프로젝트 없음", content = @Content)
+        @ApiResponse(responseCode = "404", description = "프로젝트 없음", content = @Content),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
     ResponseEntity<ProjectResponseDto> getProject(@PathVariable UUID projectId);
 
@@ -68,7 +70,8 @@ public interface ProjectApi {
             description = "프로젝트 리스트 조회 성공",
             content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProjectResponseDto.class)))
         ),
-        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content)
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
     ResponseEntity<List<ProjectResponseDto>> getMyProjects();
 
@@ -83,7 +86,8 @@ public interface ProjectApi {
         @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content),
         @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
         @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
-        @ApiResponse(responseCode = "404", description = "프로젝트 없음", content = @Content)
+        @ApiResponse(responseCode = "404", description = "프로젝트 없음", content = @Content),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
     ResponseEntity<ProjectResponseDto> updateProject(
         @PathVariable UUID projectId,
@@ -101,7 +105,8 @@ public interface ProjectApi {
         @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content),
         @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
         @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
-        @ApiResponse(responseCode = "404", description = "프로젝트 없음", content = @Content)
+        @ApiResponse(responseCode = "404", description = "프로젝트 없음", content = @Content),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
     ResponseEntity<Void> deleteProject(@PathVariable UUID projectId);
 
