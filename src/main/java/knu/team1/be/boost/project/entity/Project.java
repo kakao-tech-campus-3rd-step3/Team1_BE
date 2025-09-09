@@ -25,7 +25,7 @@ import org.hibernate.annotations.SQLRestriction;
 public class Project extends SoftDeletableEntity {
 
     @Column(name = "name", nullable = false)
-    String name;
+    private String name;
 
     @Column(name = "default_reviewer_count", nullable = false)
     Integer defaultReviewerCount;
