@@ -28,7 +28,7 @@ public class Project extends SoftDeletableEntity {
     private String name;
 
     @Column(name = "default_reviewer_count", nullable = false)
-    Integer defaultReviewerCount;
+    private Integer defaultReviewerCount;
 
     @OneToMany(mappedBy = "project", fetch = FetchType.LAZY)
     private List<ProjectMember> projectMembers = new ArrayList<>();
