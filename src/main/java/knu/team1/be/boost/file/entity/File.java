@@ -26,10 +26,10 @@ import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
-@Table(name = "file")
+@Table(name = "files")
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@SQLDelete(sql = "UPDATE file SET deleted = true WHERE id = ?")
+@SQLDelete(sql = "UPDATE files SET deleted = true WHERE id = ?")
 @SQLRestriction("deleted = false")
 public class File extends SoftDeletableEntity {
 
