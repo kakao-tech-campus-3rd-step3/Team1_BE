@@ -1,5 +1,8 @@
 package knu.team1.be.boost.project.entity;
 
+import lombok.Getter;
+
+@Getter
 public enum ProjectRole {
     OWNER("프로젝트 소유자"), MEMBER("일반 멤버");
 
@@ -9,7 +12,4 @@ public enum ProjectRole {
         this.description = description;
     }
 
-    public String getDescription() {
-        return description;
-    }
 }
