@@ -11,6 +11,7 @@ import knu.team1.be.boost.file.exception.FileNotReadyException;
 import knu.team1.be.boost.file.exception.FileTooLargeException;
 import knu.team1.be.boost.file.exception.StorageServiceException;
 import knu.team1.be.boost.project.exception.ProjectNotFoundException;
+import knu.team1.be.boost.member.exception.MemberNotFoundException;
 import knu.team1.be.boost.task.exception.TaskNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
