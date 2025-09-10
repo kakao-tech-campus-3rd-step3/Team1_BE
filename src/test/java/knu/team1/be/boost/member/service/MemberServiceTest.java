@@ -25,7 +25,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class MemberServiceTest {
 
     @InjectMocks
-    private MemberServiceImpl userService;
+    private MemberService userService;
 
     @Mock
     private MemberRepository memberRepository;
