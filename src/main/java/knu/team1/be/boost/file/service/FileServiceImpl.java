@@ -127,7 +127,7 @@ public class FileServiceImpl implements FileService {
         file.getMetadata()
             .validateMatches(request.filename(), request.contentType(), request.sizeBytes());
 
-        UUID taskId = UUID.fromString(request.taskId());
+        UUID taskId = request.taskId();
         Task task = taskRepository.findById(taskId)
             .orElseThrow(() -> {
                 log.warn("파일 업로드 완료 실패 - 존재하지 않는 taskId={}, fileId={}", taskId, fileId);
