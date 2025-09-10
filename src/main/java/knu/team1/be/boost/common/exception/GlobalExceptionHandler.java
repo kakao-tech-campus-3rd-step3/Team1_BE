@@ -10,6 +10,7 @@ import knu.team1.be.boost.file.exception.FileNotFoundException;
 import knu.team1.be.boost.file.exception.FileNotReadyException;
 import knu.team1.be.boost.file.exception.FileTooLargeException;
 import knu.team1.be.boost.file.exception.StorageServiceException;
+import knu.team1.be.boost.project.exception.ProjectNotFoundException;
 import knu.team1.be.boost.member.exception.MemberNotFoundException;
 import knu.team1.be.boost.task.exception.TaskNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -89,7 +90,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({
         FileNotFoundException.class,
         TaskNotFoundException.class,
-        MemberNotFoundException.class
+        MemberNotFoundException.class,
+        ProjectNotFoundException.class,
     })
     public ProblemDetail handleNotFound(RuntimeException e, HttpServletRequest req) {
         return ErrorResponses.of(HttpStatus.NOT_FOUND, e.getMessage(), instance(req));
