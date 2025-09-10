@@ -22,7 +22,7 @@ import org.hibernate.annotations.SQLRestriction;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SQLDelete(sql = "UPDATE project SET deleted = true WHERE id = ?")
 @SQLRestriction("deleted = false")
-@Table(name = "project")
+@Table(name = "projects")
 public class Project extends SoftDeletableEntity {
 
     @Column(name = "name", nullable = false)
