@@ -12,7 +12,7 @@ import knu.team1.be.boost.member.dto.MemberUpdateRequestDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -38,7 +38,7 @@ public interface MemberApi {
 
     @Operation(
         summary = "내 정보 수정",
-        description = "로그인한 회원의 이름 또는 프로필 이모지를 수정합니다."
+        description = "로그인한 회원의 이름 또는 아바타를 수정합니다."
     )
     @ApiResponses(value = {
         @ApiResponse(
@@ -50,7 +50,7 @@ public interface MemberApi {
         @ApiResponse(responseCode = "404", description = "회원을 찾을 수 없음", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
-    @PatchMapping("/me")
+    @PutMapping("/me")
     ResponseEntity<MemberResponseDto> updateMyInfo(
         @Valid @RequestBody MemberUpdateRequestDto requestDto
     );
