@@ -2,11 +2,11 @@ package knu.team1.be.boost.project.service;
 
 import java.util.List;
 import java.util.UUID;
-import knu.team1.be.boost.project.ProjectNotFoundException;
 import knu.team1.be.boost.project.dto.ProjectCreateRequestDto;
 import knu.team1.be.boost.project.dto.ProjectResponseDto;
 import knu.team1.be.boost.project.dto.ProjectUpdateRequestDto;
 import knu.team1.be.boost.project.entity.Project;
+import knu.team1.be.boost.project.exception.ProjectNotFoundException;
 import knu.team1.be.boost.project.repository.ProjectRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;

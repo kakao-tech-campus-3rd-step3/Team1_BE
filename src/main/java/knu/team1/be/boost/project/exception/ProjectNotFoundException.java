@@ -1,4 +1,4 @@
-package knu.team1.be.boost.project;
+package knu.team1.be.boost.project.exception;
 
 import java.util.UUID;
 
