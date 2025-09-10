@@ -8,6 +8,7 @@ import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
 import knu.team1.be.boost.common.entity.SoftDeletableEntity;
+import knu.team1.be.boost.projectMember.entity.ProjectMember;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

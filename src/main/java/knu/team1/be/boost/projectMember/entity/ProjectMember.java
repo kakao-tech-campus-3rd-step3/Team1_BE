@@ -1,4 +1,4 @@
-package knu.team1.be.boost.project.entity;
+package knu.team1.be.boost.projectMember.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,6 +11,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import knu.team1.be.boost.common.entity.SoftDeletableEntity;
 import knu.team1.be.boost.member.entity.Member;
+import knu.team1.be.boost.project.entity.Project;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

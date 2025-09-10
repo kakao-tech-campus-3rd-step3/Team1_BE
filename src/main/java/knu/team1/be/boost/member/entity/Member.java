@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import knu.team1.be.boost.common.entity.SoftDeletableEntity;
 import knu.team1.be.boost.member.vo.OauthInfo;
-import knu.team1.be.boost.project.entity.ProjectMember;
+import knu.team1.be.boost.projectMember.entity.ProjectMember;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
