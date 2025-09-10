@@ -10,7 +10,7 @@ import java.util.UUID;
 public record FileCompleteRequestDto(
 
     @Schema(description = "업로드 작업 ID (UUID)", example = "c8b0a2a7-1a89-4c5c-b4d2-3c9c6c59a1d4")
-    @NotBlank(message = "할 일 ID는 필수입니다.")
+    @NotNull(message = "할 일 ID는 필수입니다.")
     UUID taskId,
 
     @Schema(description = "파일명", example = "example.pdf")
