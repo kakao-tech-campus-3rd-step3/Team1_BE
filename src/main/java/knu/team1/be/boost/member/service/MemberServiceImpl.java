@@ -1,10 +1,10 @@
 package knu.team1.be.boost.member.service;
 
 import java.util.UUID;
-import knu.team1.be.boost.common.exception.MemberNotFoundException;
 import knu.team1.be.boost.member.dto.MemberResponseDto;
 import knu.team1.be.boost.member.dto.MemberUpdateRequestDto;
 import knu.team1.be.boost.member.entity.Member;
+import knu.team1.be.boost.member.exception.MemberNotFoundException;
 import knu.team1.be.boost.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
