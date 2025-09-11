@@ -45,4 +45,31 @@ public class ProjectMember extends SoftDeletableEntity {
     @Column(name = "role", nullable = false)
     private ProjectRole role;
 
+    /**
+     * 프로젝트와 멤버 간의 연관관계를 나타내는 ProjectMember 엔티티를 생성합니다.
+     * </p>
+     * 생성된 엔티티는 프로젝트와 멤버의 컬렉션에 자동으로 추가됩니다.
+     *
+     * @param project 연관 지을 프로젝트
+     * @param member  연관 지을 멤버
+     * @param role    프로젝트 내에서의 멤버 역할
+     * @return 생성된 ProjectMember 엔티티
+     */
+    public static ProjectMember createProjectMember(
+        Project project,
+        Member member,
+        ProjectRole role
+    ) {
+        ProjectMember projectMember = ProjectMember.builder()
+            .project(project)
+            .member(member)
+            .role(role)
+            .build();
+
+        project.getProjectMembers().add(projectMember);
+        member.getProjectMembers().add(projectMember);
+
+        return projectMember;
+    }
+
 }
