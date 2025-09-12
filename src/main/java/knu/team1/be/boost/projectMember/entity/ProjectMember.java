@@ -47,7 +47,6 @@ public class ProjectMember extends SoftDeletableEntity {
 
     /**
      * 프로젝트와 멤버 간의 연관관계를 나타내는 ProjectMember 엔티티를 생성합니다.
-     * </p>
      * 생성된 엔티티는 프로젝트와 멤버의 컬렉션에 자동으로 추가됩니다.
      *
      * @param project 연관 지을 프로젝트
