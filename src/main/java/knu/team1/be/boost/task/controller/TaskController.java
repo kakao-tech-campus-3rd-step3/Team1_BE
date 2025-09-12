@@ -5,6 +5,7 @@ import java.net.URI;
 import java.util.UUID;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
 import knu.team1.be.boost.task.dto.TaskResponseDto;
+import knu.team1.be.boost.task.dto.TaskUpdateRequestDto;
 import knu.team1.be.boost.task.service.TaskService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -26,5 +27,15 @@ public class TaskController implements TaskApi {
         URI location = URI.create(
             "/api/projects/" + response.projectId() + "/tasks/" + response.taskId());
         return ResponseEntity.created(location).body(response);
+    }
+
+    @Override
+    public ResponseEntity<TaskResponseDto> updateTask(
+        @PathVariable UUID projectId,
+        @PathVariable UUID taskId,
+        @Valid @RequestBody TaskUpdateRequestDto request
+    ) {
+        TaskResponseDto response = taskService.updateTask(projectId, taskId, request);
+        return ResponseEntity.ok(response);
     }
 }
