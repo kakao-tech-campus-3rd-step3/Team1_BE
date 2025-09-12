@@ -1,0 +1,43 @@
+package knu.team1.be.boost.task.controller;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import java.util.UUID;
+import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
+import knu.team1.be.boost.task.dto.TaskResponseDto;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Tag(name = "Tasks", description = "할 일 관련 API")
+@RequestMapping("/api/projects/{projectId}/tasks")
+public interface TaskApi {
+
+    @Operation(
+        summary = "할 일 생성",
+        description = "새로운 할 일을 생성하고 생성된 Task 정보를 반환합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "201",
+            description = "할 일 생성 성공",
+            content = @Content(schema = @Schema(implementation = TaskResponseDto.class))
+        ),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
+        @ApiResponse(responseCode = "404", description = "존재하지 않는 멤버 ID 포함", content = @Content),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
+    })
+    @PostMapping
+    ResponseEntity<TaskResponseDto> createTask(
+        @PathVariable UUID projectId,
+        @Valid @RequestBody TaskCreateRequestDto request);
+
+}
