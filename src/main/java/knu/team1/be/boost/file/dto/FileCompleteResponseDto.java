@@ -6,13 +6,13 @@ import java.util.UUID;
 import knu.team1.be.boost.file.entity.File;
 
 @Schema(description = "파일 업로드 완료 응답 DTO")
-public record FileCompleteResponse(
+public record FileCompleteResponseDto(
 
-    @Schema(description = "파일 ID (UUID 문자열)", example = "2f8f2a2e-4a63-4f3a-8d1b-2a4de6d6f8aa")
-    String fileId,
+    @Schema(description = "파일 ID (UUID)", example = "2f8f2a2e-4a63-4f3a-8d1b-2a4de6d6f8aa")
+    UUID fileId,
 
-    @Schema(description = "업로드 작업 ID (UUID 문자열)", example = "c8b0a2a7-1a89-4c5c-b4d2-3c9c6c59a1d4")
-    String taskId,
+    @Schema(description = "업로드 작업 ID (UUID)", example = "c8b0a2a7-1a89-4c5c-b4d2-3c9c6c59a1d4")
+    UUID taskId,
 
     @Schema(description = "파일 상태", example = "completed")
     String status,
@@ -21,10 +21,10 @@ public record FileCompleteResponse(
     LocalDateTime completedAt
 ) {
 
-    public static FileCompleteResponse from(File file, UUID taskId) {
-        return new FileCompleteResponse(
-            file.getId().toString(),
-            taskId.toString(),
+    public static FileCompleteResponseDto from(File file, UUID taskId) {
+        return new FileCompleteResponseDto(
+            file.getId(),
+            taskId,
             file.getStatus().name().toLowerCase(),
             file.getCompletedAt()
         );

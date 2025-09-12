@@ -38,3 +38,5 @@ boost:
     region: ap-northeast-2
     upload:
       expire-seconds: 900
+  file:
+    max-upload-size: 5MB

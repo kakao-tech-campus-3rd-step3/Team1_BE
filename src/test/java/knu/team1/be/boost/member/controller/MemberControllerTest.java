@@ -5,7 +5,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -13,9 +13,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDateTime;
 import java.util.UUID;
-import knu.team1.be.boost.common.exception.MemberNotFoundException;
 import knu.team1.be.boost.member.dto.MemberResponseDto;
 import knu.team1.be.boost.member.dto.MemberUpdateRequestDto;
+import knu.team1.be.boost.member.exception.MemberNotFoundException;
 import knu.team1.be.boost.member.service.MemberService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -51,7 +51,7 @@ public class MemberControllerTest {
         MemberResponseDto responseDto = new MemberResponseDto(
             testMemberId,
             "테스트 유저",
-            "🤖",
+            "1111",
             LocalDateTime.now(),
             LocalDateTime.now()
         );
@@ -62,7 +62,7 @@ public class MemberControllerTest {
             .andDo(print())
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.name").value("테스트 유저"))
-            .andExpect(jsonPath("$.profileEmoji").value("🤖"));
+            .andExpect(jsonPath("$.avatar").value("1111"));
     }
 
     @Test
@@ -82,11 +82,11 @@ public class MemberControllerTest {
     @DisplayName("내 정보 수정 API 성공")
     void updateMyInfo_Success() throws Exception {
         // given
-        MemberUpdateRequestDto requestDto = new MemberUpdateRequestDto("수정된 이름", "😎");
+        MemberUpdateRequestDto requestDto = new MemberUpdateRequestDto("수정된 이름", "1111");
         MemberResponseDto responseDto = new MemberResponseDto(
             testMemberId,
             "수정된 이름",
-            "😎",
+            "1112",
             LocalDateTime.now(),
             LocalDateTime.now()
         );
@@ -94,25 +94,25 @@ public class MemberControllerTest {
             any(MemberUpdateRequestDto.class))).willReturn(responseDto);
 
         // when & then
-        mockMvc.perform(patch("/api/members/me")
+        mockMvc.perform(put("/api/members/me")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
             .andDo(print())
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.name").value("수정된 이름"))
-            .andExpect(jsonPath("$.profileEmoji").value("😎"));
+            .andExpect(jsonPath("$.avatar").value("1112"));
     }
 
     @Test
     @DisplayName("내 정보 수정 API 실패 - 존재하지 않는 회원")
     void updateMyInfo_Fail_MemberNotFound() throws Exception {
         // given
-        MemberUpdateRequestDto requestDto = new MemberUpdateRequestDto("수정된 이름", "😎");
+        MemberUpdateRequestDto requestDto = new MemberUpdateRequestDto("수정된 이름", "1112");
         given(memberService.updateMember(any(UUID.class), any(MemberUpdateRequestDto.class)))
             .willThrow(new MemberNotFoundException(testMemberId));
 
         // when & then
-        mockMvc.perform(patch("/api/members/me")
+        mockMvc.perform(put("/api/members/me")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
             .andDo(print())

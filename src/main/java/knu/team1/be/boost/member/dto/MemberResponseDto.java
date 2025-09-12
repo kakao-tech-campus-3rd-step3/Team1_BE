@@ -13,8 +13,8 @@ public record MemberResponseDto(
     @Schema(description = "회원 이름", example = "김부스트")
     String name,
 
-    @Schema(description = "프로필 이모지", example = "🚀")
-    String profileEmoji,
+    @Schema(description = "회원 아바타", example = "1111")
+    String avatar,
 
     @Schema(description = "계정 생성일", example = "2025-09-05T15:00:00")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
@@ -29,7 +29,7 @@ public record MemberResponseDto(
         return new MemberResponseDto(
             member.getId(),
             member.getName(),
-            member.getProfileEmoji(),
+            member.getAvatar(),
             member.getCreatedAt(),
             member.getUpdatedAt()
         );

@@ -1,0 +1,26 @@
+package knu.team1.be.boost.project.dto;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.UUID;
+import knu.team1.be.boost.project.entity.Project;
+
+public record ProjectResponseDto(
+    @Schema(description = "프로젝트 고유 ID", example = "a1b2c3d4-e5f6-7890-1234-567890abcdef")
+    UUID id,
+
+    @Schema(description = "프로젝트 이름", example = "카테캠 BOOST")
+    String name,
+
+    @Schema(description = "프로젝트 생성/수정 시 기본으로 설정되는 리뷰어 인원 수", example = "2")
+    Integer defaultReviewerCount
+) {
+
+    public static ProjectResponseDto from(Project project) {
+        return new ProjectResponseDto(
+            project.getId(),
+            project.getName(),
+            project.getDefaultReviewerCount()
+        );
+    }
+
+}

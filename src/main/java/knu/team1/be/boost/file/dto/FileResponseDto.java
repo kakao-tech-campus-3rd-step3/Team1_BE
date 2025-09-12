@@ -10,7 +10,7 @@ import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequ
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 
 @Schema(description = "파일 업로드/다운로드 Presigned URL 응답 DTO")
-public record FileResponse(
+public record FileResponseDto(
 
     @Schema(description = "파일 ID (UUID)", example = "2f8f2a2e-4a63-4f3a-8d1b-2a4de6d6f8aa")
     UUID fileId,
@@ -34,13 +34,13 @@ public record FileResponse(
     Integer expiresInSeconds
 ) {
 
-    public static FileResponse forUpload(File file, PresignedPutObjectRequest presigned,
+    public static FileResponseDto forUpload(File file, PresignedPutObjectRequest presigned,
         int expiresInSeconds) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Content-Type", file.getMetadata().contentType());
         headers.put("x-amz-server-side-encryption", "AES256");
 
-        return new FileResponse(
+        return new FileResponseDto(
             file.getId(),
             file.getStorageKey().value(),
             presigned.url().toString(),
@@ -50,9 +50,9 @@ public record FileResponse(
         );
     }
 
-    public static FileResponse forDownload(File file, PresignedGetObjectRequest presigned,
+    public static FileResponseDto forDownload(File file, PresignedGetObjectRequest presigned,
         int expiresInSeconds) {
-        return new FileResponse(
+        return new FileResponseDto(
             file.getId(),
             file.getStorageKey().value(),
             presigned.url().toString(),

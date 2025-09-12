@@ -4,15 +4,20 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import java.util.UUID;
 
-@Schema(description = "파일 업로드 요청 DTO")
-public record FileRequest(
+@Schema(description = "파일 업로드 완료 요청 DTO")
+public record FileCompleteRequestDto(
+
+    @Schema(description = "업로드 작업 ID (UUID)", example = "c8b0a2a7-1a89-4c5c-b4d2-3c9c6c59a1d4")
+    @NotNull(message = "할 일 ID는 필수입니다.")
+    UUID taskId,
 
     @Schema(description = "파일명", example = "example.pdf")
     @NotBlank(message = "파일명은 필수입니다.")
     String filename,
 
-    @Schema(description = "MIME Content-Type", example = "application/pdf")
+    @Schema(description = "Content-Type", example = "application/pdf")
     @NotBlank(message = "Content-Type은 필수입니다.")
     String contentType,
 
@@ -20,7 +25,6 @@ public record FileRequest(
     @NotNull(message = "파일 크기는 필수입니다.")
     @Positive(message = "파일 크기는 양수이어야 합니다.")
     Integer sizeBytes
-
 ) {
 
 }
