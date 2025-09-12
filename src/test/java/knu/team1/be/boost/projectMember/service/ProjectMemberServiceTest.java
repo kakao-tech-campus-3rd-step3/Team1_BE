@@ -107,6 +107,10 @@ class ProjectMemberServiceTest {
             assertThat(saved.getProject()).isSameAs(project);
             assertThat(saved.getMember()).isSameAs(member);
             assertThat(saved.getRole()).isEqualTo(role);
+
+            // soft delete 복구 검증
+            assertThat(saved.isDeleted()).isFalse();
+            assertThat(saved.getDeletedAt()).isNull();
         }
 
         @Test
@@ -172,7 +176,7 @@ class ProjectMemberServiceTest {
             assertThatThrownBy(
                 () -> projectMemberService.joinProject(projectId, memberId, role))
                 .isInstanceOf(MemberNotFoundException.class);
-            
+
             verify(projectMemberRepository, never()).save(any());
         }
     }
