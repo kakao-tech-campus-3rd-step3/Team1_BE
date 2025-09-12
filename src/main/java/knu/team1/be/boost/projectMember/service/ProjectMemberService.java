@@ -35,17 +35,29 @@ public class ProjectMemberService {
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new MemberNotFoundException(memberId));
 
-        // 이미 참여 중인지 확인
-        Optional<ProjectMember> existing = projectMemberRepository
-            .findByProjectIdAndMemberId(projectId, memberId);
-        if (existing.isPresent()) {
-            throw new MemberAlreadyJoinedException();
+        // 프로젝트와 멤버 관계 존재여부 확인
+        Optional<ProjectMember> existingRecord = projectMemberRepository
+            .findByProjectIdAndMemberIdIncludingDeleted(projectId, memberId);
+
+        // 참여기록이 없다면 새로 생성해서 저장
+        if (existingRecord.isEmpty()) {
+            ProjectMember newMember = ProjectMember.createProjectMember(project, member, role);
+            projectMemberRepository.save(newMember);
+            return;
         }
 
-        // 새로운 관계 생성
-        ProjectMember projectMember = ProjectMember.createProjectMember(project, member, role);
+        ProjectMember projectMember = existingRecord.get();
 
-        projectMemberRepository.save(projectMember);
+        // 참여했던 기록이 있으나 비활성화 상태면 재활성
+        if (projectMember.isDeleted()) {
+            projectMember.reactivate();
+            projectMember.updateRole(role);
+            projectMemberRepository.save(projectMember);
+            return;
+        }
+
+        // 이미 참여중이라면 예외처리
+        throw new MemberAlreadyJoinedException();
     }
 
     @Transactional

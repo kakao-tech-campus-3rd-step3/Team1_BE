@@ -72,4 +72,8 @@ public class ProjectMember extends SoftDeletableEntity {
         return projectMember;
     }
 
+    public void updateRole(ProjectRole role) {
+        this.role = role;
+    }
+
 }
