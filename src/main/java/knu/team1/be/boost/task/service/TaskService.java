@@ -14,8 +14,10 @@ import knu.team1.be.boost.project.exception.ProjectNotFoundException;
 import knu.team1.be.boost.project.repository.ProjectRepository;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
 import knu.team1.be.boost.task.dto.TaskResponseDto;
+import knu.team1.be.boost.task.dto.TaskUpdateRequestDto;
 import knu.team1.be.boost.task.entity.Task;
 import knu.team1.be.boost.task.entity.TaskStatus;
+import knu.team1.be.boost.task.exception.TaskNotFoundException;
 import knu.team1.be.boost.task.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -37,8 +39,8 @@ public class TaskService {
         // TODO: 인증 붙으면 현재 사용자 프로젝트 소속 여부 확인
 
         TaskStatus status = TaskStatus.from(request.status());
-        List<String> tags = extractTags(request);
-        Set<Member> assignees = findAssignees(request);
+        List<String> tags = extractTags(request.tags());
+        Set<Member> assignees = findAssignees(request.assignees());
 
         Task task = Task.builder()
             .project(project)
@@ -57,20 +59,54 @@ public class TaskService {
         return TaskResponseDto.from(saved);
     }
 
-    private List<String> extractTags(TaskCreateRequestDto request) {
-        return Optional.ofNullable(request.tags())
+    @Transactional
+    public TaskResponseDto updateTask(UUID projectId, UUID taskId, TaskUpdateRequestDto request) {
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new ProjectNotFoundException(projectId));
+
+        Task task = taskRepository.findById(taskId)
+            .orElseThrow(() -> new TaskNotFoundException(taskId));
+
+        // TODO: 인증 붙으면 현재 사용자 프로젝트 소속 여부 확인
+
+        if (!task.getProject().getId().equals(project.getId())) {
+            throw new IllegalArgumentException(
+                "해당 프로젝트에 속한 할 일이 아닙니다. projectId=" + projectId + ", taskId=" + taskId);
+        }
+
+        TaskStatus status = TaskStatus.from(request.status());
+        List<String> tags = extractTags(request.tags());
+        Set<Member> assignees = findAssignees(request.assignees());
+
+        task.update(
+            request.title(),
+            request.description(),
+            status,
+            request.dueDate(),
+            request.urgent(),
+            request.requiredReviewerCount(),
+            tags,
+            assignees
+        );
+
+        Task saved = taskRepository.save(task);
+
+        return TaskResponseDto.from(saved);
+    }
+
+    private List<String> extractTags(List<String> tags) {
+        return Optional.ofNullable(tags)
             .map(ArrayList::new)
             .orElseGet(ArrayList::new);
     }
 
-    private Set<Member> findAssignees(TaskCreateRequestDto request) {
+    private Set<Member> findAssignees(List<UUID> assigneeIds) {
         Set<Member> assignees = new HashSet<>();
 
-        if (request.assignees() == null || request.assignees().isEmpty()) {
+        if (assigneeIds == null || assigneeIds.isEmpty()) {
             return assignees;
         }
 
-        List<UUID> assigneeIds = request.assignees();
         List<Member> foundAssignees = memberRepository.findAllById(assigneeIds);
 
         if (assigneeIds.size() != foundAssignees.size()) {
