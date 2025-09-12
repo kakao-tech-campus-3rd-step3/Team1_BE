@@ -18,6 +18,7 @@ import knu.team1.be.boost.task.dto.TaskUpdateRequestDto;
 import knu.team1.be.boost.task.entity.Task;
 import knu.team1.be.boost.task.entity.TaskStatus;
 import knu.team1.be.boost.task.exception.TaskNotFoundException;
+import knu.team1.be.boost.task.exception.TaskNotInProjectException;
 import knu.team1.be.boost.task.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -70,8 +71,7 @@ public class TaskService {
         // TODO: 인증 붙으면 현재 사용자 프로젝트 소속 여부 확인
 
         if (!task.getProject().getId().equals(project.getId())) {
-            throw new IllegalArgumentException(
-                "해당 프로젝트에 속한 할 일이 아닙니다. projectId=" + projectId + ", taskId=" + taskId);
+            throw new TaskNotInProjectException(projectId, taskId);
         }
 
         TaskStatus status = TaskStatus.from(request.status());
