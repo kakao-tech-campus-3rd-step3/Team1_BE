@@ -21,4 +21,9 @@ public abstract class SoftDeletableEntity extends BaseEntity {
 
     @Column(name = "deletedAt")
     private LocalDateTime deletedAt;
+
+    public void reactivate() {
+        this.deleted = false;
+        this.deletedAt = null;
+    }
 }
