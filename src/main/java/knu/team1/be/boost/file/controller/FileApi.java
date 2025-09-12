@@ -35,6 +35,7 @@ public interface FileApi {
             content = @Content(schema = @Schema(implementation = FileResponseDto.class))
         ),
         @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
         @ApiResponse(responseCode = "413", description = "파일 크기 한도 초과", content = @Content),
         @ApiResponse(responseCode = "500", description = "S3 오류", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
@@ -53,6 +54,8 @@ public interface FileApi {
             content = @Content(schema = @Schema(implementation = FileResponseDto.class))
         ),
         @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
+        @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
         @ApiResponse(responseCode = "404", description = "파일을 찾을 수 없음", content = @Content),
         @ApiResponse(responseCode = "409", description = "업로드 미완료 상태(다운로드 불가)", content = @Content),
         @ApiResponse(responseCode = "500", description = "S3 오류", content = @Content),
@@ -72,6 +75,8 @@ public interface FileApi {
             content = @Content(schema = @Schema(implementation = FileCompleteResponseDto.class))
         ),
         @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
+        @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
         @ApiResponse(responseCode = "404", description = "파일 또는 할 일을 찾을 수 없음", content = @Content),
         @ApiResponse(responseCode = "409", description = "이미 업로드 완료 처리된 파일", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
