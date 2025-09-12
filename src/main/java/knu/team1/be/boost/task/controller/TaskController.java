@@ -38,4 +38,13 @@ public class TaskController implements TaskApi {
         TaskResponseDto response = taskService.updateTask(projectId, taskId, request);
         return ResponseEntity.ok(response);
     }
+
+    @Override
+    public ResponseEntity<Void> deleteTask(
+        @PathVariable UUID projectId,
+        @PathVariable UUID taskId
+    ) {
+        taskService.deleteTask(projectId, taskId);
+        return ResponseEntity.noContent().build();
+    }
 }

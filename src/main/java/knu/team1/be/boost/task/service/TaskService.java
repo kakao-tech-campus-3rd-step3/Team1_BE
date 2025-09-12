@@ -68,7 +68,7 @@ public class TaskService {
         Task task = taskRepository.findById(taskId)
             .orElseThrow(() -> new TaskNotFoundException(taskId));
 
-        // TODO: 인증 붙으면 현재 사용자 프로젝트 소속 여부 확인
+        // TODO: 인증 붙으면 현재 사용자 프로젝트 소속 여부 확인 + 해당 할 일에 담당자인지 확인
 
         if (!task.getProject().getId().equals(project.getId())) {
             throw new TaskNotInProjectException(projectId, taskId);
@@ -89,9 +89,24 @@ public class TaskService {
             assignees
         );
 
-        Task saved = taskRepository.save(task);
+        return TaskResponseDto.from(task);
+    }
 
-        return TaskResponseDto.from(saved);
+    @Transactional
+    public void deleteTask(UUID projectId, UUID taskId) {
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new ProjectNotFoundException(projectId));
+
+        Task task = taskRepository.findById(taskId)
+            .orElseThrow(() -> new TaskNotFoundException(taskId));
+
+        // TODO: 인증 붙으면 현재 사용자 프로젝트 소속 여부 확인 + 해당 할 일에 담당자인지 확인
+
+        if (!task.getProject().getId().equals(project.getId())) {
+            throw new TaskNotInProjectException(projectId, taskId);
+        }
+
+        taskRepository.delete(task);
     }
 
     private List<String> extractTags(List<String> tags) {
