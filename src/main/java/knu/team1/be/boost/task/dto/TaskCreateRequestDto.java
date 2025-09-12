@@ -23,6 +23,7 @@ public record TaskCreateRequestDto(
     String status,
 
     @Schema(description = "마감일", example = "2025-09-11")
+    @NotNull(message = "마감일은 필수입니다.")
     LocalDate dueDate,
 
     @Schema(description = "긴급 여부", example = "true")
