@@ -59,7 +59,7 @@ class FileServiceTest {
 
     @BeforeEach
     void setUp() {
-        fileService = new FileServiceImpl(fileRepository, taskRepository, presignedUrlFactory);
+        fileService = new FileService(fileRepository, taskRepository, presignedUrlFactory);
         ReflectionTestUtils.setField(fileService, "bucket", "test-bucket");
         ReflectionTestUtils.setField(fileService, "expireSeconds", 900);
         ReflectionTestUtils.setField(fileService, "maxUploadSize", DataSize.ofMegabytes(5));
