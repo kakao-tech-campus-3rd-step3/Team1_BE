@@ -10,25 +10,28 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
-import knu.team1.be.boost.common.entity.BaseEntity;
-import knu.team1.be.boost.file.dto.FileRequest;
+import knu.team1.be.boost.common.entity.SoftDeletableEntity;
+import knu.team1.be.boost.file.dto.FileRequestDto;
 import knu.team1.be.boost.file.entity.vo.FileMetadata;
 import knu.team1.be.boost.file.entity.vo.StorageKey;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.task.entity.Task;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
-@Table(name = "file")
+@Table(name = "files")
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@SQLDelete(sql = "UPDATE file SET deleted = true WHERE id = ?")
-public class File extends BaseEntity {
+@SQLDelete(sql = "UPDATE files SET deleted = true WHERE id = ?")
+@SQLRestriction("deleted = false")
+public class File extends SoftDeletableEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")   // TODO: 인증 붙이면 nullable = false 활성화
@@ -50,12 +53,13 @@ public class File extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
+    @Builder.Default
     private FileStatus status = FileStatus.PENDING;
 
     @Column(name = "completed_at")
     private LocalDateTime completedAt;
 
-    public static File pendingUpload(FileRequest req, FileType fileType, StorageKey key) {
+    public static File pendingUpload(FileRequestDto req, FileType fileType, StorageKey key) {
         return File.builder()
             .member(null) // TODO: 인증 붙이면 세팅
             .task(null)

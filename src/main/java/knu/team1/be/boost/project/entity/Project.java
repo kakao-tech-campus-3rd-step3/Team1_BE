@@ -1,16 +1,13 @@
-package knu.team1.be.boost.member.entity;
+package knu.team1.be.boost.project.entity;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import java.util.ArrayList;
 import java.util.List;
 import knu.team1.be.boost.common.entity.SoftDeletableEntity;
-import knu.team1.be.boost.member.entity.vo.OauthInfo;
 import knu.team1.be.boost.projectMember.entity.ProjectMember;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -23,32 +20,29 @@ import org.hibernate.annotations.SQLRestriction;
 @Entity
 @Getter
 @SuperBuilder
-@Table(name = "members", uniqueConstraints = {
-    @UniqueConstraint(
-        name = "uk_member_provider_provider_id",
-        columnNames = {"provider", "provider_id"}
-    )
-})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@SQLDelete(sql = "UPDATE members SET deleted = true WHERE id = ?")
+@SQLDelete(sql = "UPDATE project SET deleted = true WHERE id = ?")
 @SQLRestriction("deleted = false")
-public class Member extends SoftDeletableEntity {
-
-    @Embedded
-    private OauthInfo oauthInfo;
+@Table(name = "projects")
+public class Project extends SoftDeletableEntity {
 
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "avatar", nullable = false)
-    private String avatar;
+    @Column(name = "default_reviewer_count", nullable = false)
+    private Integer defaultReviewerCount;
 
-    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "project", fetch = FetchType.LAZY)
     @Builder.Default
     private List<ProjectMember> projectMembers = new ArrayList<>();
 
-    public void updateMember(String name, String avatar) {
-        this.name = name;
-        this.avatar = avatar;
+    public void updateProject(String name, Integer defaultReviewerCount) {
+        if (name != null) {
+            this.name = name;
+        }
+        if (defaultReviewerCount != null) {
+            this.defaultReviewerCount = defaultReviewerCount;
+        }
     }
+
 }
