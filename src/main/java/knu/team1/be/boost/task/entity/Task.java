@@ -17,7 +17,7 @@ import org.hibernate.annotations.SQLDelete;
 @Table(name = "task")
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@SQLDelete(sql = "UPDATE task SET deleted = true WHERE id = ?")
+@SQLDelete(sql = "UPDATE task SET deleted = true, deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
 public class Task extends SoftDeletableEntity {
 
     @Id
