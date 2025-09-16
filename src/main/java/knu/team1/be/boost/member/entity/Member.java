@@ -10,9 +10,10 @@ import jakarta.persistence.UniqueConstraint;
 import java.util.ArrayList;
 import java.util.List;
 import knu.team1.be.boost.common.entity.SoftDeletableEntity;
-import knu.team1.be.boost.projectMember.entity.ProjectMember;
 import knu.team1.be.boost.member.entity.vo.OauthInfo;
+import knu.team1.be.boost.projectMember.entity.ProjectMember;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -29,7 +30,7 @@ import org.hibernate.annotations.SQLRestriction;
     )
 })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@SQLDelete(sql = "UPDATE members SET deleted = true WHERE id = ?")
+@SQLDelete(sql = "UPDATE members SET deleted = true, deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
 @SQLRestriction("deleted = false")
 public class Member extends SoftDeletableEntity {
 
@@ -43,8 +44,9 @@ public class Member extends SoftDeletableEntity {
     private String avatar;
 
     @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
+    @Builder.Default
     private List<ProjectMember> projectMembers = new ArrayList<>();
-  
+
     public void updateMember(String name, String avatar) {
         this.name = name;
         this.avatar = avatar;

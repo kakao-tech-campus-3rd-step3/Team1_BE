@@ -32,7 +32,7 @@ import org.hibernate.annotations.SQLDelete;
 @Table(name = "tasks")
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@SQLDelete(sql = "UPDATE tasks SET deleted = true WHERE id = ?")
+@SQLDelete(sql = "UPDATE tasks SET deleted = true, deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
 public class Task extends SoftDeletableEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

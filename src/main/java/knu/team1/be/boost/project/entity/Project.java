@@ -10,6 +10,7 @@ import java.util.List;
 import knu.team1.be.boost.common.entity.SoftDeletableEntity;
 import knu.team1.be.boost.projectMember.entity.ProjectMember;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -20,7 +21,7 @@ import org.hibernate.annotations.SQLRestriction;
 @Getter
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@SQLDelete(sql = "UPDATE project SET deleted = true WHERE id = ?")
+@SQLDelete(sql = "UPDATE projects SET deleted = true, deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
 @SQLRestriction("deleted = false")
 @Table(name = "projects")
 public class Project extends SoftDeletableEntity {
@@ -32,6 +33,7 @@ public class Project extends SoftDeletableEntity {
     private Integer defaultReviewerCount;
 
     @OneToMany(mappedBy = "project", fetch = FetchType.LAZY)
+    @Builder.Default
     private List<ProjectMember> projectMembers = new ArrayList<>();
 
     public void updateProject(String name, Integer defaultReviewerCount) {
