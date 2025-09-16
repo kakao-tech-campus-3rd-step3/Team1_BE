@@ -10,9 +10,8 @@ import knu.team1.be.boost.file.exception.FileNotFoundException;
 import knu.team1.be.boost.file.exception.FileNotReadyException;
 import knu.team1.be.boost.file.exception.FileTooLargeException;
 import knu.team1.be.boost.file.exception.StorageServiceException;
-import knu.team1.be.boost.project.exception.ProjectNotFoundException;
-import knu.team1.be.boost.projectMember.exception.MemberAlreadyJoinedException;
 import knu.team1.be.boost.member.exception.MemberNotFoundException;
+import knu.team1.be.boost.project.exception.ProjectNotFoundException;
 import knu.team1.be.boost.task.exception.TaskNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -101,8 +100,7 @@ public class GlobalExceptionHandler {
     // 409: 리소스 상태 충돌
     @ExceptionHandler({
         FileAlreadyUploadCompletedException.class,
-        FileNotReadyException.class,
-        MemberAlreadyJoinedException.class
+        FileNotReadyException.class
     })
     public ProblemDetail handleAlreadyCompleted(RuntimeException e, HttpServletRequest req) {
         return ErrorResponses.of(HttpStatus.CONFLICT, e.getMessage(), instance(req));

@@ -26,4 +26,8 @@ public class RefreshToken extends BaseEntity {
 
     @Column(name = "refresh_token", nullable = false)
     private String refreshToken;
+
+    public void updateToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
 }
