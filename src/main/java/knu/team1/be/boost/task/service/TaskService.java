@@ -14,6 +14,7 @@ import knu.team1.be.boost.project.exception.ProjectNotFoundException;
 import knu.team1.be.boost.project.repository.ProjectRepository;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
 import knu.team1.be.boost.task.dto.TaskResponseDto;
+import knu.team1.be.boost.task.dto.TaskStatusRequestDto;
 import knu.team1.be.boost.task.dto.TaskUpdateRequestDto;
 import knu.team1.be.boost.task.entity.Task;
 import knu.team1.be.boost.task.entity.TaskStatus;
@@ -107,6 +108,27 @@ public class TaskService {
         }
 
         taskRepository.delete(task);
+    }
+
+    @Transactional
+    public TaskResponseDto changeTaskStatus(UUID projectId, UUID taskId,
+        TaskStatusRequestDto request) {
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new ProjectNotFoundException(projectId));
+
+        Task task = taskRepository.findById(taskId)
+            .orElseThrow(() -> new TaskNotFoundException(taskId));
+
+        // TODO: 인증 붙으면 현재 사용자 프로젝트 소속 여부 확인 + 해당 할 일에 담당자인지 확인
+
+        if (!task.getProject().getId().equals(project.getId())) {
+            throw new TaskNotInProjectException(projectId, taskId);
+        }
+
+        TaskStatus status = TaskStatus.from(request.Status());
+        task.changeStatus(status);
+
+        return TaskResponseDto.from(task);
     }
 
     private List<String> extractTags(List<String> tags) {

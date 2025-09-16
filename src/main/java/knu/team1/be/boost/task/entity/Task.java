@@ -82,4 +82,8 @@ public class Task extends SoftDeletableEntity {
         this.tags = tags;
         this.assignees = assignees;
     }
+
+    public void changeStatus(TaskStatus taskStatus) {
+        this.status = taskStatus;
+    }
 }
