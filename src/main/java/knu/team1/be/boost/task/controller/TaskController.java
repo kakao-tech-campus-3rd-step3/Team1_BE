@@ -5,6 +5,7 @@ import java.net.URI;
 import java.util.UUID;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
 import knu.team1.be.boost.task.dto.TaskResponseDto;
+import knu.team1.be.boost.task.dto.TaskStatusRequestDto;
 import knu.team1.be.boost.task.dto.TaskUpdateRequestDto;
 import knu.team1.be.boost.task.service.TaskService;
 import lombok.RequiredArgsConstructor;
@@ -46,5 +47,15 @@ public class TaskController implements TaskApi {
     ) {
         taskService.deleteTask(projectId, taskId);
         return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    public ResponseEntity<TaskResponseDto> changeTaskStatus(
+        @PathVariable UUID projectId,
+        @PathVariable UUID taskId,
+        @Valid @RequestBody TaskStatusRequestDto request
+    ) {
+        TaskResponseDto response = taskService.changeTaskStatus(projectId, taskId, request);
+        return ResponseEntity.ok(response);
     }
 }

@@ -10,9 +10,11 @@ import jakarta.validation.Valid;
 import java.util.UUID;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
 import knu.team1.be.boost.task.dto.TaskResponseDto;
+import knu.team1.be.boost.task.dto.TaskStatusRequestDto;
 import knu.team1.be.boost.task.dto.TaskUpdateRequestDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -83,5 +85,23 @@ public interface TaskApi {
     ResponseEntity<Void> deleteTask(
         @PathVariable UUID projectId,
         @PathVariable UUID taskId
+    );
+
+    @Operation(
+        summary = "할 일 상태 변경",
+        description = "특정 프로젝트에 속한 할 일의 상태만 변경합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "할 일 상태 변경 성공", content = @Content),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
+        @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
+        @ApiResponse(responseCode = "404", description = "존재하지 않는 프로젝트/할 일 ID 포함", content = @Content),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
+    })
+    @PatchMapping("/{taskId}")
+    ResponseEntity<TaskResponseDto> changeTaskStatus(
+        @PathVariable UUID projectId,
+        @PathVariable UUID taskId,
+        @Valid @RequestBody TaskStatusRequestDto request
     );
 }
