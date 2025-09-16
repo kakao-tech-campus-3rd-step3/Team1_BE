@@ -69,7 +69,7 @@ public class Task extends SoftDeletableEntity {
     )
     @Builder.Default
     private Set<Member> assignees = new LinkedHashSet<>();
-    
+
     public void update(String title, String description, TaskStatus status,
         LocalDate dueDate, Boolean urgent, Integer requiredReviewerCount,
         List<String> tags, Set<Member> assignees) {
