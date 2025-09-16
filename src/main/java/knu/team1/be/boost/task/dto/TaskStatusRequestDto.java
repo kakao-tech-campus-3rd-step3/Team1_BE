@@ -8,7 +8,7 @@ public record TaskStatusRequestDto(
 
     @Schema(description = "수정할 할 일 상태 (TODO/PROGRESS/REVIEW/DONE)", example = "REVIEW")
     @NotBlank(message = "상태는 필수입니다.")
-    String Status
+    String status
 ) {
 
 }

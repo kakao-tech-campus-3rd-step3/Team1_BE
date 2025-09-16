@@ -125,7 +125,7 @@ public class TaskService {
             throw new TaskNotInProjectException(projectId, taskId);
         }
 
-        TaskStatus status = TaskStatus.from(request.Status());
+        TaskStatus status = TaskStatus.from(request.status());
         task.changeStatus(status);
 
         return TaskResponseDto.from(task);
