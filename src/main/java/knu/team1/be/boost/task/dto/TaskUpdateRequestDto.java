@@ -23,7 +23,7 @@ public record TaskUpdateRequestDto(
     String description,
 
     @Schema(description = "할 일 상태 (TODO/PROGRESS/REVIEW/DONE)", example = "PROGRESS")
-    @NotBlank(message = "상태는 필수입니다.")
+    @NotNull(message = "상태는 필수입니다.")
     TaskStatus status,
 
     @Schema(description = "마감일", example = "2025-09-12")
