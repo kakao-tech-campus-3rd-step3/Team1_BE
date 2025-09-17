@@ -26,6 +26,9 @@ public class SecurityConfig {
         http
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers(
+                    // H2 콘솔 접속을 위한 경로 허용
+                    "/h2-console/**",
+
                     // API 문서 관련 경로
                     "/swagger-ui/**",
                     "/swagger-ui.html",
