@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -13,9 +14,11 @@ public record TaskUpdateRequestDto(
 
     @Schema(description = "할 일 제목", example = "1회차 기술 멘토링 피드백 반영(수정)")
     @NotBlank(message = "제목은 필수입니다.")
+    @Size(max = 100, message = "제목은 최대 100자까지 입력할 수 있습니다.")
     String title,
 
     @Schema(description = "할 일 상세 설명", example = "피드백 중 우선순위 높은 항목 먼저 반영")
+    @Size(max = 2000, message = "할 일 상세 설명은 최대 2000자까지 입력할 수 있습니다.")
     String description,
 
     @Schema(description = "할 일 상태 (TODO/PROGRESS/REVIEW/DONE)", example = "PROGRESS")
