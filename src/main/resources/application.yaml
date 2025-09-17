@@ -24,11 +24,25 @@ spring:
       client:
         registration:
           kakao:
+            # 카카오 개발자 콘솔에서 발급받은 정보
             client-id: YOUR_KAKAO_REST_API_KEY
+            client-secret: YOUR_KAKAO_CLIENT_SECRET
+
+            # 프론트에서 인가 코드 받는 페이지, 카카오 개발자 콘솔에 등록한 Redirect URI와 일치해야 함
+            redirect-uri: "https://my-service.com/login/kakao/callback"
+
+            # 고정값
             client-authentication-method: client_secret_post
             authorization-grant-type: authorization_code
             scope:
               - profile_nickname
+
+        provider:
+          kakao:
+            # 카카오 서버 정보 (명시적으로 작성 권장)
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
 
 springdoc:
   swagger-ui:
