@@ -44,7 +44,6 @@ public interface AuthApi {
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
     @PostMapping("/logout")
-//    @PreAuthorize("isAuthenticated()")
     ResponseEntity<Void> logout(@AuthenticationPrincipal UserPrincipalDto userPrincipalDto);
 
     @Operation(
