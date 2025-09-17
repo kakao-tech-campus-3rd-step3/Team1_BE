@@ -22,13 +22,19 @@ public class KakaoClientService {
     @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
     private String kakaoRedirectUri;
 
+    @Value("${spring.security.oauth2.client.provider.kakao.token-uri}")
+    private String kakaoTokenUri;
+
+    @Value("${spring.security.oauth2.client.provider.kakao.user-info-uri}")
+    private String kakaoUserInfoUri;
+
     public KakaoDto.UserInfo getUserInfo(String code) {
         // 인가 코드로 액세스 토큰 요청
         Token tokenResponse = getToken(code);
 
         // 액세스 토큰으로 사용자 정보 요청
         return webClient.get()
-            .uri("https://kapi.kakao.com/v2/user/me")
+            .uri(kakaoUserInfoUri)
             .header("Authorization", "Bearer " + tokenResponse.accessToken())
             .retrieve()
             .bodyToMono(KakaoDto.UserInfo.class)
@@ -43,7 +49,7 @@ public class KakaoClientService {
         formData.add("code", code);
 
         return webClient.post()
-            .uri("https://kauth.kakao.com/oauth/token")
+            .uri(kakaoTokenUri)
             .contentType(MediaType.APPLICATION_FORM_URLENCODED)
             .bodyValue(formData)
             .retrieve()
