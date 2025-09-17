@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
+import knu.team1.be.boost.task.entity.TaskStatus;
 
 @Schema(description = "할 일 수정 요청 DTO")
 public record TaskUpdateRequestDto(
@@ -23,7 +24,7 @@ public record TaskUpdateRequestDto(
 
     @Schema(description = "할 일 상태 (TODO/PROGRESS/REVIEW/DONE)", example = "PROGRESS")
     @NotBlank(message = "상태는 필수입니다.")
-    String status,
+    TaskStatus status,
 
     @Schema(description = "마감일", example = "2025-09-12")
     @NotNull(message = "마감일은 필수입니다.")

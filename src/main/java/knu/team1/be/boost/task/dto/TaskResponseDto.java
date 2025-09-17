@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.UUID;
 import knu.team1.be.boost.member.dto.MemberResponseDto;
 import knu.team1.be.boost.task.entity.Task;
+import knu.team1.be.boost.task.entity.TaskStatus;
 
 @Schema(description = "할 일 응답 DTO")
 public record TaskResponseDto(
@@ -24,7 +25,7 @@ public record TaskResponseDto(
     String description,
 
     @Schema(description = "할 일 상태 (TODO/PROGRESS/REVIEW/DONE)", example = "TODO")
-    String status,
+    TaskStatus status,
 
     @Schema(description = "마감일", example = "2025-08-26")
     LocalDate dueDate,
@@ -54,7 +55,7 @@ public record TaskResponseDto(
             task.getProject().getId(),
             task.getTitle(),
             task.getDescription(),
-            task.getStatus().name(),
+            task.getStatus(),
             task.getDueDate(),
             task.getUrgent(),
             task.getRequiredReviewerCount(),

@@ -17,7 +17,6 @@ import knu.team1.be.boost.task.dto.TaskResponseDto;
 import knu.team1.be.boost.task.dto.TaskStatusRequestDto;
 import knu.team1.be.boost.task.dto.TaskUpdateRequestDto;
 import knu.team1.be.boost.task.entity.Task;
-import knu.team1.be.boost.task.entity.TaskStatus;
 import knu.team1.be.boost.task.exception.TaskNotFoundException;
 import knu.team1.be.boost.task.exception.TaskNotInProjectException;
 import knu.team1.be.boost.task.repository.TaskRepository;
@@ -40,7 +39,6 @@ public class TaskService {
 
         // TODO: 인증 붙으면 현재 사용자 프로젝트 소속 여부 확인
 
-        TaskStatus status = TaskStatus.from(request.status());
         List<String> tags = extractTags(request.tags());
         Set<Member> assignees = findAssignees(request.assignees());
 
@@ -48,7 +46,7 @@ public class TaskService {
             .project(project)
             .title(request.title())
             .description(request.description())
-            .status(status)
+            .status(request.status())
             .dueDate(request.dueDate())
             .urgent(request.urgent())
             .requiredReviewerCount(request.requiredReviewerCount())
@@ -75,14 +73,13 @@ public class TaskService {
             throw new TaskNotInProjectException(projectId, taskId);
         }
 
-        TaskStatus status = TaskStatus.from(request.status());
         List<String> tags = extractTags(request.tags());
         Set<Member> assignees = findAssignees(request.assignees());
 
         task.update(
             request.title(),
             request.description(),
-            status,
+            request.status(),
             request.dueDate(),
             request.urgent(),
             request.requiredReviewerCount(),
@@ -125,8 +122,7 @@ public class TaskService {
             throw new TaskNotInProjectException(projectId, taskId);
         }
 
-        TaskStatus status = TaskStatus.from(request.status());
-        task.changeStatus(status);
+        task.changeStatus(request.status());
 
         return TaskResponseDto.from(task);
     }
