@@ -30,10 +30,10 @@ public record TaskResponseDto(
     LocalDate dueDate,
 
     @Schema(description = "긴급 여부", example = "true")
-    boolean urgent,
+    Boolean urgent,
 
     @Schema(description = "필요 리뷰어 수 (0 이상)", example = "2")
-    int requiredReviewerCount,
+    Integer requiredReviewerCount,
 
     @Schema(description = "태그 목록", example = "[\"피드백\", \"멘토링\"]")
     List<String> tags,
@@ -56,7 +56,7 @@ public record TaskResponseDto(
             task.getDescription(),
             task.getStatus().name(),
             task.getDueDate(),
-            task.isUrgent(),
+            task.getUrgent(),
             task.getRequiredReviewerCount(),
             task.getTags(),
             task.getAssignees().stream()

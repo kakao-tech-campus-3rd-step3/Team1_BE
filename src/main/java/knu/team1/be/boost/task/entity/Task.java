@@ -51,7 +51,7 @@ public class Task extends SoftDeletableEntity {
 
     private LocalDate dueDate;
 
-    private boolean urgent;
+    private Boolean urgent;
 
     private Integer requiredReviewerCount;
 

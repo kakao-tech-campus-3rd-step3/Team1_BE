@@ -27,7 +27,8 @@ public record TaskUpdateRequestDto(
     LocalDate dueDate,
 
     @Schema(description = "긴급 여부", example = "false")
-    boolean urgent,
+    @NotNull(message = "긴급 여부는 필수입니다.")
+    Boolean urgent,
 
     @Schema(description = "필요 리뷰어 수 (0 이상)", example = "3")
     @NotNull(message = "필요 리뷰어 수는 필수입니다.")
