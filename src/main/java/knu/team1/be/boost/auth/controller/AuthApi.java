@@ -41,6 +41,7 @@ public interface AuthApi {
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "로그아웃 성공", content = @Content),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
     @PostMapping("/logout")
