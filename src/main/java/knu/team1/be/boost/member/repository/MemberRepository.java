@@ -9,6 +9,6 @@ public interface MemberRepository extends JpaRepository<Member, UUID> {
 
     Optional<Member> findByOauthInfoProviderAndOauthInfoProviderId(
         String provider,
-        String providerId
+        Long providerId
     );
 }

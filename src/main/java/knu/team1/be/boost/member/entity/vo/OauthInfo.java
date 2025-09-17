@@ -19,9 +19,9 @@ public class OauthInfo {
     private String provider;
 
     @Column(name = "provider_id", nullable = false)
-    private String providerId;
+    private Long providerId;
 
-    public OauthInfo(String provider, String providerId) {
+    public OauthInfo(String provider, Long providerId) {
         this.provider = provider;
         this.providerId = providerId;
     }
