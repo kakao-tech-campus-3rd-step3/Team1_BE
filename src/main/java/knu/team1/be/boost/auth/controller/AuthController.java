@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -25,7 +26,7 @@ public class AuthController implements AuthApi {
     private static final long REFRESH_TOKEN_EXPIRE_TIME_SECONDS = 7 * 24 * 60 * 60; // 7일
 
     @Override
-    public ResponseEntity<AccessTokenResponseDto> kakaoLogin(@RequestHeader("code") String code) {
+    public ResponseEntity<AccessTokenResponseDto> kakaoLogin(@RequestParam("code") String code) {
         TokenDto tokenDto = authService.login(code);
 
         // 헤더에 Refresh Token 쿠키 추가

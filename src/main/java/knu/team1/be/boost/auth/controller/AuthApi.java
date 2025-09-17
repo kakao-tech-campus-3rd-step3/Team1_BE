@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Auth", description = "로그인 관련 API")
 @RequestMapping("/api/auth")
@@ -32,7 +33,7 @@ public interface AuthApi {
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
     @PostMapping("/login/kakao")
-    ResponseEntity<AccessTokenResponseDto> kakaoLogin(@RequestHeader("code") String code);
+    ResponseEntity<AccessTokenResponseDto> kakaoLogin(@RequestParam("code") String code);
 
     @Operation(
         summary = "로그아웃",
