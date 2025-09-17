@@ -96,6 +96,7 @@ public class AuthService {
                     .profile()
                     .nickname()
                 )
+                .avatar("1111")
                 .oauthInfo(oauthInfo)
                 .build();
             return memberRepository.save(newMember);
