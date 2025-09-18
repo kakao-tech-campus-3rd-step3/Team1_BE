@@ -31,6 +31,7 @@ public interface AuthApi {
             description = "로그인 성공",
             content = @Content(schema = @Schema(implementation = AccessTokenResponseDto.class))
         ),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
     @PostMapping("/login/kakao")
