@@ -26,7 +26,7 @@ import org.springframework.util.StringUtils;
 
 @Slf4j
 @Component
-public class JwtTokenProvider {
+public class JwtUtil {
 
     private final Key key;
 
@@ -40,7 +40,7 @@ public class JwtTokenProvider {
 
     private static final long REFRESH_TOKEN_EXPIRE_TIME = 7 * 24 * 60 * 60 * 1000L; // 7일
 
-    public JwtTokenProvider(@Value("${jwt.secret}") String secretKey) {
+    public JwtUtil(@Value("${jwt.secret}") String secretKey) {
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 

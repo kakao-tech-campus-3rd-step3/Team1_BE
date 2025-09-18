@@ -6,7 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
-import knu.team1.be.boost.security.util.JwtTokenProvider;
+import knu.team1.be.boost.security.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -21,7 +21,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtUtil jwtUtil;
 
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
@@ -53,13 +53,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return;
         }
 
-        String token = jwtTokenProvider.resolveToken(request);
+        String token = jwtUtil.resolveToken(request);
 
         // 토큰이 있는 경우에만 검증 및 인증 정보 설정
         if (StringUtils.hasText(token)) {
             // 예외가 발생하면 JwtExceptionFilter로 처리 위임
-            jwtTokenProvider.validateToken(token);
-            Authentication authentication = jwtTokenProvider.getAuthentication(token);
+            jwtUtil.validateToken(token);
+            Authentication authentication = jwtUtil.getAuthentication(token);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
 

@@ -14,7 +14,7 @@ import knu.team1.be.boost.auth.repository.RefreshTokenRepository;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.entity.vo.OauthInfo;
 import knu.team1.be.boost.member.repository.MemberRepository;
-import knu.team1.be.boost.security.util.JwtTokenProvider;
+import knu.team1.be.boost.security.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -32,7 +32,7 @@ public class AuthService {
 
     private final RefreshTokenRepository refreshTokenRepository;
 
-    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtUtil jwtUtil;
 
     private final KakaoClientService kakaoClientService;
 
@@ -44,7 +44,7 @@ public class AuthService {
         Member member = registerOrLogin(kakaoUserInfo);
 
         Authentication userAuthentication = createUserAuthentication(member);
-        TokenDto tokenDto = jwtTokenProvider.generateToken(userAuthentication);
+        TokenDto tokenDto = jwtUtil.generateToken(userAuthentication);
 
         saveOrUpdateRefreshToken(member, tokenDto.refreshToken());
 
@@ -60,13 +60,13 @@ public class AuthService {
     public TokenDto reissue(String expiredAccessToken, String refreshToken) {
         // Refresh Token 자체의 유효성 검증
         try {
-            jwtTokenProvider.validateToken(refreshToken);
+            jwtUtil.validateToken(refreshToken);
         } catch (JwtException e) {
             throw new InvalidRefreshTokenException();
         }
 
         // 만료된 Access Token에서 memberId 추출
-        Authentication userAuthentication = jwtTokenProvider.getAuthentication(expiredAccessToken);
+        Authentication userAuthentication = jwtUtil.getAuthentication(expiredAccessToken);
         UserPrincipalDto userPrincipalDto = (UserPrincipalDto) userAuthentication.getPrincipal();
 
         RefreshToken storedRefreshToken = refreshTokenRepository.findByMemberId(
@@ -78,7 +78,7 @@ public class AuthService {
         }
 
         // 모든 검증을 통과하면 새로운 토큰을 생성
-        TokenDto newTokenDto = jwtTokenProvider.generateToken(userAuthentication);
+        TokenDto newTokenDto = jwtUtil.generateToken(userAuthentication);
 
         storedRefreshToken.updateToken(newTokenDto.refreshToken());
 

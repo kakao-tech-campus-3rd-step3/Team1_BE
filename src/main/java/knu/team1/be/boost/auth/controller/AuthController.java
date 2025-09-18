@@ -4,7 +4,7 @@ import knu.team1.be.boost.auth.dto.AccessTokenResponseDto;
 import knu.team1.be.boost.auth.dto.TokenDto;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.auth.service.AuthService;
-import knu.team1.be.boost.security.util.JwtTokenProvider;
+import knu.team1.be.boost.security.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -21,7 +21,7 @@ public class AuthController implements AuthApi {
 
     private final AuthService authService;
 
-    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtUtil jwtUtil;
 
     private static final long REFRESH_TOKEN_EXPIRE_TIME_SECONDS = 7 * 24 * 60 * 60; // 7일
 
@@ -52,7 +52,7 @@ public class AuthController implements AuthApi {
         @CookieValue("refreshToken") String refreshToken,
         @RequestHeader("Authorization") String accessTokenHeader
     ) {
-        String expiredAccessToken = jwtTokenProvider.resolveToken(accessTokenHeader);
+        String expiredAccessToken = jwtUtil.resolveToken(accessTokenHeader);
         TokenDto tokenDto = authService.reissue(expiredAccessToken, refreshToken);
 
         HttpHeaders headers = createCookieHeaders(tokenDto.refreshToken());
