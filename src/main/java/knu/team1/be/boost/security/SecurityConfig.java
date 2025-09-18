@@ -1,6 +1,7 @@
 package knu.team1.be.boost.security;
 
 import knu.team1.be.boost.security.filter.JwtAuthFilter;
+import knu.team1.be.boost.security.filter.JwtExceptionFilter;
 import knu.team1.be.boost.security.handler.CustomAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -19,6 +20,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+
+    private final JwtExceptionFilter jwtExceptionFilter;
 
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
@@ -53,6 +56,7 @@ public class SecurityConfig {
             .exceptionHandling(e -> e
                 .authenticationEntryPoint(customAuthenticationEntryPoint)
             )
+            .addFilterBefore(jwtExceptionFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
