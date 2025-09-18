@@ -26,6 +26,17 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
     private static final List<String> WHITELIST = List.of(
+        // H2 콘솔 접속을 위한 경로
+        "/h2-console/**",
+
+        // API 문서 관련 경로
+        "/swagger-ui/**",
+        "/swagger-ui.html",
+        "/api-docs/**",
+        "/v3/api-docs/**",
+
+        // 인증 관련 경로
+        "/api/auth/login/kakao",
         "/api/auth/reissue"
     );
 

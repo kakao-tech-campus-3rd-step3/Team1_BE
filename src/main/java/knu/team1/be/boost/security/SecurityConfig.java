@@ -26,7 +26,7 @@ public class SecurityConfig {
         http
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers(
-                    // H2 콘솔 접속을 위한 경로 허용
+                    // H2 콘솔 접속을 위한 경로
                     "/h2-console/**",
 
                     // API 문서 관련 경로
