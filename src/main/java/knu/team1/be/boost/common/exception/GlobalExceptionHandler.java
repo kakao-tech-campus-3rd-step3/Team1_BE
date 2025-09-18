@@ -114,7 +114,8 @@ public class GlobalExceptionHandler {
         return ErrorResponses.of(
             HttpStatus.CONFLICT,
             e.getMessage(),
-            instance(req));
+            instance(req)
+        );
     }
 
     // 413: 요청 본문이 서버가 허용하는 한도 초과한 경우
