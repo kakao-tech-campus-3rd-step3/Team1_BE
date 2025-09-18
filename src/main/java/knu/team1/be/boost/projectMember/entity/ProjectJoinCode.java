@@ -1,4 +1,4 @@
-package knu.team1.be.boost.project.entity;
+package knu.team1.be.boost.projectMember.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -10,6 +10,7 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import knu.team1.be.boost.common.entity.BaseEntity;
+import knu.team1.be.boost.project.entity.Project;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

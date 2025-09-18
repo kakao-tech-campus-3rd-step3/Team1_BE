@@ -1,4 +1,4 @@
-package knu.team1.be.boost.project.entity;
+package knu.team1.be.boost.projectMember.entity;
 
 public enum CodeStatus {
     ACTIVE, // 활성 상태
