@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import knu.team1.be.boost.auth.dto.AccessTokenResponseDto;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
@@ -44,6 +45,7 @@ public interface AuthApi {
         @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping("/logout")
     ResponseEntity<Void> logout(@AuthenticationPrincipal UserPrincipalDto userPrincipalDto);
 
