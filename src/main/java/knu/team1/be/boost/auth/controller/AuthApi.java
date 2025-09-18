@@ -40,7 +40,7 @@ public interface AuthApi {
         description = "계정 로그아웃을 진행합니다."
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "로그아웃 성공", content = @Content),
+        @ApiResponse(responseCode = "204", description = "로그아웃 성공", content = @Content),
         @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
@@ -58,6 +58,7 @@ public interface AuthApi {
             content = @Content(schema = @Schema(implementation = AccessTokenResponseDto.class))
         ),
         @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
         @ApiResponse(responseCode = "404", description = "리프레시 토큰을 찾을 수 없음", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })

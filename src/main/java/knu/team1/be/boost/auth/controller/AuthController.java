@@ -44,7 +44,7 @@ public class AuthController implements AuthApi {
         // 쿠키를 만료시키는 헤더를 생성
         HttpHeaders headers = createExpiredCookieHeaders();
 
-        return ResponseEntity.ok().headers(headers).build();
+        return ResponseEntity.noContent().headers(headers).build();
     }
 
     @Override
