@@ -1,11 +1,15 @@
 package knu.team1.be.boost.common.exception;
 
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import knu.team1.be.boost.auth.exception.InvalidRefreshTokenException;
 import knu.team1.be.boost.auth.exception.KakaoInvalidAuthCodeException;
+import knu.team1.be.boost.auth.exception.RefreshTokenNotEqualsException;
+import knu.team1.be.boost.auth.exception.RefreshTokenNotFoundException;
 import knu.team1.be.boost.file.exception.FileAlreadyUploadCompletedException;
 import knu.team1.be.boost.file.exception.FileNotFoundException;
 import knu.team1.be.boost.file.exception.FileNotReadyException;
@@ -103,11 +107,45 @@ public class GlobalExceptionHandler {
         );
     }
 
+    // 400: 인가 코드로 카카오 토큰을 받아오지 못한 경우
     @ExceptionHandler(KakaoInvalidAuthCodeException.class)
     public ProblemDetail handleInvalidAuthCode(KakaoInvalidAuthCodeException e,
         HttpServletRequest req) {
         return ErrorResponses.of(
             HttpStatus.BAD_REQUEST,
+            e.getMessage(),
+            instance(req)
+        );
+    }
+
+    // 401: 컨트롤러/서비스 단에서 발생하는 JWT 관련 예외 처리
+    // (주로 토큰 재발급 시 만료된 토큰을 파싱하려 할 때 발생)
+    @ExceptionHandler(JwtException.class)
+    public ProblemDetail handleJwtExceptionInController(JwtException e, HttpServletRequest req) {
+        return ErrorResponses.of(
+            HttpStatus.UNAUTHORIZED,
+            "유효하지 않은 형식의 토큰입니다.",
+            instance(req)
+        );
+    }
+
+    // 401: 리프레시 토큰이 유효하지 않은 경우
+    @ExceptionHandler(InvalidRefreshTokenException.class)
+    public ProblemDetail handleInvalidRefreshToken(InvalidRefreshTokenException e,
+        HttpServletRequest req) {
+        return ErrorResponses.of(
+            HttpStatus.UNAUTHORIZED,
+            e.getMessage(),
+            instance(req)
+        );
+    }
+
+    // 401: 요청된 리프레시 토큰과 서버의 리프레시 토큰이 다른 경우
+    @ExceptionHandler(RefreshTokenNotEqualsException.class)
+    public ProblemDetail handleRefreshTokenNotEquals(RefreshTokenNotEqualsException e,
+        HttpServletRequest req) {
+        return ErrorResponses.of(
+            HttpStatus.UNAUTHORIZED,
             e.getMessage(),
             instance(req)
         );
@@ -119,6 +157,7 @@ public class GlobalExceptionHandler {
         TaskNotFoundException.class,
         MemberNotFoundException.class,
         ProjectNotFoundException.class,
+        RefreshTokenNotFoundException.class
     })
     public ProblemDetail handleNotFound(RuntimeException e, HttpServletRequest req) {
         return ErrorResponses.of(HttpStatus.NOT_FOUND, e.getMessage(), instance(req));

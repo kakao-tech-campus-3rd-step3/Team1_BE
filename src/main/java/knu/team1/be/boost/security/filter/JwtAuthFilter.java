@@ -57,7 +57,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         // 토큰이 있는 경우에만 검증 및 인증 정보 설정
         if (StringUtils.hasText(token)) {
-            // 예외가 발생하면 JwtExceptionFilter로 처리 위임
             jwtUtil.validateToken(token);
             Authentication authentication = jwtUtil.getAuthentication(token);
             SecurityContextHolder.getContext().setAuthentication(authentication);
