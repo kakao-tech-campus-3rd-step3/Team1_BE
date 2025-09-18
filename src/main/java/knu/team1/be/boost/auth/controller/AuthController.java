@@ -1,11 +1,13 @@
 package knu.team1.be.boost.auth.controller;
 
+import java.time.Duration;
 import knu.team1.be.boost.auth.dto.AccessTokenResponseDto;
 import knu.team1.be.boost.auth.dto.TokenDto;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.auth.service.AuthService;
 import knu.team1.be.boost.security.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +25,8 @@ public class AuthController implements AuthApi {
 
     private final JwtUtil jwtUtil;
 
-    private static final long REFRESH_TOKEN_EXPIRE_TIME_SECONDS = 7 * 24 * 60 * 60; // 7일
+    @Value("${jwt.refresh-token-expire-time}")
+    private Duration refreshTokenExpireTime;
 
     @Override
     public ResponseEntity<AccessTokenResponseDto> kakaoLogin(@RequestParam("code") String code) {
@@ -64,7 +67,7 @@ public class AuthController implements AuthApi {
 
     private HttpHeaders createCookieHeaders(String refreshTokenValue) {
         ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshTokenValue)
-            .maxAge(REFRESH_TOKEN_EXPIRE_TIME_SECONDS)
+            .maxAge(refreshTokenExpireTime)
             .path("/")
             .secure(true)
             .sameSite("Strict")
@@ -80,6 +83,9 @@ public class AuthController implements AuthApi {
         ResponseCookie cookie = ResponseCookie.from("refreshToken", "")
             .maxAge(0)
             .path("/")
+            .secure(true)
+            .sameSite("Strict")
+            .httpOnly(true)
             .build();
 
         HttpHeaders headers = new HttpHeaders();

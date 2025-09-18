@@ -7,6 +7,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 import java.security.Key;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -30,18 +31,21 @@ public class JwtUtil {
 
     private final Key key;
 
+    private final Duration accessTokenExpireTime;
+    private final Duration refreshTokenExpireTime;
+
     private static final String AUTHORITIES_KEY = "auth";
-
     private static final String AUTHORIZATION_HEADER = "Authorization";
-
     private static final String BEARER_PREFIX = "Bearer ";
 
-    private static final long ACCESS_TOKEN_EXPIRE_TIME = 30 * 60 * 1000L; // 30분
-
-    private static final long REFRESH_TOKEN_EXPIRE_TIME = 7 * 24 * 60 * 60 * 1000L; // 7일
-
-    public JwtUtil(@Value("${jwt.secret}") String secretKey) {
+    public JwtUtil(
+        @Value("${jwt.secret}") String secretKey,
+        @Value("${jwt.access-token-expire-time}") Duration accessTokenExpireTime,
+        @Value("${jwt.refresh-token-expire-time}") Duration refreshTokenExpireTime
+    ) {
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
+        this.accessTokenExpireTime = accessTokenExpireTime;
+        this.refreshTokenExpireTime = refreshTokenExpireTime;
     }
 
     public TokenDto generateToken(Authentication userAuth) {
@@ -60,13 +64,13 @@ public class JwtUtil {
             .claim(AUTHORITIES_KEY, authorities)
             .claim("name", userPrincipalDto.name())
             .claim("avatar", userPrincipalDto.avatar())
-            .setExpiration(new Date(now + ACCESS_TOKEN_EXPIRE_TIME))
+            .setExpiration(new Date(now + accessTokenExpireTime.toMillis()))
             .signWith(key, SignatureAlgorithm.HS256)
             .compact();
 
         String refreshToken = Jwts.builder()
             .setSubject(userPrincipalDto.id().toString())
-            .setExpiration(new Date(now + REFRESH_TOKEN_EXPIRE_TIME))
+            .setExpiration(new Date(now + refreshTokenExpireTime.toMillis()))
             .signWith(key, SignatureAlgorithm.HS256)
             .compact();
 
