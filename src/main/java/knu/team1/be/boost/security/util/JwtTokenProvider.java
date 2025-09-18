@@ -1,4 +1,4 @@
-package knu.team1.be.boost.common.config.jwt;
+package knu.team1.be.boost.security.util;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;

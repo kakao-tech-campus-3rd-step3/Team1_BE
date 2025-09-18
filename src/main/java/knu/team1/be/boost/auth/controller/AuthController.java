@@ -4,7 +4,7 @@ import knu.team1.be.boost.auth.dto.AccessTokenResponseDto;
 import knu.team1.be.boost.auth.dto.TokenDto;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.auth.service.AuthService;
-import knu.team1.be.boost.common.config.jwt.JwtTokenProvider;
+import knu.team1.be.boost.security.util.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;

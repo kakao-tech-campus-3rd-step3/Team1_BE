@@ -1,7 +1,7 @@
-package knu.team1.be.boost.common.config;
+package knu.team1.be.boost.security;
 
-import knu.team1.be.boost.common.config.jwt.JwtAuthFilter;
-import knu.team1.be.boost.common.exception.CustomAuthenticationEntryPoint;
+import knu.team1.be.boost.security.filter.JwtAuthFilter;
+import knu.team1.be.boost.security.handler.CustomAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

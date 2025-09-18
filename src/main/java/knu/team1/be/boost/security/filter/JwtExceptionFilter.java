@@ -1,4 +1,4 @@
-package knu.team1.be.boost.common.exception;
+package knu.team1.be.boost.security.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
 import knu.team1.be.boost.auth.exception.MissingAuthoritiesClaimException;
+import knu.team1.be.boost.common.exception.ErrorResponses;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
