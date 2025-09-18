@@ -56,29 +56,6 @@ class TaskServiceTest {
         taskService = new TaskService(taskRepository, memberRepository, projectRepository);
     }
 
-    private Project project(UUID id) {
-        return Project.builder().id(id).name("테스트 프로젝트").build();
-    }
-
-    private Member member(UUID id, String name) {
-        return Member.builder().id(id).name(name).build();
-    }
-
-    private Task task(UUID taskId, Project project) {
-        return Task.builder()
-            .id(taskId)
-            .project(project)
-            .title("1회차 기술 멘토링 피드백 반영")
-            .description("기술 멘토링에서 나온 멘토님의 피드백을 반영한다.")
-            .status(TaskStatus.TODO)
-            .dueDate(LocalDate.of(2025, 9, 17))
-            .urgent(false)
-            .requiredReviewerCount(1)
-            .tags(new ArrayList<>(List.of("피드백", "멘토링")))
-            .assignees(Set.of())
-            .build();
-    }
-
     @Nested
     @DisplayName("할 일 생성")
     class CreateTask {
@@ -487,5 +464,28 @@ class TaskServiceTest {
                 () -> taskService.changeTaskStatus(projectId, existing.getId(), request))
                 .isInstanceOf(TaskNotInProjectException.class);
         }
+    }
+
+    private static Project project(UUID id) {
+        return Project.builder().id(id).name("테스트 프로젝트").build();
+    }
+
+    private static Member member(UUID id, String name) {
+        return Member.builder().id(id).name(name).build();
+    }
+
+    private static Task task(UUID taskId, Project project) {
+        return Task.builder()
+            .id(taskId)
+            .project(project)
+            .title("1회차 기술 멘토링 피드백 반영")
+            .description("기술 멘토링에서 나온 멘토님의 피드백을 반영한다.")
+            .status(TaskStatus.TODO)
+            .dueDate(LocalDate.of(2025, 9, 17))
+            .urgent(false)
+            .requiredReviewerCount(1)
+            .tags(new ArrayList<>(List.of("피드백", "멘토링")))
+            .assignees(Set.of())
+            .build();
     }
 }
