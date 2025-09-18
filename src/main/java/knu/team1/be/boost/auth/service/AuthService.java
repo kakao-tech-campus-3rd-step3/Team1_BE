@@ -36,6 +36,8 @@ public class AuthService {
 
     private final KakaoClientService kakaoClientService;
 
+    private final String DEFAULT_AVATAR = "1111";
+
     @Transactional
     public TokenDto login(String code) {
         KakaoDto.UserInfo kakaoUserInfo = kakaoClientService.getUserInfo(code);
@@ -96,7 +98,7 @@ public class AuthService {
                     .profile()
                     .nickname()
                 )
-                .avatar("1111")
+                .avatar(DEFAULT_AVATAR)
                 .oauthInfo(oauthInfo)
                 .build();
             return memberRepository.save(newMember);
