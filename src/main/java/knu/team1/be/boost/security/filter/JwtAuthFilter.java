@@ -35,7 +35,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         // 인증 관련 경로
         "/api/auth/login/kakao",
-        "/api/auth/reissue"
+        "/api/auth/reissue",
+
+        // 헬스체크 경로
+        "/health"
     );
 
     @Override
