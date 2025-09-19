@@ -1,0 +1,42 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  h2:
+    console:
+      enabled: false
+
+  datasource:
+    url: ${RDS_URL}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${RDS_USERNAME}
+    password: ${RDS_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-id: ${KAKAO_CLIENT_ID}
+            client-secret: ${KAKAO_CLIENT_SECRET}
+            redirect-uri: ${KAKAO_REDIRECT_URI}
+
+jwt:
+  secret: ${JWT_SECRET_KEY}
+
+boost:
+  aws:
+    bucket: ${AWS_S3_BUCKET}
+    region: ${AWS_REGION}
+    credentials:
+      access-key: ${AWS_ACCESS_KEY}
+      secret-key: ${AWS_SECRET_KEY}
