@@ -58,6 +58,10 @@
           "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:994523636482:secret:boost-secret-yj-vhponB:KAKAO_CLIENT_SECRET::"
         },
         {
+          "name": "KAKAO_REDIRECT_URI",
+          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:994523636482:secret:boost-secret-yj-vhponB:KAKAO_REDIRECT_URI::"
+        },
+        {
           "name": "AWS_REGION",
           "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:994523636482:secret:boost-secret-yj-vhponB:AWS_REGION::"
         },
@@ -66,8 +70,12 @@
           "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:994523636482:secret:boost-secret-yj-vhponB:AWS_S3_BUCKET::"
         },
         {
-          "name": "KAKAO_REDIRECT_URI",
-          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:994523636482:secret:boost-secret-yj-vhponB:KAKAO_REDIRECT_URI::"
+          "name": "AWS_ACCESS_KEY",
+          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:994523636482:secret:boost-secret-yj-vhponB:AWS_ACCESS_KEY::"
+        },
+        {
+          "name": "AWS_SECRET_KEY",
+          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:994523636482:secret:boost-secret-yj-vhponB:AWS_SECRET_KEY::"
         }
       ],
       "memoryReservation": 512,
