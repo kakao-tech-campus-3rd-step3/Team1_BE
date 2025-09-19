@@ -20,6 +20,7 @@ import knu.team1.be.boost.project.exception.ProjectNotFoundException;
 import knu.team1.be.boost.projectMember.exception.MemberAlreadyJoinedException;
 import knu.team1.be.boost.task.exception.TaskNotFoundException;
 import knu.team1.be.boost.task.exception.TaskNotInProjectException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -32,13 +33,32 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     private URI instance(HttpServletRequest req) {
         return URI.create(req.getRequestURI());
     }
 
-    // 같은 유형의 예외는 일괄 처리
+    @ExceptionHandler(BusinessException.class)
+    public ProblemDetail handleBusinessException(BusinessException e, HttpServletRequest req) {
+
+        ErrorCode errorCode = e.getErrorCode();
+        String userMsg = errorCode.getUserMessage();
+        HttpStatus httpStatus = errorCode.getHttpStatus();
+
+        if (httpStatus.is5xxServerError()) {
+            log.error("[{} {}] {} | {}", httpStatus.value(), errorCode, userMsg, e.getLogMessage());
+        } else {
+            log.warn("[{} {}] {} | {}", httpStatus.value(), errorCode, userMsg, e.getLogMessage());
+        }
+
+        return ErrorResponses.of(
+            httpStatus,
+            userMsg,
+            instance(req)
+        );
+    }
 
     // 400: Bean Validation
     @ExceptionHandler(MethodArgumentNotValidException.class)
