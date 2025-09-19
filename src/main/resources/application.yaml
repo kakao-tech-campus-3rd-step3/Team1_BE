@@ -1,9 +1,18 @@
+# ===================================================================
+# 기본 애플리케이션 및 서버 설정
+# ===================================================================
+server:
+  shutdown: graceful
+
 spring:
   application:
     name: boost
   lifecycle:
     timeout-per-shutdown-phase: 10s
 
+  # ===================================================================
+  # 데이터베이스 & JPA 설정
+  # ===================================================================
   datasource:
     url: jdbc:h2:mem:testdb
     driver-class-name: org.h2.Driver
@@ -12,13 +21,52 @@ spring:
 
   h2:
     console:
-      enabled: true
+      enabled: true # [!!보안!!] 개발 환경에서만 true로 사용, 운영 환경에서는 반드시 false로 설정
 
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: create-drop # [!!주의!!] 개발용 설정. 운영 환경에서는 validate 또는 none을 사용해야 데이터가 유지
     show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
 
+  # ===================================================================
+  # 보안 (Security & JWT) 설정
+  # ===================================================================
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            # [!!보안!!]
+            client-id: YOUR_KAKAO_REST_API_KEY
+            # [!!보안!!]
+            client-secret: YOUR_KAKAO_CLIENT_SECRET
+            # 추후 변경
+            redirect-uri: "http://localhost:8080/login/kakao/callback"
+            client-authentication-method: client_secret_post
+            authorization-grant-type: authorization_code
+            scope:
+              - profile_nickname
+
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
+
+jwt:
+  # [!!보안!!]
+  secret: your-super-secret-key-that-is-long-enough-to-be-secure-and-is-at-least-64-bytes
+
+  access-token-expire-time: 30m   # 30분
+  refresh-token-expire-time: 7d   # 7일
+
+# ===================================================================
+# API 문서 (Swagger) 설정
+# ===================================================================
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
@@ -29,14 +77,19 @@ springdoc:
   api-docs:
     path: /api-docs
     enabled: true
-server:
-  shutdown: graceful
 
+# ===================================================================
+# 커스텀 비즈니스 로직 설정 (S3 파일 업로드 등)
+# ===================================================================
 boost:
   aws:
     bucket: boost-s3-bucket-storage
     region: ap-northeast-2
     upload:
       expire-seconds: 900
+    credentials:
+      # [!!!치명적 보안!!!]
+      access-key: AWS_ACCESS_KEY
+      secret-key: AWS_SECRET_KEY
   file:
     max-upload-size: 5MB
