@@ -47,11 +47,7 @@ public class GlobalExceptionHandler {
         String userMsg = errorCode.getUserMessage();
         HttpStatus httpStatus = errorCode.getHttpStatus();
 
-        if (httpStatus.is5xxServerError()) {
-            log.error("[{} {}] {} | {}", httpStatus.value(), errorCode, userMsg, e.getLogMessage());
-        } else {
-            log.warn("[{} {}] {} | {}", httpStatus.value(), errorCode, userMsg, e.getLogMessage());
-        }
+        log.warn("[{} {}] {} | {}", httpStatus.value(), errorCode, userMsg, e.getLogMessage());
 
         return ErrorResponses.of(
             httpStatus,
@@ -240,6 +236,8 @@ public class GlobalExceptionHandler {
     // 500: 그외 모든 예외
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleFallback(Exception e, HttpServletRequest req) {
+        log.error("[500 UNEXPECTED] {}", e.toString(), e);
+
         return ErrorResponses.of(
             HttpStatus.INTERNAL_SERVER_ERROR,
             "일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
