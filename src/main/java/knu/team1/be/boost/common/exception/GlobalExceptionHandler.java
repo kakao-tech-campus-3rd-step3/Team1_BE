@@ -17,7 +17,9 @@ import knu.team1.be.boost.file.exception.FileTooLargeException;
 import knu.team1.be.boost.file.exception.StorageServiceException;
 import knu.team1.be.boost.member.exception.MemberNotFoundException;
 import knu.team1.be.boost.project.exception.ProjectNotFoundException;
+import knu.team1.be.boost.projectMember.exception.MemberAlreadyJoinedException;
 import knu.team1.be.boost.task.exception.TaskNotFoundException;
+import knu.team1.be.boost.task.exception.TaskNotInProjectException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -160,16 +162,25 @@ public class GlobalExceptionHandler {
         RefreshTokenNotFoundException.class
     })
     public ProblemDetail handleNotFound(RuntimeException e, HttpServletRequest req) {
-        return ErrorResponses.of(HttpStatus.NOT_FOUND, e.getMessage(), instance(req));
+        return ErrorResponses.of(
+            HttpStatus.NOT_FOUND,
+            e.getMessage(),
+            instance(req)
+        );
     }
 
     // 409: 리소스 상태 충돌
     @ExceptionHandler({
         FileAlreadyUploadCompletedException.class,
-        FileNotReadyException.class
+        FileNotReadyException.class,
+        MemberAlreadyJoinedException.class,
+        TaskNotInProjectException.class
     })
     public ProblemDetail handleAlreadyCompleted(RuntimeException e, HttpServletRequest req) {
-        return ErrorResponses.of(HttpStatus.CONFLICT, e.getMessage(), instance(req));
+        return ErrorResponses.of(
+            HttpStatus.CONFLICT,
+            e.getMessage(),
+            instance(req));
     }
 
     // 413: 요청 본문이 서버가 허용하는 한도 초과한 경우
