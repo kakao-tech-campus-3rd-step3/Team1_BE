@@ -2,6 +2,8 @@ package knu.team1.be.boost.file.service;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+import knu.team1.be.boost.common.exception.BusinessException;
+import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.file.dto.FileCompleteRequestDto;
 import knu.team1.be.boost.file.dto.FileCompleteResponseDto;
 import knu.team1.be.boost.file.dto.FileRequestDto;
@@ -9,14 +11,9 @@ import knu.team1.be.boost.file.dto.FileResponseDto;
 import knu.team1.be.boost.file.entity.File;
 import knu.team1.be.boost.file.entity.FileType;
 import knu.team1.be.boost.file.entity.vo.StorageKey;
-import knu.team1.be.boost.file.exception.FileAlreadyUploadCompletedException;
-import knu.team1.be.boost.file.exception.FileNotFoundException;
-import knu.team1.be.boost.file.exception.FileNotReadyException;
-import knu.team1.be.boost.file.exception.FileTooLargeException;
 import knu.team1.be.boost.file.infra.s3.PresignedUrlFactory;
 import knu.team1.be.boost.file.repository.FileRepository;
 import knu.team1.be.boost.task.entity.Task;
-import knu.team1.be.boost.task.exception.TaskNotFoundException;
 import knu.team1.be.boost.task.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,8 +47,10 @@ public class FileService {
         long max = maxUploadSize.toBytes();
         long size = request.sizeBytes();
         if (request.sizeBytes() > max) {
-            log.warn("파일 업로드 실패 - 최대 크기 초과 size={}, max={}", size, max);
-            throw new FileTooLargeException(size, max);
+            throw new BusinessException(
+                ErrorCode.FILE_TOO_LARGE,
+                "size: " + size + ", max: " + max
+            );
         }
 
         FileType fileType = FileType.fromContentType(request.contentType());
@@ -77,14 +76,16 @@ public class FileService {
         // TODO: 다운로드 요청자가 해당 프로젝트 팀원인지 검증
 
         File file = fileRepository.findById(fileId)
-            .orElseThrow(() -> {
-                log.warn("파일 다운로드 실패 - 존재하지 않는 fileId={}", fileId);
-                return new FileNotFoundException(fileId);
-            });
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.FILE_NOT_FOUND,
+                "fileId: " + fileId
+            ));
 
         if (!file.isComplete()) {
-            log.warn("파일 다운로드 실패 - 업로드 미완료 fileId={}", fileId);
-            throw new FileNotReadyException(fileId);
+            throw new BusinessException(
+                ErrorCode.FILE_NOT_READY,
+                "fileId: " + fileId
+            );
         }
 
         PresignedGetObjectRequest presigned = presignedUrlFactory.forDownload(
@@ -103,22 +104,25 @@ public class FileService {
     @Transactional
     public FileCompleteResponseDto completeUpload(UUID fileId, FileCompleteRequestDto request) {
         File file = fileRepository.findById(fileId)
-            .orElseThrow(() -> {
-                log.warn("파일 업로드 완료 실패 - 존재하지 않는 fileId={}", fileId);
-                return new FileNotFoundException(fileId);
-            });
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.FILE_NOT_FOUND,
+                "fileId: " + fileId
+            ));
 
         if (file.isComplete()) {
-            log.warn("파일 업로드 완료 실패 - 이미 업로드 완료 처리된 파일 fileId={}", fileId);
-            throw new FileAlreadyUploadCompletedException(fileId);
+            throw new BusinessException(
+                ErrorCode.FILE_ALREADY_UPLOAD_COMPLETED,
+                "fileId: " + fileId
+            );
         }
 
         long max = maxUploadSize.toBytes();
         long size = request.sizeBytes();
         if (request.sizeBytes() > max) {
-            log.warn("파일 업로드 완료 실패 - 최대 크기 초과 fileId={}, size={}, max={}",
-                fileId, size, max);
-            throw new FileTooLargeException(size, max);
+            throw new BusinessException(
+                ErrorCode.FILE_TOO_LARGE,
+                "fileId: " + fileId + ", size: " + size + ", max: " + max
+            );
         }
 
         file.getMetadata()
@@ -126,10 +130,10 @@ public class FileService {
 
         UUID taskId = request.taskId();
         Task task = taskRepository.findById(taskId)
-            .orElseThrow(() -> {
-                log.warn("파일 업로드 완료 실패 - 존재하지 않는 taskId={}, fileId={}", taskId, fileId);
-                return new TaskNotFoundException(taskId);
-            });
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.TASK_NOT_FOUND,
+                "파일 업로드 완료 실패 " + "taskId: " + taskId + ", fileId: " + fileId
+            ));
 
         file.assignTask(task);
         file.complete();
