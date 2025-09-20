@@ -19,10 +19,9 @@ import knu.team1.be.boost.file.dto.FileCompleteRequestDto;
 import knu.team1.be.boost.file.dto.FileCompleteResponseDto;
 import knu.team1.be.boost.file.dto.FileRequestDto;
 import knu.team1.be.boost.file.dto.FileResponseDto;
-import knu.team1.be.boost.file.exception.FileAlreadyUploadCompletedException;
-import knu.team1.be.boost.file.exception.FileNotFoundException;
-import knu.team1.be.boost.file.exception.FileTooLargeException;
 import knu.team1.be.boost.file.service.FileService;
+import knu.team1.be.boost.common.exception.BusinessException;
+import knu.team1.be.boost.common.exception.ErrorCode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -122,7 +121,7 @@ class FileControllerTest {
                 1048576
             );
             given(fileService.uploadFile(any(FileRequestDto.class)))
-                .willThrow(new FileTooLargeException(1048576, 1000000));
+                .willThrow(new BusinessException(ErrorCode.FILE_TOO_LARGE));
 
             // when & then
             mockMvc.perform(
@@ -173,7 +172,7 @@ class FileControllerTest {
             // given
             UUID fileId = UUID.randomUUID();
             given(fileService.downloadFile(eq(fileId)))
-                .willThrow(new FileNotFoundException(fileId));
+                .willThrow(new BusinessException(ErrorCode.FILE_NOT_FOUND));
 
             // when & then
             mockMvc.perform(get("/api/files/{fileId}/download-url", fileId))
@@ -262,7 +261,7 @@ class FileControllerTest {
                 );
 
             given(fileService.completeUpload(eq(fileId), any(FileCompleteRequestDto.class)))
-                .willThrow(new FileAlreadyUploadCompletedException(fileId));
+                .willThrow(new BusinessException(ErrorCode.FILE_ALREADY_UPLOAD_COMPLETED));
 
             // when & then
             mockMvc.perform(
