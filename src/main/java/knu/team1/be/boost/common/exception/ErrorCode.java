@@ -32,6 +32,6 @@ public enum ErrorCode {
     KAKAO_INVALID_AUTH_CODE(HttpStatus.BAD_REQUEST, "카카오 인가 코드가 유효하지 않습니다.");
 
     private final HttpStatus httpStatus;
-    private final String userMessage;
+    private final String errorMessage;
 
 }

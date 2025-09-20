@@ -44,14 +44,14 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleBusinessException(BusinessException e, HttpServletRequest req) {
 
         ErrorCode errorCode = e.getErrorCode();
-        String userMsg = errorCode.getUserMessage();
+        String errorMessage = errorCode.getErrorMessage();
         HttpStatus httpStatus = errorCode.getHttpStatus();
 
-        log.warn("[{} {}] {} | {}", httpStatus.value(), errorCode, userMsg, e.getLogMessage());
+        log.warn("[{} {}] {} | {}", httpStatus.value(), errorCode, errorMessage, e.getLogMessage());
 
         return ErrorResponses.of(
             httpStatus,
-            userMsg,
+            errorMessage,
             instance(req)
         );
     }

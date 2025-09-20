@@ -9,7 +9,7 @@ public class BusinessException extends RuntimeException {
     private final String logMessage;
 
     public BusinessException(ErrorCode errorCode, String logMessage) {
-        super(errorCode.getUserMessage());
+        super(errorCode.getErrorMessage());
         this.errorCode = errorCode;
         this.logMessage = logMessage;
     }
