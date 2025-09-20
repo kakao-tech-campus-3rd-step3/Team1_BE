@@ -18,32 +18,32 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
 
-    public MemberResponseDto getMember(UUID userId) {
-        Member member = memberRepository.findById(userId)
+    public MemberResponseDto getMember(UUID memberId) {
+        Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new BusinessException(
                 ErrorCode.MEMBER_NOT_FOUND,
-                "userId: " + userId
+                "memberId: " + memberId
             ));
         return MemberResponseDto.from(member);
     }
 
     @Transactional
-    public MemberResponseDto updateMember(UUID userId, MemberUpdateRequestDto requestDto) {
-        Member member = memberRepository.findById(userId)
+    public MemberResponseDto updateMember(UUID memberId, MemberUpdateRequestDto requestDto) {
+        Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new BusinessException(
                 ErrorCode.MEMBER_NOT_FOUND,
-                "userId: " + userId
+                "memberId: " + memberId
             ));
         member.updateMember(requestDto.name(), requestDto.avatar());
         return MemberResponseDto.from(member);
     }
 
     @Transactional
-    public void deleteMember(UUID userId) {
-        Member member = memberRepository.findById(userId)
+    public void deleteMember(UUID memberId) {
+        Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new BusinessException(
                 ErrorCode.MEMBER_NOT_FOUND,
-                "userId: " + userId
+                "memberId: " + memberId
             ));
         memberRepository.delete(member);
     }
