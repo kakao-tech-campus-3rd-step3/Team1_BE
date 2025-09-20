@@ -49,11 +49,7 @@ public class GlobalExceptionHandler {
 
         log.warn("[{} {}] {} | {}", httpStatus.value(), errorCode, errorMessage, e.getLogMessage());
 
-        return ErrorResponses.of(
-            httpStatus,
-            errorMessage,
-            instance(req)
-        );
+        return ErrorResponses.forBusiness(errorCode, instance(req));
     }
 
     // 400: Bean Validation
