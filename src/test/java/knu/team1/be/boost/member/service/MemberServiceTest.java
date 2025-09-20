@@ -9,13 +9,13 @@ import static org.mockito.Mockito.verify;
 
 import java.util.Optional;
 import java.util.UUID;
+import knu.team1.be.boost.common.exception.BusinessException;
+import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.member.dto.MemberResponseDto;
 import knu.team1.be.boost.member.dto.MemberUpdateRequestDto;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.entity.vo.OauthInfo;
 import knu.team1.be.boost.member.repository.MemberRepository;
-import knu.team1.be.boost.common.exception.BusinessException;
-import knu.team1.be.boost.common.exception.ErrorCode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -68,7 +68,7 @@ public class MemberServiceTest {
         BusinessException exception = assertThrows(BusinessException.class, () -> {
             userService.getMember(nonExistentUserId);
         });
-        
+
         assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.MEMBER_NOT_FOUND);
     }
 
@@ -100,7 +100,7 @@ public class MemberServiceTest {
         BusinessException exception = assertThrows(BusinessException.class, () -> {
             userService.updateMember(nonExistentUserId, requestDto);
         });
-        
+
         assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.MEMBER_NOT_FOUND);
     }
 
@@ -128,8 +128,7 @@ public class MemberServiceTest {
         BusinessException exception = assertThrows(BusinessException.class, () -> {
             userService.deleteMember(nonExistentUserId);
         });
-        
+
         assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.MEMBER_NOT_FOUND);
     }
 }
-

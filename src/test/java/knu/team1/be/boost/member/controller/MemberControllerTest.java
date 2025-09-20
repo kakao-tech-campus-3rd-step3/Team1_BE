@@ -141,4 +141,3 @@ public class MemberControllerTest {
             .andExpect(status().isNotFound());
     }
 }
-

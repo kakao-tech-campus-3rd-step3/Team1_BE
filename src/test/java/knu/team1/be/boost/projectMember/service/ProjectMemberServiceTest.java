@@ -1,7 +1,6 @@
 package knu.team1.be.boost.projectMember.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -156,7 +155,7 @@ class ProjectMemberServiceTest {
             BusinessException exception = assertThrows(BusinessException.class, () -> {
                 projectMemberService.joinProject(projectId, memberId, role);
             });
-            
+
             assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.PROJECT_NOT_FOUND);
 
             verify(memberRepository, never()).findById(any());
@@ -179,7 +178,7 @@ class ProjectMemberServiceTest {
             BusinessException exception = assertThrows(BusinessException.class, () -> {
                 projectMemberService.joinProject(projectId, memberId, role);
             });
-            
+
             assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.MEMBER_NOT_FOUND);
 
             verify(projectMemberRepository, never()).save(any());
@@ -226,7 +225,7 @@ class ProjectMemberServiceTest {
             BusinessException exception = assertThrows(BusinessException.class, () -> {
                 projectMemberService.leaveProject(projectId, memberId);
             });
-            
+
             assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.PROJECT_MEMBER_NOT_FOUND);
 
             verify(projectMemberRepository, never()).delete(any());
