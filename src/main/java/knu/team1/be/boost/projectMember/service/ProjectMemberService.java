@@ -2,15 +2,15 @@ package knu.team1.be.boost.projectMember.service;
 
 import java.util.Optional;
 import java.util.UUID;
+import knu.team1.be.boost.common.exception.BusinessException;
+import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.member.entity.Member;
-import knu.team1.be.boost.member.exception.MemberNotFoundException;
 import knu.team1.be.boost.member.repository.MemberRepository;
 import knu.team1.be.boost.project.entity.Project;
 import knu.team1.be.boost.project.exception.ProjectNotFoundException;
 import knu.team1.be.boost.project.repository.ProjectRepository;
 import knu.team1.be.boost.projectMember.entity.ProjectMember;
 import knu.team1.be.boost.projectMember.entity.ProjectRole;
-import knu.team1.be.boost.projectMember.exception.MemberAlreadyJoinedException;
 import knu.team1.be.boost.projectMember.exception.ProjectMemberNotFoundException;
 import knu.team1.be.boost.projectMember.repository.ProjectMemberRepository;
 import lombok.AllArgsConstructor;
@@ -33,7 +33,10 @@ public class ProjectMemberService {
         Project project = projectRepository.findById(projectId)
             .orElseThrow(() -> new ProjectNotFoundException(projectId));
         Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new MemberNotFoundException(memberId));
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.MEMBER_NOT_FOUND,
+                "userId: " + memberId
+            ));
 
         // 프로젝트와 멤버 관계 존재여부 확인
         Optional<ProjectMember> existingRecord = projectMemberRepository
@@ -57,7 +60,10 @@ public class ProjectMemberService {
         }
 
         // 이미 참여중이라면 예외처리
-        throw new MemberAlreadyJoinedException();
+        throw new BusinessException(
+            ErrorCode.MEMBER_ALREADY_JOINED,
+            "projectId: " + projectId + ", memberId: " + memberId
+        );
     }
 
     @Transactional

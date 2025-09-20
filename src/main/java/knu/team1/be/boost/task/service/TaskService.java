@@ -6,8 +6,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import knu.team1.be.boost.common.exception.BusinessException;
+import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.member.entity.Member;
-import knu.team1.be.boost.member.exception.MemberNotFoundException;
 import knu.team1.be.boost.member.repository.MemberRepository;
 import knu.team1.be.boost.project.entity.Project;
 import knu.team1.be.boost.project.exception.ProjectNotFoundException;
@@ -155,7 +156,10 @@ public class TaskService {
                 }
             }
 
-            throw new MemberNotFoundException(missingIds);
+            throw new BusinessException(
+                ErrorCode.MEMBER_NOT_FOUND,
+                "MemberIds: " + missingIds
+            );
         }
 
         assignees.addAll(foundAssignees);

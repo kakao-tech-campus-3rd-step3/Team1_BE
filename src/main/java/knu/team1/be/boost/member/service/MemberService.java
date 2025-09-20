@@ -1,10 +1,11 @@
 package knu.team1.be.boost.member.service;
 
 import java.util.UUID;
+import knu.team1.be.boost.common.exception.BusinessException;
+import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.member.dto.MemberResponseDto;
 import knu.team1.be.boost.member.dto.MemberUpdateRequestDto;
 import knu.team1.be.boost.member.entity.Member;
-import knu.team1.be.boost.member.exception.MemberNotFoundException;
 import knu.team1.be.boost.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,14 +20,20 @@ public class MemberService {
 
     public MemberResponseDto getMember(UUID userId) {
         Member member = memberRepository.findById(userId)
-            .orElseThrow(() -> new MemberNotFoundException(userId));
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.MEMBER_NOT_FOUND,
+                "userId: " + userId
+            ));
         return MemberResponseDto.from(member);
     }
 
     @Transactional
     public MemberResponseDto updateMember(UUID userId, MemberUpdateRequestDto requestDto) {
         Member member = memberRepository.findById(userId)
-            .orElseThrow(() -> new MemberNotFoundException(userId));
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.MEMBER_NOT_FOUND,
+                "userId: " + userId
+            ));
         member.updateMember(requestDto.name(), requestDto.avatar());
         return MemberResponseDto.from(member);
     }
@@ -34,7 +41,10 @@ public class MemberService {
     @Transactional
     public void deleteMember(UUID userId) {
         Member member = memberRepository.findById(userId)
-            .orElseThrow(() -> new MemberNotFoundException(userId));
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.MEMBER_NOT_FOUND,
+                "userId: " + userId
+            ));
         memberRepository.delete(member);
     }
 }
