@@ -55,7 +55,7 @@ public class ErrorResponses {
     public static ProblemDetail forBusiness(ErrorCode errorCode, URI instance) {
         ProblemDetail pd = ProblemDetail.forStatusAndDetail(
             errorCode.getHttpStatus(),
-            errorCode.getErrorMessage()
+            errorCode.getClientMessage()
         );
         pd.setInstance(instance);
         pd.setTitle(errorCode.getHttpStatus().getReasonPhrase());
