@@ -7,7 +7,6 @@ import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
 import knu.team1.be.boost.project.entity.Project;
-import knu.team1.be.boost.project.exception.ProjectNotFoundException;
 import knu.team1.be.boost.project.repository.ProjectRepository;
 import knu.team1.be.boost.projectMember.entity.ProjectMember;
 import knu.team1.be.boost.projectMember.entity.ProjectRole;
@@ -31,11 +30,15 @@ public class ProjectMemberService {
 
         // 프로젝트와 멤버 존재여부 확인
         Project project = projectRepository.findById(projectId)
-            .orElseThrow(() -> new ProjectNotFoundException(projectId));
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND,
+                "projectId: " + projectId
+            ));
+
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new BusinessException(
                 ErrorCode.MEMBER_NOT_FOUND,
-                "userId: " + memberId
+                "memberId: " + memberId
             ));
 
         // 프로젝트와 멤버 관계 존재여부 확인

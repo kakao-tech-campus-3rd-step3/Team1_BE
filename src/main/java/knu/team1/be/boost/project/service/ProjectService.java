@@ -2,6 +2,8 @@ package knu.team1.be.boost.project.service;
 
 import java.util.List;
 import java.util.UUID;
+import knu.team1.be.boost.common.exception.BusinessException;
+import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.project.dto.ProjectCreateRequestDto;
 import knu.team1.be.boost.project.dto.ProjectResponseDto;
 import knu.team1.be.boost.project.dto.ProjectUpdateRequestDto;
@@ -32,7 +34,10 @@ public class ProjectService {
 
     public ProjectResponseDto getProject(UUID projectId) {
         Project project = projectRepository.findById(projectId)
-            .orElseThrow(() -> new ProjectNotFoundException(projectId));
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND,
+                "projectId: " + projectId
+            ));
         return ProjectResponseDto.from(project);
     }
 
@@ -44,7 +49,10 @@ public class ProjectService {
     @Transactional
     public ProjectResponseDto updateProject(UUID projectId, ProjectUpdateRequestDto requestDto) {
         Project oldProject = projectRepository.findById(projectId)
-            .orElseThrow(() -> new ProjectNotFoundException(projectId));
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND,
+                "projectId: " + projectId
+            ));
 
         oldProject.updateProject(requestDto.name(), requestDto.defaultReviewerCount());
 

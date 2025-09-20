@@ -11,7 +11,6 @@ import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
 import knu.team1.be.boost.project.entity.Project;
-import knu.team1.be.boost.project.exception.ProjectNotFoundException;
 import knu.team1.be.boost.project.repository.ProjectRepository;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
 import knu.team1.be.boost.task.dto.TaskResponseDto;
@@ -36,7 +35,10 @@ public class TaskService {
     @Transactional
     public TaskResponseDto createTask(UUID projectId, TaskCreateRequestDto request) {
         Project project = projectRepository.findById(projectId)
-            .orElseThrow(() -> new ProjectNotFoundException(projectId));
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND,
+                "projectId: " + projectId
+            ));
 
         // TODO: 인증 붙으면 현재 사용자 프로젝트 소속 여부 확인
 
@@ -63,7 +65,10 @@ public class TaskService {
     @Transactional
     public TaskResponseDto updateTask(UUID projectId, UUID taskId, TaskUpdateRequestDto request) {
         Project project = projectRepository.findById(projectId)
-            .orElseThrow(() -> new ProjectNotFoundException(projectId));
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND,
+                "projectId: " + projectId
+            ));
 
         Task task = taskRepository.findById(taskId)
             .orElseThrow(() -> new TaskNotFoundException(taskId));
@@ -94,7 +99,10 @@ public class TaskService {
     @Transactional
     public void deleteTask(UUID projectId, UUID taskId) {
         Project project = projectRepository.findById(projectId)
-            .orElseThrow(() -> new ProjectNotFoundException(projectId));
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND,
+                "projectId: " + projectId
+            ));
 
         Task task = taskRepository.findById(taskId)
             .orElseThrow(() -> new TaskNotFoundException(taskId));
@@ -112,7 +120,10 @@ public class TaskService {
     public TaskResponseDto changeTaskStatus(UUID projectId, UUID taskId,
         TaskStatusRequestDto request) {
         Project project = projectRepository.findById(projectId)
-            .orElseThrow(() -> new ProjectNotFoundException(projectId));
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND,
+                "projectId: " + projectId
+            ));
 
         Task task = taskRepository.findById(taskId)
             .orElseThrow(() -> new TaskNotFoundException(taskId));
