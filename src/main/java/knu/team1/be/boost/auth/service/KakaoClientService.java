@@ -58,10 +58,7 @@ public class KakaoClientService {
             .bodyValue(formData)
             .retrieve()
             .onStatus(HttpStatusCode::is4xxClientError, clientResponse ->
-                Mono.error(new BusinessException(
-                    ErrorCode.KAKAO_INVALID_AUTH_CODE,
-                    "kakao auth code validation failed"
-                ))
+                Mono.error(new BusinessException(ErrorCode.KAKAO_INVALID_AUTH_CODE))
             )
             .bodyToMono(Token.class)
             .block();

@@ -61,10 +61,7 @@ public class AuthService {
         try {
             jwtUtil.validateToken(refreshToken);
         } catch (JwtException e) {
-            throw new BusinessException(
-                ErrorCode.INVALID_REFRESH_TOKEN,
-                "refreshToken validation failed"
-            );
+            throw new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
 
         // 만료된 Access Token에서 memberId 추출
