@@ -13,6 +13,7 @@ public enum ErrorCode {
 
     // Project 관련
     PROJECT_NOT_FOUND(HttpStatus.NOT_FOUND, "Project not found", "해당 프로젝트를 찾을 수 없습니다."),
+    PROJECT_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "Project member not found", "해당 프로젝트에 참여하지 않은 멤버입니다."),
 
     // Task 관련
     TASK_NOT_FOUND(HttpStatus.NOT_FOUND, "Task not found", "할 일을 찾을 수 없습니다."),

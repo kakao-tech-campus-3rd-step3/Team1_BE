@@ -73,7 +73,10 @@ public class ProjectMemberService {
     public void leaveProject(UUID projectId, UUID memberId) {
         ProjectMember projectMember = projectMemberRepository
             .findByProjectIdAndMemberId(projectId, memberId)
-            .orElseThrow(() -> new ProjectMemberNotFoundException(projectId, memberId));
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_MEMBER_NOT_FOUND,
+                "projectId: " + projectId + ", memberId: " + memberId
+            ));
 
         projectMemberRepository.delete(projectMember);
     }
