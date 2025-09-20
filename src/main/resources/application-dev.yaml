@@ -1,0 +1,43 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+    import: application-dev-env.yaml
+
+  h2:
+    console:
+      enabled: true
+
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-id: ${KAKAO_CLIENT_ID}
+            client-secret: ${KAKAO_CLIENT_SECRET}
+            redirect-uri: "http://localhost:8080/login/kakao/callback"
+
+jwt:
+  secret: ${JWT_SECRET_KEY}
+
+boost:
+  aws:
+    bucket: ${AWS_S3_BUCKET}
+    region: ${AWS_REGION}
+    credentials:
+      access-key: ${AWS_ACCESS_KEY}
+      secret-key: ${AWS_SECRET_KEY}

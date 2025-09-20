@@ -32,7 +32,7 @@ public class MemberServiceTest {
 
     // 테스트용 임시 ID 및 데이터
     private final UUID testUserId = UUID.fromString("a1b2c3d4-e5f6-7890-1234-567890abcdef");
-    private final OauthInfo testOauthInfo = new OauthInfo("kakao", "123456789");
+    private final OauthInfo testOauthInfo = new OauthInfo("kakao", 123456789L);
     private final Member testMember = Member.builder()
         .id(testUserId)
         .name("테스트 유저")

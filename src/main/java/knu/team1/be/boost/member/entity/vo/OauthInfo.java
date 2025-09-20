@@ -3,12 +3,14 @@ package knu.team1.be.boost.member.entity.vo;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Embeddable
 @Getter
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EqualsAndHashCode
 public class OauthInfo {
@@ -17,9 +19,9 @@ public class OauthInfo {
     private String provider;
 
     @Column(name = "provider_id", nullable = false)
-    private String providerId;
+    private Long providerId;
 
-    public OauthInfo(String provider, String providerId) {
+    public OauthInfo(String provider, Long providerId) {
         this.provider = provider;
         this.providerId = providerId;
     }

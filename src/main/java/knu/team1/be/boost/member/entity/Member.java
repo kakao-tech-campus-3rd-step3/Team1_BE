@@ -30,7 +30,7 @@ import org.hibernate.annotations.SQLRestriction;
     )
 })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@SQLDelete(sql = "UPDATE members SET deleted = true WHERE id = ?")
+@SQLDelete(sql = "UPDATE members SET deleted = true, deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
 @SQLRestriction("deleted = false")
 public class Member extends SoftDeletableEntity {
 
