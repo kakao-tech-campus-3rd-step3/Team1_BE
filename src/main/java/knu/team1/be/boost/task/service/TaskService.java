@@ -17,8 +17,6 @@ import knu.team1.be.boost.task.dto.TaskResponseDto;
 import knu.team1.be.boost.task.dto.TaskStatusRequestDto;
 import knu.team1.be.boost.task.dto.TaskUpdateRequestDto;
 import knu.team1.be.boost.task.entity.Task;
-import knu.team1.be.boost.task.exception.TaskNotFoundException;
-import knu.team1.be.boost.task.exception.TaskNotInProjectException;
 import knu.team1.be.boost.task.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -71,12 +69,18 @@ public class TaskService {
             ));
 
         Task task = taskRepository.findById(taskId)
-            .orElseThrow(() -> new TaskNotFoundException(taskId));
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.TASK_NOT_FOUND,
+                "taskId: " + taskId
+            ));
 
         // TODO: 인증 붙으면 현재 사용자 프로젝트 소속 여부 확인 + 해당 할 일에 담당자인지 확인
 
         if (!task.getProject().getId().equals(project.getId())) {
-            throw new TaskNotInProjectException(projectId, taskId);
+            throw new BusinessException(
+                ErrorCode.TASK_NOT_IN_PROJECT,
+                "projectId: " + projectId + ", taskId: " + taskId
+            );
         }
 
         List<String> tags = extractTags(request.tags());
@@ -105,12 +109,18 @@ public class TaskService {
             ));
 
         Task task = taskRepository.findById(taskId)
-            .orElseThrow(() -> new TaskNotFoundException(taskId));
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.TASK_NOT_FOUND,
+                "taskId: " + taskId
+            ));
 
         // TODO: 인증 붙으면 현재 사용자 프로젝트 소속 여부 확인 + 해당 할 일에 담당자인지 확인
 
         if (!task.getProject().getId().equals(project.getId())) {
-            throw new TaskNotInProjectException(projectId, taskId);
+            throw new BusinessException(
+                ErrorCode.TASK_NOT_IN_PROJECT,
+                "projectId: " + projectId + ", taskId: " + taskId
+            );
         }
 
         taskRepository.delete(task);
@@ -126,12 +136,18 @@ public class TaskService {
             ));
 
         Task task = taskRepository.findById(taskId)
-            .orElseThrow(() -> new TaskNotFoundException(taskId));
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.TASK_NOT_FOUND,
+                "taskId: " + taskId
+            ));
 
         // TODO: 인증 붙으면 현재 사용자 프로젝트 소속 여부 확인 + 해당 할 일에 담당자인지 확인
 
         if (!task.getProject().getId().equals(project.getId())) {
-            throw new TaskNotInProjectException(projectId, taskId);
+            throw new BusinessException(
+                ErrorCode.TASK_NOT_IN_PROJECT,
+                "projectId: " + projectId + ", taskId: " + taskId
+            );
         }
 
         task.changeStatus(request.status());
