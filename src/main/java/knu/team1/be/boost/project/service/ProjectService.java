@@ -8,7 +8,6 @@ import knu.team1.be.boost.project.dto.ProjectCreateRequestDto;
 import knu.team1.be.boost.project.dto.ProjectResponseDto;
 import knu.team1.be.boost.project.dto.ProjectUpdateRequestDto;
 import knu.team1.be.boost.project.entity.Project;
-import knu.team1.be.boost.project.exception.ProjectNotFoundException;
 import knu.team1.be.boost.project.repository.ProjectRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -62,7 +61,10 @@ public class ProjectService {
     @Transactional
     public void deleteProject(UUID projectId) {
         Project project = projectRepository.findById(projectId)
-            .orElseThrow(() -> new ProjectNotFoundException(projectId));
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND,
+                "projectId: " + projectId
+            ));
         projectRepository.delete(project);
     }
 }
