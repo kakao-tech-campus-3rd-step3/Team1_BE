@@ -6,20 +6,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import knu.team1.be.boost.auth.exception.InvalidRefreshTokenException;
-import knu.team1.be.boost.auth.exception.KakaoInvalidAuthCodeException;
-import knu.team1.be.boost.auth.exception.RefreshTokenNotEqualsException;
-import knu.team1.be.boost.auth.exception.RefreshTokenNotFoundException;
-import knu.team1.be.boost.file.exception.FileAlreadyUploadCompletedException;
-import knu.team1.be.boost.file.exception.FileNotFoundException;
-import knu.team1.be.boost.file.exception.FileNotReadyException;
-import knu.team1.be.boost.file.exception.FileTooLargeException;
-import knu.team1.be.boost.file.exception.StorageServiceException;
-import knu.team1.be.boost.member.exception.MemberNotFoundException;
-import knu.team1.be.boost.project.exception.ProjectNotFoundException;
-import knu.team1.be.boost.projectMember.exception.MemberAlreadyJoinedException;
-import knu.team1.be.boost.task.exception.TaskNotFoundException;
-import knu.team1.be.boost.task.exception.TaskNotInProjectException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -47,7 +33,8 @@ public class GlobalExceptionHandler {
         String errorMessage = errorCode.getErrorMessage();
         HttpStatus httpStatus = errorCode.getHttpStatus();
 
-        log.warn("[{} {}] {} | {}", httpStatus.value(), errorCode, errorMessage, e.getAdditionalInfo());
+        log.warn("[{} {}] {} | {}", httpStatus.value(), errorCode, errorMessage,
+            e.getAdditionalInfo());
 
         return ErrorResponses.forBusiness(errorCode, instance(req));
     }
@@ -121,16 +108,6 @@ public class GlobalExceptionHandler {
         );
     }
 
-    // 400: 인가 코드로 카카오 토큰을 받아오지 못한 경우
-    @ExceptionHandler(KakaoInvalidAuthCodeException.class)
-    public ProblemDetail handleInvalidAuthCode(KakaoInvalidAuthCodeException e,
-        HttpServletRequest req) {
-        return ErrorResponses.of(
-            HttpStatus.BAD_REQUEST,
-            e.getMessage(),
-            instance(req)
-        );
-    }
 
     // 401: 컨트롤러/서비스 단에서 발생하는 JWT 관련 예외 처리
     // (주로 토큰 재발급 시 만료된 토큰을 파싱하려 할 때 발생)
@@ -143,68 +120,6 @@ public class GlobalExceptionHandler {
         );
     }
 
-    // 401: 리프레시 토큰이 유효하지 않은 경우
-    @ExceptionHandler(InvalidRefreshTokenException.class)
-    public ProblemDetail handleInvalidRefreshToken(InvalidRefreshTokenException e,
-        HttpServletRequest req) {
-        return ErrorResponses.of(
-            HttpStatus.UNAUTHORIZED,
-            e.getMessage(),
-            instance(req)
-        );
-    }
-
-    // 401: 요청된 리프레시 토큰과 서버의 리프레시 토큰이 다른 경우
-    @ExceptionHandler(RefreshTokenNotEqualsException.class)
-    public ProblemDetail handleRefreshTokenNotEquals(RefreshTokenNotEqualsException e,
-        HttpServletRequest req) {
-        return ErrorResponses.of(
-            HttpStatus.UNAUTHORIZED,
-            e.getMessage(),
-            instance(req)
-        );
-    }
-
-    // 404: 도메인 NotFound
-    @ExceptionHandler({
-        FileNotFoundException.class,
-        TaskNotFoundException.class,
-        MemberNotFoundException.class,
-        ProjectNotFoundException.class,
-        RefreshTokenNotFoundException.class
-    })
-    public ProblemDetail handleNotFound(RuntimeException e, HttpServletRequest req) {
-        return ErrorResponses.of(
-            HttpStatus.NOT_FOUND,
-            e.getMessage(),
-            instance(req)
-        );
-    }
-
-    // 409: 리소스 상태 충돌
-    @ExceptionHandler({
-        FileAlreadyUploadCompletedException.class,
-        FileNotReadyException.class,
-        MemberAlreadyJoinedException.class,
-        TaskNotInProjectException.class
-    })
-    public ProblemDetail handleAlreadyCompleted(RuntimeException e, HttpServletRequest req) {
-        return ErrorResponses.of(
-            HttpStatus.CONFLICT,
-            e.getMessage(),
-            instance(req)
-        );
-    }
-
-    // 413: 요청 본문이 서버가 허용하는 한도 초과한 경우
-    @ExceptionHandler(FileTooLargeException.class)
-    public ProblemDetail handleFileTooLarge(FileTooLargeException e, HttpServletRequest req) {
-        return ErrorResponses.of(
-            HttpStatus.PAYLOAD_TOO_LARGE,
-            e.getMessage(),
-            instance(req)
-        );
-    }
 
     // 405/415 등: 스펙 위반
     @ExceptionHandler({
@@ -217,16 +132,6 @@ public class GlobalExceptionHandler {
             : HttpStatus.UNSUPPORTED_MEDIA_TYPE;
 
         return ErrorResponses.of(status, e.getMessage(), instance(req));
-    }
-
-    // 500: 그외 외부 서버와의 오류
-    @ExceptionHandler(StorageServiceException.class)
-    public ProblemDetail handleStorage(StorageServiceException e, HttpServletRequest req) {
-        return ErrorResponses.of(
-            HttpStatus.INTERNAL_SERVER_ERROR,
-            e.getMessage(),
-            instance(req)
-        );
     }
 
     // 500: 그외 모든 예외

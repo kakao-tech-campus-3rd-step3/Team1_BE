@@ -10,7 +10,6 @@ import knu.team1.be.boost.project.entity.Project;
 import knu.team1.be.boost.project.repository.ProjectRepository;
 import knu.team1.be.boost.projectMember.entity.ProjectMember;
 import knu.team1.be.boost.projectMember.entity.ProjectRole;
-import knu.team1.be.boost.projectMember.exception.ProjectMemberNotFoundException;
 import knu.team1.be.boost.projectMember.repository.ProjectMemberRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;

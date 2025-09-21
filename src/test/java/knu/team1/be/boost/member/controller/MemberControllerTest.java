@@ -13,9 +13,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import knu.team1.be.boost.common.exception.BusinessException;
+import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.member.dto.MemberResponseDto;
 import knu.team1.be.boost.member.dto.MemberUpdateRequestDto;
-import knu.team1.be.boost.member.exception.MemberNotFoundException;
 import knu.team1.be.boost.member.service.MemberService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -70,7 +71,10 @@ public class MemberControllerTest {
     void getMyInfo_Fail_MemberNotFound() throws Exception {
         // given
         given(memberService.getMember(any(UUID.class)))
-            .willThrow(new MemberNotFoundException(testMemberId));
+            .willThrow(new BusinessException(
+                ErrorCode.MEMBER_NOT_FOUND,
+                "memberId: " + testMemberId
+            ));
 
         // when & then
         mockMvc.perform(get("/api/members/me"))
@@ -109,7 +113,10 @@ public class MemberControllerTest {
         // given
         MemberUpdateRequestDto requestDto = new MemberUpdateRequestDto("수정된 이름", "1112");
         given(memberService.updateMember(any(UUID.class), any(MemberUpdateRequestDto.class)))
-            .willThrow(new MemberNotFoundException(testMemberId));
+            .willThrow(new BusinessException(
+                ErrorCode.MEMBER_NOT_FOUND,
+                "memberId: " + testMemberId
+            ));
 
         // when & then
         mockMvc.perform(put("/api/members/me")
@@ -132,8 +139,10 @@ public class MemberControllerTest {
     @DisplayName("회원 탈퇴 API 실패 - 존재하지 않는 회원")
     void deleteMyAccount_Fail_MemberNotFound() throws Exception {
         // given
-        doThrow(new MemberNotFoundException(testMemberId)).when(memberService)
-            .deleteMember(any(UUID.class));
+        doThrow(new BusinessException(
+            ErrorCode.MEMBER_NOT_FOUND,
+            "memberId: " + testMemberId
+        )).when(memberService).deleteMember(any(UUID.class));
 
         // when & then
         mockMvc.perform(delete("/api/members/me"))
