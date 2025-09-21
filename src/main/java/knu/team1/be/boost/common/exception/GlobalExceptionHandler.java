@@ -33,8 +33,13 @@ public class GlobalExceptionHandler {
         String errorMessage = errorCode.getErrorMessage();
         HttpStatus httpStatus = errorCode.getHttpStatus();
 
-        log.warn("[{} {}] {} | {}", httpStatus.value(), errorCode, errorMessage,
-            e.getAdditionalInfo(), e);
+        if (httpStatus.is5xxServerError()) {
+            log.error("[{} {}] {} | {}", httpStatus.value(), errorCode, errorMessage,
+                e.getAdditionalInfo(), e);
+        } else {
+            log.warn("[{} {}] {} | {}", httpStatus.value(), errorCode, errorMessage,
+                e.getAdditionalInfo(), e);
+        }
 
         return ErrorResponses.forBusiness(errorCode, instance(req));
     }
