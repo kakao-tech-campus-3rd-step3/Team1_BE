@@ -54,6 +54,8 @@ public class GlobalExceptionHandler {
             ))
             .toList();
 
+        log.warn("[400 BAD_REQUEST] Validation failed: {}", e.toString(), e);
+
         return ErrorResponses.of(
             HttpStatus.BAD_REQUEST,
             "입력값이 올바르지 않습니다.",
@@ -65,6 +67,8 @@ public class GlobalExceptionHandler {
     // 400: 잘못된 요청
     @ExceptionHandler(IllegalArgumentException.class)
     public ProblemDetail handleIllegalArgument(IllegalArgumentException e, HttpServletRequest req) {
+        log.warn("[400 BAD_REQUEST] Illegal argument: {}", e.toString(), e);
+
         return ErrorResponses.of(
             HttpStatus.BAD_REQUEST,
             e.getMessage(),
@@ -74,8 +78,12 @@ public class GlobalExceptionHandler {
 
     // 400: 타입 불일치
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ProblemDetail handleTypeMismatch(MethodArgumentTypeMismatchException e,
-        HttpServletRequest req) {
+    public ProblemDetail handleTypeMismatch(
+        MethodArgumentTypeMismatchException e,
+        HttpServletRequest req
+    ) {
+        log.warn("[400 BAD_REQUEST] Type mismatch: {}", e.toString(), e);
+
         return ErrorResponses.of(
             HttpStatus.BAD_REQUEST,
             "파라미터 타입이 올바르지 않습니다: " + e.getName(),
@@ -85,7 +93,12 @@ public class GlobalExceptionHandler {
 
     // 400: JSON 파싱 불가
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ProblemDetail handleNotReadable(HttpServletRequest req) {
+    public ProblemDetail handleNotReadable(
+        HttpMessageNotReadableException e,
+        HttpServletRequest req
+    ) {
+        log.warn("[400 BAD_REQUEST] Not readable: {}", e.toString(), e);
+
         return ErrorResponses.of(
             HttpStatus.BAD_REQUEST,
             "요청 본문을 해석할 수 없습니다.",
@@ -101,6 +114,8 @@ public class GlobalExceptionHandler {
     ) {
         String message = String.format("필수 파라미터 '%s'가 누락되었습니다.", e.getParameterName());
 
+        log.warn("[400 BAD_REQUEST] Missing parameter: {}", e.toString(), e);
+
         return ErrorResponses.of(
             HttpStatus.BAD_REQUEST,
             message,
@@ -113,6 +128,8 @@ public class GlobalExceptionHandler {
     // (주로 토큰 재발급 시 만료된 토큰을 파싱하려 할 때 발생)
     @ExceptionHandler(JwtException.class)
     public ProblemDetail handleJwtExceptionInController(JwtException e, HttpServletRequest req) {
+        log.warn("[401 UNAUTHORIZED] JWT exception: {}", e.toString(), e);
+
         return ErrorResponses.of(
             HttpStatus.UNAUTHORIZED,
             "유효하지 않은 형식의 토큰입니다.",
@@ -130,6 +147,7 @@ public class GlobalExceptionHandler {
         HttpStatus status = (e instanceof HttpRequestMethodNotSupportedException)
             ? HttpStatus.METHOD_NOT_ALLOWED
             : HttpStatus.UNSUPPORTED_MEDIA_TYPE;
+        log.warn("[{} {}] {}", status.value(), status.getReasonPhrase(), e.toString(), e);
 
         return ErrorResponses.of(status, e.getMessage(), instance(req));
     }
