@@ -34,7 +34,7 @@ public class GlobalExceptionHandler {
         HttpStatus httpStatus = errorCode.getHttpStatus();
 
         log.warn("[{} {}] {} | {}", httpStatus.value(), errorCode, errorMessage,
-            e.getAdditionalInfo());
+            e.getAdditionalInfo(), e);
 
         return ErrorResponses.forBusiness(errorCode, instance(req));
     }
