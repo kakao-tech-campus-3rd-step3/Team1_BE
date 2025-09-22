@@ -34,7 +34,7 @@ import org.hibernate.annotations.SQLRestriction;
 public class File extends SoftDeletableEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")   // TODO: 인증 붙이면 nullable = false 활성화
+    @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
