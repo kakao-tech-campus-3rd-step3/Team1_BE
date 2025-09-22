@@ -9,6 +9,7 @@ import java.util.UUID;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
+import knu.team1.be.boost.common.policy.AccessPolicy;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
 import knu.team1.be.boost.project.entity.Project;
@@ -31,6 +32,8 @@ public class TaskService {
     private final MemberRepository memberRepository;
     private final ProjectRepository projectRepository;
 
+    private final AccessPolicy accessPolicy;
+
     @Transactional
     public TaskResponseDto createTask(
         UUID projectId,
@@ -43,10 +46,12 @@ public class TaskService {
                 "projectId: " + projectId
             ));
 
-        // TODO: 인증 붙으면 현재 사용자 프로젝트 소속 여부 확인
+        accessPolicy.ensureProjectMember(projectId, user.id());
 
         List<String> tags = extractTags(request.tags());
         Set<Member> assignees = findAssignees(request.assignees());
+
+        accessPolicy.ensureAssigneesAreProjectMembers(projectId, assignees);
 
         Task task = Task.builder()
             .project(project)
@@ -84,8 +89,6 @@ public class TaskService {
                 "taskId: " + taskId
             ));
 
-        // TODO: 인증 붙으면 현재 사용자 프로젝트 소속 여부 확인 + 해당 할 일에 담당자인지 확인
-
         if (!task.getProject().getId().equals(project.getId())) {
             throw new BusinessException(
                 ErrorCode.TASK_NOT_IN_PROJECT,
@@ -93,8 +96,13 @@ public class TaskService {
             );
         }
 
+        accessPolicy.ensureProjectMember(projectId, user.id());
+        accessPolicy.ensureTaskAssignee(taskId, user.id());
+
         List<String> tags = extractTags(request.tags());
         Set<Member> assignees = findAssignees(request.assignees());
+
+        accessPolicy.ensureAssigneesAreProjectMembers(projectId, assignees);
 
         task.update(
             request.title(),
@@ -128,14 +136,15 @@ public class TaskService {
                 "taskId: " + taskId
             ));
 
-        // TODO: 인증 붙으면 현재 사용자 프로젝트 소속 여부 확인 + 해당 할 일에 담당자인지 확인
-
         if (!task.getProject().getId().equals(project.getId())) {
             throw new BusinessException(
                 ErrorCode.TASK_NOT_IN_PROJECT,
                 "projectId: " + projectId + ", taskId: " + taskId
             );
         }
+
+        accessPolicy.ensureProjectMember(projectId, user.id());
+        accessPolicy.ensureTaskAssignee(taskId, user.id());
 
         taskRepository.delete(task);
     }
@@ -159,14 +168,15 @@ public class TaskService {
                 "taskId: " + taskId
             ));
 
-        // TODO: 인증 붙으면 현재 사용자 프로젝트 소속 여부 확인 + 해당 할 일에 담당자인지 확인
-
         if (!task.getProject().getId().equals(project.getId())) {
             throw new BusinessException(
                 ErrorCode.TASK_NOT_IN_PROJECT,
                 "projectId: " + projectId + ", taskId: " + taskId
             );
         }
+
+        accessPolicy.ensureProjectMember(projectId, user.id());
+        accessPolicy.ensureTaskAssignee(taskId, user.id());
 
         task.changeStatus(request.status());
 
