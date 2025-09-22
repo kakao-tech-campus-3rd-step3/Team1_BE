@@ -2,6 +2,7 @@ package knu.team1.be.boost.file.service;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.file.dto.FileCompleteRequestDto;
@@ -13,6 +14,8 @@ import knu.team1.be.boost.file.entity.FileType;
 import knu.team1.be.boost.file.entity.vo.StorageKey;
 import knu.team1.be.boost.file.infra.s3.PresignedUrlFactory;
 import knu.team1.be.boost.file.repository.FileRepository;
+import knu.team1.be.boost.member.entity.Member;
+import knu.team1.be.boost.member.repository.MemberRepository;
 import knu.team1.be.boost.task.entity.Task;
 import knu.team1.be.boost.task.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +34,7 @@ public class FileService {
 
     private final FileRepository fileRepository;
     private final TaskRepository taskRepository;
+    private final MemberRepository memberRepository;
     private final PresignedUrlFactory presignedUrlFactory;
 
     @Value("${boost.aws.bucket}")
@@ -43,7 +47,16 @@ public class FileService {
     private DataSize maxUploadSize;
 
     @Transactional
-    public FileResponseDto uploadFile(FileRequestDto request) {
+    public FileResponseDto uploadFile(
+        FileRequestDto request,
+        UserPrincipalDto user
+    ) {
+        Member member = memberRepository.findById(user.id())
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.MEMBER_NOT_FOUND,
+                "memberId: " + user.id()
+            ));
+
         long max = maxUploadSize.toBytes();
         long size = request.sizeBytes();
         if (request.sizeBytes() > max) {
@@ -56,7 +69,7 @@ public class FileService {
         FileType fileType = FileType.fromContentType(request.contentType());
         StorageKey key = StorageKey.generate(LocalDateTime.now(), fileType.getExtension());
 
-        File file = File.pendingUpload(request, fileType, key);
+        File file = File.pendingUpload(request, fileType, key, member);
         File saved = fileRepository.save(file);
 
         PresignedPutObjectRequest presigned = presignedUrlFactory.forUpload(
@@ -72,9 +85,10 @@ public class FileService {
     }
 
     @Transactional(readOnly = true)
-    public FileResponseDto downloadFile(UUID fileId) {
-        // TODO: 다운로드 요청자가 해당 프로젝트 팀원인지 검증
-
+    public FileResponseDto downloadFile(
+        UUID fileId,
+        UserPrincipalDto user
+    ) {
         File file = fileRepository.findById(fileId)
             .orElseThrow(() -> new BusinessException(
                 ErrorCode.FILE_NOT_FOUND,
@@ -102,7 +116,11 @@ public class FileService {
     }
 
     @Transactional
-    public FileCompleteResponseDto completeUpload(UUID fileId, FileCompleteRequestDto request) {
+    public FileCompleteResponseDto completeUpload(
+        UUID fileId,
+        FileCompleteRequestDto request,
+        UserPrincipalDto user
+    ) {
         File file = fileRepository.findById(fileId)
             .orElseThrow(() -> new BusinessException(
                 ErrorCode.FILE_NOT_FOUND,
