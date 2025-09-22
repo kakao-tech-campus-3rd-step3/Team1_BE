@@ -4,7 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -15,8 +17,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
+import knu.team1.be.boost.common.policy.AccessPolicy;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
 import knu.team1.be.boost.project.entity.Project;
@@ -45,13 +49,19 @@ class TaskServiceTest {
     @Mock
     MemberRepository memberRepository;
     @Mock
+    AccessPolicy accessPolicy;
+    @Mock
     ProjectRepository projectRepository;
 
     TaskService taskService;
 
+    UUID userId = UUID.randomUUID();
+    UserPrincipalDto user = UserPrincipalDto.from(userId, "test-user", "avatar-code");
+
     @BeforeEach
     void setUp() {
-        taskService = new TaskService(taskRepository, memberRepository, projectRepository);
+        taskService = new TaskService(
+            taskRepository, memberRepository, projectRepository, accessPolicy);
     }
 
     @Nested
@@ -71,6 +81,11 @@ class TaskServiceTest {
             given(memberRepository.findAllById(anyList()))
                 .willReturn(List.of(member(m1, "영진"), member(m2, "비버")));
 
+            doNothing().when(accessPolicy)
+                .ensureProjectMember(eq(projectId), eq(userId));
+            doNothing().when(accessPolicy)
+                .ensureAssigneesAreProjectMembers(eq(projectId), any(Set.class));
+
             TaskCreateRequestDto request = new TaskCreateRequestDto(
                 "1회차 기술 멘토링 피드백 반영",
                 "기술 멘토링에서 나온 멘토님의 피드백을 반영한다.",
@@ -86,7 +101,7 @@ class TaskServiceTest {
                 .willAnswer(invocation -> invocation.getArgument(0));
 
             // when
-            TaskResponseDto response = taskService.createTask(projectId, request);
+            TaskResponseDto response = taskService.createTask(projectId, request, user);
 
             // then
             assertThat(response.projectId()).isEqualTo(projectId);
@@ -126,11 +141,11 @@ class TaskServiceTest {
             );
 
             // when & then
-            assertThatThrownBy(() -> taskService.createTask(projectId, request))
+            assertThatThrownBy(() -> taskService.createTask(projectId, request, user))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.PROJECT_NOT_FOUND);
 
-            verifyNoInteractions(taskRepository, memberRepository);
+            verifyNoInteractions(taskRepository, memberRepository, accessPolicy);
         }
 
         @Test
@@ -158,11 +173,12 @@ class TaskServiceTest {
             );
 
             // when & then
-            assertThatThrownBy(() -> taskService.createTask(projectId, request))
+            assertThatThrownBy(() -> taskService.createTask(projectId, request, user))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.MEMBER_NOT_FOUND);
 
             verify(taskRepository, never()).save(any());
+            verifyNoInteractions(accessPolicy);
         }
 
     }
@@ -188,6 +204,13 @@ class TaskServiceTest {
             given(memberRepository.findAllById(anyList()))
                 .willReturn(List.of(member(m1, "비버")));
 
+            doNothing().when(accessPolicy)
+                .ensureProjectMember(eq(projectId), eq(userId));
+            doNothing().when(accessPolicy)
+                .ensureTaskAssignee(eq(taskId), eq(userId));
+            doNothing().when(accessPolicy)
+                .ensureAssigneesAreProjectMembers(eq(projectId), any(Set.class));
+
             TaskUpdateRequestDto request = new TaskUpdateRequestDto(
                 "수정된 제목",
                 "수정된 설명",
@@ -200,7 +223,7 @@ class TaskServiceTest {
             );
 
             // when
-            TaskResponseDto response = taskService.updateTask(projectId, taskId, request);
+            TaskResponseDto response = taskService.updateTask(projectId, taskId, request, user);
 
             // then
             assertThat(response.title()).isEqualTo("수정된 제목");
@@ -233,11 +256,11 @@ class TaskServiceTest {
             );
 
             // when & then
-            assertThatThrownBy(() -> taskService.updateTask(projectId, taskId, request))
+            assertThatThrownBy(() -> taskService.updateTask(projectId, taskId, request, user))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.PROJECT_NOT_FOUND);
 
-            verifyNoInteractions(taskRepository, memberRepository);
+            verifyNoInteractions(taskRepository, memberRepository, accessPolicy);
         }
 
         @Test
@@ -262,11 +285,11 @@ class TaskServiceTest {
             );
 
             // when & then
-            assertThatThrownBy(() -> taskService.updateTask(projectId, taskId, request))
+            assertThatThrownBy(() -> taskService.updateTask(projectId, taskId, request, user))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.TASK_NOT_FOUND);
 
-            verifyNoInteractions(memberRepository);
+            verifyNoInteractions(memberRepository, accessPolicy);
         }
 
         @Test
@@ -295,11 +318,12 @@ class TaskServiceTest {
             );
 
             // when & then
-            assertThatThrownBy(() -> taskService.updateTask(projectId, existing.getId(), request))
+            assertThatThrownBy(
+                () -> taskService.updateTask(projectId, existing.getId(), request, user))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.TASK_NOT_IN_PROJECT);
 
-            verifyNoInteractions(memberRepository);
+            verifyNoInteractions(memberRepository, accessPolicy);
         }
 
     }
@@ -321,8 +345,11 @@ class TaskServiceTest {
             Task existing = task(taskId, project);
             given(taskRepository.findById(taskId)).willReturn(Optional.of(existing));
 
+            doNothing().when(accessPolicy).ensureProjectMember(eq(projectId), eq(userId));
+            doNothing().when(accessPolicy).ensureTaskAssignee(eq(taskId), eq(userId));
+
             // when
-            taskService.deleteTask(projectId, taskId);
+            taskService.deleteTask(projectId, taskId, user);
 
             // then
             verify(taskRepository).delete(existing);
@@ -337,11 +364,11 @@ class TaskServiceTest {
             given(projectRepository.findById(projectId)).willReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(() -> taskService.deleteTask(projectId, taskId))
+            assertThatThrownBy(() -> taskService.deleteTask(projectId, taskId, user))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.PROJECT_NOT_FOUND);
 
-            verifyNoInteractions(taskRepository);
+            verifyNoInteractions(taskRepository, accessPolicy);
         }
 
 
@@ -357,11 +384,12 @@ class TaskServiceTest {
             given(taskRepository.findById(taskId)).willReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(() -> taskService.deleteTask(projectId, taskId))
+            assertThatThrownBy(() -> taskService.deleteTask(projectId, taskId, user))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.TASK_NOT_FOUND);
 
             verify(taskRepository, never()).delete(any());
+            verifyNoInteractions(accessPolicy);
         }
 
         @Test
@@ -379,11 +407,12 @@ class TaskServiceTest {
             given(taskRepository.findById(existing.getId())).willReturn(Optional.of(existing));
 
             // when & then
-            assertThatThrownBy(() -> taskService.deleteTask(projectId, existing.getId()))
+            assertThatThrownBy(() -> taskService.deleteTask(projectId, existing.getId(), user))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.TASK_NOT_IN_PROJECT);
 
             verify(taskRepository, never()).delete(any());
+            verifyNoInteractions(accessPolicy);
         }
     }
 
@@ -404,10 +433,15 @@ class TaskServiceTest {
             Task existing = task(taskId, project);
             given(taskRepository.findById(taskId)).willReturn(Optional.of(existing));
 
+            doNothing().when(accessPolicy).ensureProjectMember(eq(projectId), eq(userId));
+            doNothing().when(accessPolicy).ensureTaskAssignee(eq(taskId), eq(userId));
+
             TaskStatusRequestDto request = new TaskStatusRequestDto(TaskStatus.REVIEW);
 
             // when
-            TaskResponseDto response = taskService.changeTaskStatus(projectId, taskId, request);
+            TaskResponseDto response = taskService.changeTaskStatus(
+                projectId, taskId, request, user
+            );
 
             // then
             assertThat(response.status()).isEqualTo(TaskStatus.REVIEW);
@@ -426,11 +460,11 @@ class TaskServiceTest {
             TaskStatusRequestDto request = new TaskStatusRequestDto(TaskStatus.DONE);
 
             // when & then
-            assertThatThrownBy(() -> taskService.changeTaskStatus(projectId, taskId, request))
+            assertThatThrownBy(() -> taskService.changeTaskStatus(projectId, taskId, request, user))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.PROJECT_NOT_FOUND);
 
-            verifyNoInteractions(taskRepository);
+            verifyNoInteractions(taskRepository, accessPolicy);
         }
 
         @Test
@@ -446,9 +480,11 @@ class TaskServiceTest {
             TaskStatusRequestDto request = new TaskStatusRequestDto(TaskStatus.DONE);
 
             // when & then
-            assertThatThrownBy(() -> taskService.changeTaskStatus(projectId, taskId, request))
+            assertThatThrownBy(() -> taskService.changeTaskStatus(projectId, taskId, request, user))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.TASK_NOT_FOUND);
+
+            verifyNoInteractions(accessPolicy);
         }
 
         @Test
@@ -469,9 +505,11 @@ class TaskServiceTest {
 
             // when & then
             assertThatThrownBy(
-                () -> taskService.changeTaskStatus(projectId, existing.getId(), request))
+                () -> taskService.changeTaskStatus(projectId, existing.getId(), request, user))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.TASK_NOT_IN_PROJECT);
+
+            verifyNoInteractions(accessPolicy);
         }
     }
 
