@@ -56,16 +56,14 @@ public class FileService {
     ) {
         Member member = memberRepository.findById(user.id())
             .orElseThrow(() -> new BusinessException(
-                ErrorCode.MEMBER_NOT_FOUND,
-                "memberId: " + user.id()
+                ErrorCode.MEMBER_NOT_FOUND, "memberId: " + user.id()
             ));
 
         long max = maxUploadSize.toBytes();
         long size = request.sizeBytes();
         if (request.sizeBytes() > max) {
             throw new BusinessException(
-                ErrorCode.FILE_TOO_LARGE,
-                "size: " + size + ", max: " + max
+                ErrorCode.FILE_TOO_LARGE, "size: " + size + ", max: " + max
             );
         }
 
@@ -94,14 +92,12 @@ public class FileService {
     ) {
         File file = fileRepository.findById(fileId)
             .orElseThrow(() -> new BusinessException(
-                ErrorCode.FILE_NOT_FOUND,
-                "fileId: " + fileId
+                ErrorCode.FILE_NOT_FOUND, "fileId: " + fileId
             ));
 
         if (!file.isComplete()) {
             throw new BusinessException(
-                ErrorCode.FILE_NOT_READY,
-                "fileId: " + fileId
+                ErrorCode.FILE_NOT_READY, "fileId: " + fileId
             );
         }
 
@@ -129,14 +125,12 @@ public class FileService {
     ) {
         File file = fileRepository.findById(fileId)
             .orElseThrow(() -> new BusinessException(
-                ErrorCode.FILE_NOT_FOUND,
-                "fileId: " + fileId
+                ErrorCode.FILE_NOT_FOUND, "fileId: " + fileId
             ));
 
         if (file.isComplete()) {
             throw new BusinessException(
-                ErrorCode.FILE_ALREADY_UPLOAD_COMPLETED,
-                "fileId: " + fileId
+                ErrorCode.FILE_ALREADY_UPLOAD_COMPLETED, "fileId: " + fileId
             );
         }
 
@@ -144,8 +138,7 @@ public class FileService {
         long size = request.sizeBytes();
         if (request.sizeBytes() > max) {
             throw new BusinessException(
-                ErrorCode.FILE_TOO_LARGE,
-                "fileId: " + fileId + ", size: " + size + ", max: " + max
+                ErrorCode.FILE_TOO_LARGE, "fileId: " + fileId + ", size: " + size + ", max: " + max
             );
         }
 
@@ -162,7 +155,7 @@ public class FileService {
         UUID projectId = task.getProject().getId();
         accessPolicy.ensureProjectMember(projectId, user.id());
         accessPolicy.ensureTaskAssignee(taskId, user.id());
-        
+
         file.assignTask(task);
         file.complete();
 
