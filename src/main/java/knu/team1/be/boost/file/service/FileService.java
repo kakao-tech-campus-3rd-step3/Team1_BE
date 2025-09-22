@@ -59,13 +59,7 @@ public class FileService {
                 ErrorCode.MEMBER_NOT_FOUND, "memberId: " + user.id()
             ));
 
-        long max = maxUploadSize.toBytes();
-        long size = request.sizeBytes();
-        if (request.sizeBytes() > max) {
-            throw new BusinessException(
-                ErrorCode.FILE_TOO_LARGE, "size: " + size + ", max: " + max
-            );
-        }
+        validateFileLimit(request.sizeBytes(), null);
 
         FileType fileType = FileType.fromContentType(request.contentType());
         StorageKey key = StorageKey.generate(LocalDateTime.now(), fileType.getExtension());
@@ -134,13 +128,7 @@ public class FileService {
             );
         }
 
-        long max = maxUploadSize.toBytes();
-        long size = request.sizeBytes();
-        if (request.sizeBytes() > max) {
-            throw new BusinessException(
-                ErrorCode.FILE_TOO_LARGE, "fileId: " + fileId + ", size: " + size + ", max: " + max
-            );
-        }
+        validateFileLimit(request.sizeBytes(), fileId);
 
         file.getMetadata()
             .validateMatches(request.filename(), request.contentType(), request.sizeBytes());
@@ -162,5 +150,16 @@ public class FileService {
         log.info("파일 업로드 완료 처리 성공 - fileId={}, taskId={}, filename={}",
             fileId, taskId, request.filename());
         return FileCompleteResponseDto.from(file, taskId);
+    }
+
+    private void validateFileLimit(long sizeBytes, UUID fileIdOrNull) {
+        long max = maxUploadSize.toBytes();
+        if (sizeBytes > max) {
+            String msg = "size: " + sizeBytes + ", max: " + max;
+            if (fileIdOrNull != null) {
+                msg = "fileId: " + fileIdOrNull + ", " + msg;
+            }
+            throw new BusinessException(ErrorCode.FILE_TOO_LARGE, msg);
+        }
     }
 }
