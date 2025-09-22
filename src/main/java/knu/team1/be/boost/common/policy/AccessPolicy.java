@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.member.entity.Member;
+import knu.team1.be.boost.projectMember.entity.ProjectRole;
 import knu.team1.be.boost.projectMember.repository.ProjectMemberRepository;
 import knu.team1.be.boost.task.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
@@ -56,11 +57,26 @@ public class AccessPolicy {
         }
     }
 
+    public void ensureProjectOwner(UUID projectId, UUID memberId) {
+        if (!isProjectOwner(projectId, memberId)) {
+            throw new BusinessException(
+                ErrorCode.PROJECT_OWNER_ONLY,
+                "projectId=" + projectId + ", memberId=" + memberId
+            );
+        }
+    }
+
     private boolean isProjectMember(UUID projectId, UUID memberId) {
         return projectMemberRepository.existsByProjectIdAndMemberId(projectId, memberId);
     }
 
     private boolean isTaskAssignee(UUID taskId, UUID memberId) {
         return taskRepository.existsByIdAndAssigneesId(taskId, memberId);
+    }
+
+    private boolean isProjectOwner(UUID projectId, UUID memberId) {
+        return projectMemberRepository.existsByProjectIdAndMemberIdAndRole(
+            projectId, memberId, ProjectRole.OWNER
+        );
     }
 }

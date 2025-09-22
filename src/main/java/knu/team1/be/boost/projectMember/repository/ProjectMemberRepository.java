@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 import knu.team1.be.boost.projectMember.entity.ProjectMember;
+import knu.team1.be.boost.projectMember.entity.ProjectRole;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -25,4 +26,6 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, UU
     boolean existsByProjectIdAndMemberId(UUID projectId, UUID memberId);
 
     int countByProjectIdAndMemberIdIn(UUID projectId, Collection<UUID> memberIds);
+
+    boolean existsByProjectIdAndMemberIdAndRole(UUID projectId, UUID memberId, ProjectRole role);
 }
