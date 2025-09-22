@@ -15,10 +15,12 @@ public enum ErrorCode {
     PROJECT_NOT_FOUND(HttpStatus.NOT_FOUND, "Project not found", "해당 프로젝트를 찾을 수 없습니다."),
     PROJECT_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "Project member not found",
         "해당 프로젝트에 참여하지 않은 멤버입니다."),
+    PROJECT_MEMBER_ONLY(HttpStatus.FORBIDDEN, "Project member only", "프로젝트 멤버만 사용할 수 있습니다."),
 
     // Task 관련
     TASK_NOT_FOUND(HttpStatus.NOT_FOUND, "Task not found", "할 일을 찾을 수 없습니다."),
     TASK_NOT_IN_PROJECT(HttpStatus.CONFLICT, "Task not in project", "해당 할 일이 프로젝트에 속하지 않습니다."),
+    TASK_ASSIGNEE_ONLY(HttpStatus.FORBIDDEN, "Task assignee only", "해당 할 일의 담당자만 수행할 수 있습니다."),
 
     // File 관련
     FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "File not found", "파일을 찾을 수 없습니다."),

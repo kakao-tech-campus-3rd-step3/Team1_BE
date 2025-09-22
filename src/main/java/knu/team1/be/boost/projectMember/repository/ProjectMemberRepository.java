@@ -1,5 +1,6 @@
 package knu.team1.be.boost.projectMember.repository;
 
+import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 import knu.team1.be.boost.projectMember.entity.ProjectMember;
@@ -21,4 +22,7 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, UU
         @Param("memberId") UUID memberId
     );
 
+    boolean existsByProjectIdAndMemberId(UUID projectId, UUID memberId);
+
+    int countByProjectIdAndMemberIdIn(UUID projectId, Collection<UUID> memberIds);
 }
