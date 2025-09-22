@@ -42,8 +42,7 @@ public class TaskService {
     ) {
         Project project = projectRepository.findById(projectId)
             .orElseThrow(() -> new BusinessException(
-                ErrorCode.PROJECT_NOT_FOUND,
-                "projectId: " + projectId
+                ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
             ));
 
         accessPolicy.ensureProjectMember(projectId, user.id());
@@ -79,20 +78,17 @@ public class TaskService {
     ) {
         Project project = projectRepository.findById(projectId)
             .orElseThrow(() -> new BusinessException(
-                ErrorCode.PROJECT_NOT_FOUND,
-                "projectId: " + projectId
+                ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
             ));
 
         Task task = taskRepository.findById(taskId)
             .orElseThrow(() -> new BusinessException(
-                ErrorCode.TASK_NOT_FOUND,
-                "taskId: " + taskId
+                ErrorCode.TASK_NOT_FOUND, "taskId: " + taskId
             ));
 
         if (!task.getProject().getId().equals(project.getId())) {
             throw new BusinessException(
-                ErrorCode.TASK_NOT_IN_PROJECT,
-                "projectId: " + projectId + ", taskId: " + taskId
+                ErrorCode.TASK_NOT_IN_PROJECT, "projectId: " + projectId + ", taskId: " + taskId
             );
         }
 
@@ -126,20 +122,17 @@ public class TaskService {
     ) {
         Project project = projectRepository.findById(projectId)
             .orElseThrow(() -> new BusinessException(
-                ErrorCode.PROJECT_NOT_FOUND,
-                "projectId: " + projectId
+                ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
             ));
 
         Task task = taskRepository.findById(taskId)
             .orElseThrow(() -> new BusinessException(
-                ErrorCode.TASK_NOT_FOUND,
-                "taskId: " + taskId
+                ErrorCode.TASK_NOT_FOUND, "taskId: " + taskId
             ));
 
         if (!task.getProject().getId().equals(project.getId())) {
             throw new BusinessException(
-                ErrorCode.TASK_NOT_IN_PROJECT,
-                "projectId: " + projectId + ", taskId: " + taskId
+                ErrorCode.TASK_NOT_IN_PROJECT, "projectId: " + projectId + ", taskId: " + taskId
             );
         }
 
@@ -158,20 +151,17 @@ public class TaskService {
     ) {
         Project project = projectRepository.findById(projectId)
             .orElseThrow(() -> new BusinessException(
-                ErrorCode.PROJECT_NOT_FOUND,
-                "projectId: " + projectId
+                ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
             ));
 
         Task task = taskRepository.findById(taskId)
             .orElseThrow(() -> new BusinessException(
-                ErrorCode.TASK_NOT_FOUND,
-                "taskId: " + taskId
+                ErrorCode.TASK_NOT_FOUND, "taskId: " + taskId
             ));
 
         if (!task.getProject().getId().equals(project.getId())) {
             throw new BusinessException(
-                ErrorCode.TASK_NOT_IN_PROJECT,
-                "projectId: " + projectId + ", taskId: " + taskId
+                ErrorCode.TASK_NOT_IN_PROJECT, "projectId: " + projectId + ", taskId: " + taskId
             );
         }
 
