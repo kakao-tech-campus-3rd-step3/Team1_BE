@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -14,8 +15,10 @@ import static org.mockito.Mockito.when;
 import java.net.URL;
 import java.util.Optional;
 import java.util.UUID;
+import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
+import knu.team1.be.boost.common.policy.AccessPolicy;
 import knu.team1.be.boost.file.dto.FileCompleteRequestDto;
 import knu.team1.be.boost.file.dto.FileCompleteResponseDto;
 import knu.team1.be.boost.file.dto.FileRequestDto;
@@ -27,6 +30,9 @@ import knu.team1.be.boost.file.entity.vo.FileMetadata;
 import knu.team1.be.boost.file.entity.vo.StorageKey;
 import knu.team1.be.boost.file.infra.s3.PresignedUrlFactory;
 import knu.team1.be.boost.file.repository.FileRepository;
+import knu.team1.be.boost.member.entity.Member;
+import knu.team1.be.boost.member.repository.MemberRepository;
+import knu.team1.be.boost.project.entity.Project;
 import knu.team1.be.boost.task.entity.Task;
 import knu.team1.be.boost.task.repository.TaskRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,13 +56,37 @@ class FileServiceTest {
     @Mock
     TaskRepository taskRepository;
     @Mock
+    MemberRepository memberRepository;
+    @Mock
+    AccessPolicy accessPolicy;
+    @Mock
     PresignedUrlFactory presignedUrlFactory;
 
     FileService fileService;
 
+    UUID userId = UUID.randomUUID();
+    UUID projectId = UUID.randomUUID();
+    UserPrincipalDto testUser = UserPrincipalDto.from(userId, "test-user", "avatar-code");
+    Member testMember = Member.builder().id(userId).build();
+
+    Project testProject = Project.builder()
+        .id(projectId)
+        .build();
+
+    Task testTask = Task.builder()
+        .id(UUID.randomUUID())
+        .project(testProject)
+        .build();
+
     @BeforeEach
     void setUp() {
-        fileService = new FileService(fileRepository, taskRepository, presignedUrlFactory);
+        fileService = new FileService(
+            fileRepository,
+            taskRepository,
+            memberRepository,
+            accessPolicy,
+            presignedUrlFactory
+        );
         ReflectionTestUtils.setField(fileService, "bucket", "test-bucket");
         ReflectionTestUtils.setField(fileService, "expireSeconds", 900);
         ReflectionTestUtils.setField(fileService, "maxUploadSize", DataSize.ofMegabytes(5));
@@ -77,6 +107,9 @@ class FileServiceTest {
                 1048576
             );
 
+            given(memberRepository.findById(userId))
+                .willReturn(Optional.of(Member.builder().id(userId).build()));
+
             given(fileRepository.save(any(File.class)))
                 .willAnswer(invocation -> invocation.getArgument(0));
 
@@ -87,7 +120,7 @@ class FileServiceTest {
                 .willReturn(putReq);
 
             // when
-            FileResponseDto response = fileService.uploadFile(request);
+            FileResponseDto response = fileService.uploadFile(request, testUser);
 
             // then
             assertThat(response.key()).startsWith("file/");
@@ -119,8 +152,11 @@ class FileServiceTest {
                 500000000
             );
 
+            given(memberRepository.findById(userId))
+                .willReturn(Optional.of(Member.builder().id(userId).build()));
+
             // when & then
-            assertThatThrownBy(() -> fileService.uploadFile(request))
+            assertThatThrownBy(() -> fileService.uploadFile(request, testUser))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.FILE_TOO_LARGE);
 
@@ -141,6 +177,8 @@ class FileServiceTest {
 
             File file = File.builder()
                 .id(fileId)
+                .member(testMember)
+                .task(testTask)
                 .metadata(FileMetadata.of(
                     "최종 보고서.pdf",
                     "application/pdf",
@@ -153,6 +191,8 @@ class FileServiceTest {
 
             given(fileRepository.findById(fileId)).willReturn(Optional.of(file));
 
+            doNothing().when(accessPolicy).ensureProjectMember(any(UUID.class), any(UUID.class));
+
             PresignedGetObjectRequest getReq = mock(PresignedGetObjectRequest.class);
             when(getReq.url()).thenReturn(
                 new URL("https://boost-s3-bucket-storage.s3.ap-northeast-2.amazonaws.com/..."));
@@ -161,7 +201,7 @@ class FileServiceTest {
             )).willReturn(getReq);
 
             // when
-            FileResponseDto response = fileService.downloadFile(fileId);
+            FileResponseDto response = fileService.downloadFile(fileId, testUser);
 
             // then
             assertThat(response.fileId()).isEqualTo(fileId);
@@ -180,7 +220,7 @@ class FileServiceTest {
             given(fileRepository.findById(fileId)).willReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(() -> fileService.downloadFile(fileId))
+            assertThatThrownBy(() -> fileService.downloadFile(fileId, testUser))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.FILE_NOT_FOUND);
 
@@ -194,6 +234,8 @@ class FileServiceTest {
             UUID fileId = UUID.randomUUID();
             File file = File.builder()
                 .id(fileId)
+                .member(testMember)
+                .task(testTask)
                 .metadata(FileMetadata.of(
                     "최종 보고서.pdf",
                     "application/pdf",
@@ -206,7 +248,7 @@ class FileServiceTest {
             given(fileRepository.findById(fileId)).willReturn(Optional.of(file));
 
             // when & then
-            assertThatThrownBy(() -> fileService.downloadFile(fileId))
+            assertThatThrownBy(() -> fileService.downloadFile(fileId, testUser))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.FILE_NOT_READY);
 
@@ -227,6 +269,8 @@ class FileServiceTest {
             UUID taskId = UUID.randomUUID();
             File file = File.builder()
                 .id(fileId)
+                .member(testMember)
+                .task(null)
                 .metadata(FileMetadata.of(
                     "최종 보고서.pdf",
                     "application/pdf",
@@ -239,10 +283,14 @@ class FileServiceTest {
 
             Task task = Task.builder()
                 .id(taskId)
+                .project(testProject)
                 .build();
 
             given(fileRepository.findById(fileId)).willReturn(Optional.of(file));
             given(taskRepository.findById(taskId)).willReturn(Optional.of(task));
+
+            doNothing().when(accessPolicy).ensureProjectMember(any(UUID.class), any(UUID.class));
+            doNothing().when(accessPolicy).ensureTaskAssignee(any(UUID.class), any(UUID.class));
 
             FileCompleteRequestDto request = new FileCompleteRequestDto(
                 taskId,
@@ -252,7 +300,8 @@ class FileServiceTest {
             );
 
             // when
-            FileCompleteResponseDto response = fileService.completeUpload(fileId, request);
+            FileCompleteResponseDto response = fileService.completeUpload(fileId, request,
+                testUser);
 
             // then
             assertThat(response.fileId()).isEqualTo(fileId);
@@ -268,6 +317,8 @@ class FileServiceTest {
             UUID taskId = UUID.randomUUID();
             File file = File.builder()
                 .id(fileId)
+                .member(testMember)
+                .task(null)
                 .metadata(FileMetadata.of(
                     "최종 보고서.pdf",
                     "application/pdf",
@@ -285,10 +336,10 @@ class FileServiceTest {
             );
 
             // when & then
-            assertThatThrownBy(() -> fileService.completeUpload(fileId, req))
+            assertThatThrownBy(() -> fileService.completeUpload(fileId, req, testUser))
                 .isInstanceOf(IllegalArgumentException.class);
 
-            verifyNoInteractions(taskRepository);
+            verifyNoInteractions(taskRepository, accessPolicy);
         }
 
         @Test
@@ -307,11 +358,11 @@ class FileServiceTest {
             );
 
             // when & then
-            assertThatThrownBy(() -> fileService.completeUpload(fileId, request))
+            assertThatThrownBy(() -> fileService.completeUpload(fileId, request, testUser))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.FILE_NOT_FOUND);
 
-            verifyNoInteractions(taskRepository);
+            verifyNoInteractions(taskRepository, accessPolicy);
         }
 
         @Test
@@ -322,6 +373,8 @@ class FileServiceTest {
             UUID taskId = UUID.randomUUID();
             File file = File.builder()
                 .id(fileId)
+                .member(testMember)
+                .task(null)
                 .metadata(FileMetadata.of(
                     "최종 보고서.pdf",
                     "application/pdf",
@@ -343,9 +396,11 @@ class FileServiceTest {
             );
 
             // when & then
-            assertThatThrownBy(() -> fileService.completeUpload(fileId, request))
+            assertThatThrownBy(() -> fileService.completeUpload(fileId, request, testUser))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.TASK_NOT_FOUND);
+
+            verifyNoInteractions(accessPolicy);
         }
 
         @Test
@@ -355,6 +410,8 @@ class FileServiceTest {
             UUID fileId = UUID.randomUUID();
             UUID taskId = UUID.randomUUID();
             File file = File.builder()
+                .member(testMember)
+                .task(null)
                 .id(fileId)
                 .metadata(FileMetadata.of(
                     "최종 보고서.pdf",
@@ -376,11 +433,11 @@ class FileServiceTest {
             );
 
             // when & then
-            assertThatThrownBy(() -> fileService.completeUpload(fileId, request))
+            assertThatThrownBy(() -> fileService.completeUpload(fileId, request, testUser))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.FILE_ALREADY_UPLOAD_COMPLETED);
 
-            verifyNoInteractions(taskRepository);
+            verifyNoInteractions(taskRepository, accessPolicy);
         }
 
     }
