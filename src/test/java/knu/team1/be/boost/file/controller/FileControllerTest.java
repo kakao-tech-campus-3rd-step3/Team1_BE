@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
+import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.file.dto.FileCompleteRequestDto;
@@ -83,7 +84,7 @@ class FileControllerTest {
                 900
             );
 
-            given(fileService.uploadFile(any(FileRequestDto.class)))
+            given(fileService.uploadFile(any(FileRequestDto.class), any(UserPrincipalDto.class)))
                 .willReturn(response);
 
             // when & then
@@ -131,7 +132,7 @@ class FileControllerTest {
                 "application/pdf",
                 1048576
             );
-            given(fileService.uploadFile(any(FileRequestDto.class)))
+            given(fileService.uploadFile(any(FileRequestDto.class), any(UserPrincipalDto.class)))
                 .willThrow(new BusinessException(ErrorCode.FILE_TOO_LARGE));
 
             // when & then
@@ -163,7 +164,7 @@ class FileControllerTest {
                 900
             );
 
-            given(fileService.downloadFile(eq(fileId)))
+            given(fileService.downloadFile(eq(fileId), any(UserPrincipalDto.class)))
                 .willReturn(response);
 
             // when & then
@@ -182,7 +183,7 @@ class FileControllerTest {
         void test2() throws Exception {
             // given
             UUID fileId = UUID.randomUUID();
-            given(fileService.downloadFile(eq(fileId)))
+            given(fileService.downloadFile(eq(fileId), any(UserPrincipalDto.class)))
                 .willThrow(new BusinessException(ErrorCode.FILE_NOT_FOUND));
 
             // when & then
@@ -219,8 +220,11 @@ class FileControllerTest {
                     LocalDateTime.of(2025, 9, 10, 12, 34, 56)
                 );
 
-            given(fileService.completeUpload(eq(fileId), any(FileCompleteRequestDto.class)))
-                .willReturn(response);
+            given(
+                fileService.completeUpload(
+                    eq(fileId), any(FileCompleteRequestDto.class), any(UserPrincipalDto.class)
+                )
+            ).willReturn(response);
 
             // when & then
             mockMvc.perform(patch("/api/files/{fileId}/complete", fileId)
@@ -271,8 +275,11 @@ class FileControllerTest {
                     1048576
                 );
 
-            given(fileService.completeUpload(eq(fileId), any(FileCompleteRequestDto.class)))
-                .willThrow(new BusinessException(ErrorCode.FILE_ALREADY_UPLOAD_COMPLETED));
+            given(
+                fileService.completeUpload(
+                    eq(fileId), any(FileCompleteRequestDto.class), any(UserPrincipalDto.class)
+                )
+            ).willThrow(new BusinessException(ErrorCode.FILE_ALREADY_UPLOAD_COMPLETED));
 
             // when & then
             mockMvc.perform(
