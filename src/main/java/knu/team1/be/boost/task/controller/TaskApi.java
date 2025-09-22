@@ -8,11 +8,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.UUID;
+import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
 import knu.team1.be.boost.task.dto.TaskResponseDto;
 import knu.team1.be.boost.task.dto.TaskStatusRequestDto;
 import knu.team1.be.boost.task.dto.TaskUpdateRequestDto;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -44,7 +46,8 @@ public interface TaskApi {
     @PostMapping
     ResponseEntity<TaskResponseDto> createTask(
         @PathVariable UUID projectId,
-        @Valid @RequestBody TaskCreateRequestDto request
+        @Valid @RequestBody TaskCreateRequestDto request,
+        @AuthenticationPrincipal UserPrincipalDto user
     );
 
     @Operation(
@@ -67,7 +70,8 @@ public interface TaskApi {
     ResponseEntity<TaskResponseDto> updateTask(
         @PathVariable UUID projectId,
         @PathVariable UUID taskId,
-        @Valid @RequestBody TaskUpdateRequestDto request
+        @Valid @RequestBody TaskUpdateRequestDto request,
+        @AuthenticationPrincipal UserPrincipalDto user
     );
 
     @Operation(
@@ -84,7 +88,8 @@ public interface TaskApi {
     @DeleteMapping("/{taskId}")
     ResponseEntity<Void> deleteTask(
         @PathVariable UUID projectId,
-        @PathVariable UUID taskId
+        @PathVariable UUID taskId,
+        @AuthenticationPrincipal UserPrincipalDto user
     );
 
     @Operation(
@@ -102,6 +107,7 @@ public interface TaskApi {
     ResponseEntity<TaskResponseDto> changeTaskStatus(
         @PathVariable UUID projectId,
         @PathVariable UUID taskId,
-        @Valid @RequestBody TaskStatusRequestDto request
+        @Valid @RequestBody TaskStatusRequestDto request,
+        @AuthenticationPrincipal UserPrincipalDto user
     );
 }

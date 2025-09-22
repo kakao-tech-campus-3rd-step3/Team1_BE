@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.member.entity.Member;
@@ -31,7 +32,11 @@ public class TaskService {
     private final ProjectRepository projectRepository;
 
     @Transactional
-    public TaskResponseDto createTask(UUID projectId, TaskCreateRequestDto request) {
+    public TaskResponseDto createTask(
+        UUID projectId,
+        TaskCreateRequestDto request,
+        UserPrincipalDto user
+    ) {
         Project project = projectRepository.findById(projectId)
             .orElseThrow(() -> new BusinessException(
                 ErrorCode.PROJECT_NOT_FOUND,
@@ -61,7 +66,12 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskResponseDto updateTask(UUID projectId, UUID taskId, TaskUpdateRequestDto request) {
+    public TaskResponseDto updateTask(
+        UUID projectId,
+        UUID taskId,
+        TaskUpdateRequestDto request,
+        UserPrincipalDto user
+    ) {
         Project project = projectRepository.findById(projectId)
             .orElseThrow(() -> new BusinessException(
                 ErrorCode.PROJECT_NOT_FOUND,
@@ -101,7 +111,11 @@ public class TaskService {
     }
 
     @Transactional
-    public void deleteTask(UUID projectId, UUID taskId) {
+    public void deleteTask(
+        UUID projectId,
+        UUID taskId,
+        UserPrincipalDto user
+    ) {
         Project project = projectRepository.findById(projectId)
             .orElseThrow(() -> new BusinessException(
                 ErrorCode.PROJECT_NOT_FOUND,
@@ -127,8 +141,12 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskResponseDto changeTaskStatus(UUID projectId, UUID taskId,
-        TaskStatusRequestDto request) {
+    public TaskResponseDto changeTaskStatus(
+        UUID projectId,
+        UUID taskId,
+        TaskStatusRequestDto request,
+        UserPrincipalDto user
+    ) {
         Project project = projectRepository.findById(projectId)
             .orElseThrow(() -> new BusinessException(
                 ErrorCode.PROJECT_NOT_FOUND,
