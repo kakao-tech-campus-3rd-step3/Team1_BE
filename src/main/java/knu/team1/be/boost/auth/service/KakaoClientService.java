@@ -2,7 +2,8 @@ package knu.team1.be.boost.auth.service;
 
 import knu.team1.be.boost.auth.dto.KakaoDto;
 import knu.team1.be.boost.auth.dto.KakaoDto.Token;
-import knu.team1.be.boost.auth.exception.KakaoInvalidAuthCodeException;
+import knu.team1.be.boost.common.exception.BusinessException;
+import knu.team1.be.boost.common.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatusCode;
@@ -57,7 +58,7 @@ public class KakaoClientService {
             .bodyValue(formData)
             .retrieve()
             .onStatus(HttpStatusCode::is4xxClientError, clientResponse ->
-                Mono.error(new KakaoInvalidAuthCodeException())
+                Mono.error(new BusinessException(ErrorCode.KAKAO_INVALID_AUTH_CODE))
             )
             .bodyToMono(Token.class)
             .block();

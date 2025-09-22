@@ -1,7 +1,7 @@
 package knu.team1.be.boost.projectMember.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
@@ -10,16 +10,14 @@ import static org.mockito.Mockito.verify;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
+import knu.team1.be.boost.common.exception.BusinessException;
+import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.member.entity.Member;
-import knu.team1.be.boost.member.exception.MemberNotFoundException;
 import knu.team1.be.boost.member.repository.MemberRepository;
 import knu.team1.be.boost.project.entity.Project;
-import knu.team1.be.boost.project.exception.ProjectNotFoundException;
 import knu.team1.be.boost.project.repository.ProjectRepository;
 import knu.team1.be.boost.projectMember.entity.ProjectMember;
 import knu.team1.be.boost.projectMember.entity.ProjectRole;
-import knu.team1.be.boost.projectMember.exception.MemberAlreadyJoinedException;
-import knu.team1.be.boost.projectMember.exception.ProjectMemberNotFoundException;
 import knu.team1.be.boost.projectMember.repository.ProjectMemberRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -134,9 +132,11 @@ class ProjectMemberServiceTest {
             )).willReturn(Optional.of(projectMember));
 
             // when & then
-            assertThatThrownBy(
-                () -> projectMemberService.joinProject(projectId, memberId, role))
-                .isInstanceOf(MemberAlreadyJoinedException.class);
+            BusinessException exception = assertThrows(BusinessException.class, () -> {
+                projectMemberService.joinProject(projectId, memberId, role);
+            });
+
+            assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.MEMBER_ALREADY_JOINED);
 
             verify(projectMemberRepository, never()).save(any());
         }
@@ -152,9 +152,11 @@ class ProjectMemberServiceTest {
             given(projectRepository.findById(projectId)).willReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(
-                () -> projectMemberService.joinProject(projectId, memberId, role))
-                .isInstanceOf(ProjectNotFoundException.class);
+            BusinessException exception = assertThrows(BusinessException.class, () -> {
+                projectMemberService.joinProject(projectId, memberId, role);
+            });
+
+            assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.PROJECT_NOT_FOUND);
 
             verify(memberRepository, never()).findById(any());
             verify(projectMemberRepository, never()).save(any());
@@ -173,9 +175,11 @@ class ProjectMemberServiceTest {
             given(memberRepository.findById(memberId)).willReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(
-                () -> projectMemberService.joinProject(projectId, memberId, role))
-                .isInstanceOf(MemberNotFoundException.class);
+            BusinessException exception = assertThrows(BusinessException.class, () -> {
+                projectMemberService.joinProject(projectId, memberId, role);
+            });
+
+            assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.MEMBER_NOT_FOUND);
 
             verify(projectMemberRepository, never()).save(any());
         }
@@ -218,8 +222,11 @@ class ProjectMemberServiceTest {
                 .willReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(() -> projectMemberService.leaveProject(projectId, memberId))
-                .isInstanceOf(ProjectMemberNotFoundException.class);
+            BusinessException exception = assertThrows(BusinessException.class, () -> {
+                projectMemberService.leaveProject(projectId, memberId);
+            });
+
+            assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.PROJECT_MEMBER_NOT_FOUND);
 
             verify(projectMemberRepository, never()).delete(any());
         }

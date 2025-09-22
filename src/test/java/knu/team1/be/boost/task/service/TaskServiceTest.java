@@ -15,11 +15,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import knu.team1.be.boost.common.exception.BusinessException;
+import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.member.entity.Member;
-import knu.team1.be.boost.member.exception.MemberNotFoundException;
 import knu.team1.be.boost.member.repository.MemberRepository;
 import knu.team1.be.boost.project.entity.Project;
-import knu.team1.be.boost.project.exception.ProjectNotFoundException;
 import knu.team1.be.boost.project.repository.ProjectRepository;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
 import knu.team1.be.boost.task.dto.TaskResponseDto;
@@ -27,8 +27,6 @@ import knu.team1.be.boost.task.dto.TaskStatusRequestDto;
 import knu.team1.be.boost.task.dto.TaskUpdateRequestDto;
 import knu.team1.be.boost.task.entity.Task;
 import knu.team1.be.boost.task.entity.TaskStatus;
-import knu.team1.be.boost.task.exception.TaskNotFoundException;
-import knu.team1.be.boost.task.exception.TaskNotInProjectException;
 import knu.team1.be.boost.task.repository.TaskRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -129,7 +127,8 @@ class TaskServiceTest {
 
             // when & then
             assertThatThrownBy(() -> taskService.createTask(projectId, request))
-                .isInstanceOf(ProjectNotFoundException.class);
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.PROJECT_NOT_FOUND);
 
             verifyNoInteractions(taskRepository, memberRepository);
         }
@@ -160,7 +159,8 @@ class TaskServiceTest {
 
             // when & then
             assertThatThrownBy(() -> taskService.createTask(projectId, request))
-                .isInstanceOf(MemberNotFoundException.class);
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.MEMBER_NOT_FOUND);
 
             verify(taskRepository, never()).save(any());
         }
@@ -234,7 +234,8 @@ class TaskServiceTest {
 
             // when & then
             assertThatThrownBy(() -> taskService.updateTask(projectId, taskId, request))
-                .isInstanceOf(ProjectNotFoundException.class);
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.PROJECT_NOT_FOUND);
 
             verifyNoInteractions(taskRepository, memberRepository);
         }
@@ -262,7 +263,8 @@ class TaskServiceTest {
 
             // when & then
             assertThatThrownBy(() -> taskService.updateTask(projectId, taskId, request))
-                .isInstanceOf(TaskNotFoundException.class);
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.TASK_NOT_FOUND);
 
             verifyNoInteractions(memberRepository);
         }
@@ -294,7 +296,8 @@ class TaskServiceTest {
 
             // when & then
             assertThatThrownBy(() -> taskService.updateTask(projectId, existing.getId(), request))
-                .isInstanceOf(TaskNotInProjectException.class);
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.TASK_NOT_IN_PROJECT);
 
             verifyNoInteractions(memberRepository);
         }
@@ -335,7 +338,8 @@ class TaskServiceTest {
 
             // when & then
             assertThatThrownBy(() -> taskService.deleteTask(projectId, taskId))
-                .isInstanceOf(ProjectNotFoundException.class);
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.PROJECT_NOT_FOUND);
 
             verifyNoInteractions(taskRepository);
         }
@@ -354,7 +358,8 @@ class TaskServiceTest {
 
             // when & then
             assertThatThrownBy(() -> taskService.deleteTask(projectId, taskId))
-                .isInstanceOf(TaskNotFoundException.class);
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.TASK_NOT_FOUND);
 
             verify(taskRepository, never()).delete(any());
         }
@@ -375,7 +380,8 @@ class TaskServiceTest {
 
             // when & then
             assertThatThrownBy(() -> taskService.deleteTask(projectId, existing.getId()))
-                .isInstanceOf(TaskNotInProjectException.class);
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.TASK_NOT_IN_PROJECT);
 
             verify(taskRepository, never()).delete(any());
         }
@@ -421,7 +427,8 @@ class TaskServiceTest {
 
             // when & then
             assertThatThrownBy(() -> taskService.changeTaskStatus(projectId, taskId, request))
-                .isInstanceOf(ProjectNotFoundException.class);
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.PROJECT_NOT_FOUND);
 
             verifyNoInteractions(taskRepository);
         }
@@ -440,7 +447,8 @@ class TaskServiceTest {
 
             // when & then
             assertThatThrownBy(() -> taskService.changeTaskStatus(projectId, taskId, request))
-                .isInstanceOf(TaskNotFoundException.class);
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.TASK_NOT_FOUND);
         }
 
         @Test
@@ -462,7 +470,8 @@ class TaskServiceTest {
             // when & then
             assertThatThrownBy(
                 () -> taskService.changeTaskStatus(projectId, existing.getId(), request))
-                .isInstanceOf(TaskNotInProjectException.class);
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.TASK_NOT_IN_PROJECT);
         }
     }
 

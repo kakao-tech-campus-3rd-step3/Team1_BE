@@ -14,6 +14,8 @@ import static org.mockito.Mockito.when;
 import java.net.URL;
 import java.util.Optional;
 import java.util.UUID;
+import knu.team1.be.boost.common.exception.BusinessException;
+import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.file.dto.FileCompleteRequestDto;
 import knu.team1.be.boost.file.dto.FileCompleteResponseDto;
 import knu.team1.be.boost.file.dto.FileRequestDto;
@@ -23,14 +25,9 @@ import knu.team1.be.boost.file.entity.FileStatus;
 import knu.team1.be.boost.file.entity.FileType;
 import knu.team1.be.boost.file.entity.vo.FileMetadata;
 import knu.team1.be.boost.file.entity.vo.StorageKey;
-import knu.team1.be.boost.file.exception.FileAlreadyUploadCompletedException;
-import knu.team1.be.boost.file.exception.FileNotFoundException;
-import knu.team1.be.boost.file.exception.FileNotReadyException;
-import knu.team1.be.boost.file.exception.FileTooLargeException;
 import knu.team1.be.boost.file.infra.s3.PresignedUrlFactory;
 import knu.team1.be.boost.file.repository.FileRepository;
 import knu.team1.be.boost.task.entity.Task;
-import knu.team1.be.boost.task.exception.TaskNotFoundException;
 import knu.team1.be.boost.task.repository.TaskRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -124,7 +121,8 @@ class FileServiceTest {
 
             // when & then
             assertThatThrownBy(() -> fileService.uploadFile(request))
-                .isInstanceOf(FileTooLargeException.class);
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.FILE_TOO_LARGE);
 
             verifyNoInteractions(fileRepository, presignedUrlFactory);
         }
@@ -183,7 +181,8 @@ class FileServiceTest {
 
             // when & then
             assertThatThrownBy(() -> fileService.downloadFile(fileId))
-                .isInstanceOf(FileNotFoundException.class);
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.FILE_NOT_FOUND);
 
             verifyNoInteractions(presignedUrlFactory);
         }
@@ -208,7 +207,8 @@ class FileServiceTest {
 
             // when & then
             assertThatThrownBy(() -> fileService.downloadFile(fileId))
-                .isInstanceOf(FileNotReadyException.class);
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.FILE_NOT_READY);
 
             verifyNoInteractions(presignedUrlFactory);
         }
@@ -308,7 +308,8 @@ class FileServiceTest {
 
             // when & then
             assertThatThrownBy(() -> fileService.completeUpload(fileId, request))
-                .isInstanceOf(FileNotFoundException.class);
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.FILE_NOT_FOUND);
 
             verifyNoInteractions(taskRepository);
         }
@@ -343,7 +344,8 @@ class FileServiceTest {
 
             // when & then
             assertThatThrownBy(() -> fileService.completeUpload(fileId, request))
-                .isInstanceOf(TaskNotFoundException.class);
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.TASK_NOT_FOUND);
         }
 
         @Test
@@ -375,7 +377,8 @@ class FileServiceTest {
 
             // when & then
             assertThatThrownBy(() -> fileService.completeUpload(fileId, request))
-                .isInstanceOf(FileAlreadyUploadCompletedException.class);
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.FILE_ALREADY_UPLOAD_COMPLETED);
 
             verifyNoInteractions(taskRepository);
         }

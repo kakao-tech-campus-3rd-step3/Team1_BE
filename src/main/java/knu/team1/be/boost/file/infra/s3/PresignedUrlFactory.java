@@ -2,7 +2,8 @@ package knu.team1.be.boost.file.infra.s3;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import knu.team1.be.boost.file.exception.StorageServiceException;
+import knu.team1.be.boost.common.exception.BusinessException;
+import knu.team1.be.boost.common.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ContentDisposition;
@@ -43,8 +44,10 @@ public class PresignedUrlFactory {
                 .putObjectRequest(putReq)
                 .signatureDuration(Duration.ofSeconds(expireSeconds)));
         } catch (SdkException e) {
-            log.error("S3 업로드 presigned URL 생성 실패 - key={}", key, e);
-            throw new StorageServiceException("S3 업로드 URL 생성에 실패했습니다.");
+            throw new BusinessException(
+                ErrorCode.STORAGE_SERVICE_ERROR,
+                "S3 upload presigned URL creation fail. key: " + key
+            );
         }
     }
 
@@ -75,8 +78,10 @@ public class PresignedUrlFactory {
                 .getObjectRequest(getReq)
                 .signatureDuration(Duration.ofSeconds(expireSeconds)));
         } catch (SdkException e) {
-            log.error("S3 다운로드 presigned URL 생성 실패 - key={}", key, e);
-            throw new StorageServiceException("S3 다운로드 URL 생성에 실패했습니다.");
+            throw new BusinessException(
+                ErrorCode.STORAGE_SERVICE_ERROR,
+                "S3 download presigned URL creation fail. key: " + key
+            );
         }
     }
 

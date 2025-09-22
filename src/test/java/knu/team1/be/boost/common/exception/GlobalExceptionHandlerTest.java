@@ -12,12 +12,16 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.util.Map;
+import knu.team1.be.boost.security.filter.JwtAuthFilter;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
@@ -28,10 +32,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-@WebMvcTest(excludeAutoConfiguration = {
-    SecurityAutoConfiguration.class,
-    UserDetailsServiceAutoConfiguration.class
-})
+@WebMvcTest(
+    excludeAutoConfiguration = {
+        SecurityAutoConfiguration.class,
+        OAuth2ClientAutoConfiguration.class,
+        UserDetailsServiceAutoConfiguration.class
+    },
+    excludeFilters = @ComponentScan.Filter(
+        type = FilterType.ASSIGNABLE_TYPE,
+        classes = JwtAuthFilter.class
+    )
+)
+
 @ContextConfiguration(classes = {
     GlobalExceptionHandler.class,
     GlobalExceptionHandlerTest.TestController.class

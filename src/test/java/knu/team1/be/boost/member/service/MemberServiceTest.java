@@ -1,5 +1,6 @@
 package knu.team1.be.boost.member.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -8,11 +9,12 @@ import static org.mockito.Mockito.verify;
 
 import java.util.Optional;
 import java.util.UUID;
+import knu.team1.be.boost.common.exception.BusinessException;
+import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.member.dto.MemberResponseDto;
 import knu.team1.be.boost.member.dto.MemberUpdateRequestDto;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.entity.vo.OauthInfo;
-import knu.team1.be.boost.member.exception.MemberNotFoundException;
 import knu.team1.be.boost.member.repository.MemberRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -63,9 +65,11 @@ public class MemberServiceTest {
         given(memberRepository.findById(nonExistentUserId)).willReturn(Optional.empty());
 
         // when & then
-        assertThrows(MemberNotFoundException.class, () -> {
+        BusinessException exception = assertThrows(BusinessException.class, () -> {
             userService.getMember(nonExistentUserId);
         });
+
+        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.MEMBER_NOT_FOUND);
     }
 
     @Test
@@ -93,9 +97,11 @@ public class MemberServiceTest {
         given(memberRepository.findById(nonExistentUserId)).willReturn(Optional.empty());
 
         // when & then
-        assertThrows(MemberNotFoundException.class, () -> {
+        BusinessException exception = assertThrows(BusinessException.class, () -> {
             userService.updateMember(nonExistentUserId, requestDto);
         });
+
+        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.MEMBER_NOT_FOUND);
     }
 
     @Test
@@ -119,9 +125,10 @@ public class MemberServiceTest {
         given(memberRepository.findById(nonExistentUserId)).willReturn(Optional.empty());
 
         // when & then
-        assertThrows(MemberNotFoundException.class, () -> {
+        BusinessException exception = assertThrows(BusinessException.class, () -> {
             userService.deleteMember(nonExistentUserId);
         });
+
+        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.MEMBER_NOT_FOUND);
     }
 }
-
