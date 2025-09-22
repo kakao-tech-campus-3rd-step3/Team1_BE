@@ -5,6 +5,7 @@ import java.util.UUID;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
+import knu.team1.be.boost.common.policy.AccessPolicy;
 import knu.team1.be.boost.file.dto.FileCompleteRequestDto;
 import knu.team1.be.boost.file.dto.FileCompleteResponseDto;
 import knu.team1.be.boost.file.dto.FileRequestDto;
@@ -35,6 +36,8 @@ public class FileService {
     private final FileRepository fileRepository;
     private final TaskRepository taskRepository;
     private final MemberRepository memberRepository;
+
+    private final AccessPolicy accessPolicy;
     private final PresignedUrlFactory presignedUrlFactory;
 
     @Value("${boost.aws.bucket}")
@@ -102,6 +105,9 @@ public class FileService {
             );
         }
 
+        UUID projectId = file.getTask().getProject().getId();
+        accessPolicy.ensureProjectMember(projectId, user.id());
+
         PresignedGetObjectRequest presigned = presignedUrlFactory.forDownload(
             bucket,
             file.getStorageKey().value(),
@@ -153,6 +159,10 @@ public class FileService {
                 "파일 업로드 완료 실패 " + "taskId: " + taskId + ", fileId: " + fileId
             ));
 
+        UUID projectId = task.getProject().getId();
+        accessPolicy.ensureProjectMember(projectId, user.id());
+        accessPolicy.ensureTaskAssignee(taskId, user.id());
+        
         file.assignTask(task);
         file.complete();
 
