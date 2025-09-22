@@ -3,7 +3,6 @@ package knu.team1.be.boost.common.policy;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.member.entity.Member;
@@ -21,11 +20,11 @@ public class AccessPolicy {
     private final ProjectMemberRepository projectMemberRepository;
     private final TaskRepository taskRepository;
 
-    public void ensureProjectMember(UUID projectId, UserPrincipalDto user) {
-        if (!isProjectMember(projectId, user.id())) {
+    public void ensureProjectMember(UUID projectId, UUID memberId) {
+        if (!isProjectMember(projectId, memberId)) {
             throw new BusinessException(
                 ErrorCode.PROJECT_MEMBER_ONLY,
-                "projectId=" + projectId + ", userId=" + user.id()
+                "projectId=" + projectId + ", memberId=" + memberId
             );
         }
     }
@@ -48,11 +47,11 @@ public class AccessPolicy {
         }
     }
 
-    public void ensureTaskAssignee(UUID taskId, UserPrincipalDto user) {
-        if (!isTaskAssignee(taskId, user.id())) {
+    public void ensureTaskAssignee(UUID taskId, UUID memberId) {
+        if (!isTaskAssignee(taskId, memberId)) {
             throw new BusinessException(
                 ErrorCode.TASK_ASSIGNEE_ONLY,
-                "taskId=" + taskId + ", userId=" + user.id()
+                "taskId=" + taskId + ", memberId=" + memberId
             );
         }
     }
