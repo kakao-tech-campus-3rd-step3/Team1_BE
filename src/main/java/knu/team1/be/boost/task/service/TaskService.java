@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
@@ -188,22 +189,17 @@ public class TaskService {
 
         List<Member> foundAssignees = memberRepository.findAllById(assigneeIds);
 
-        if (assigneeIds.size() != foundAssignees.size()) {
-            Set<UUID> foundIds = new HashSet<>();
-            for (Member member : foundAssignees) {
-                foundIds.add(member.getId());
-            }
+        Set<UUID> foundIds = foundAssignees.stream()
+            .map(Member::getId)
+            .collect(Collectors.toSet());
 
-            List<UUID> missingIds = new ArrayList<>();
-            for (UUID id : assigneeIds) {
-                if (!foundIds.contains(id)) {
-                    missingIds.add(id);
-                }
-            }
+        List<UUID> missingIds = assigneeIds.stream()
+            .filter(id -> !foundIds.contains(id))
+            .toList();
 
+        if (!missingIds.isEmpty()) {
             throw new BusinessException(
-                ErrorCode.MEMBER_NOT_FOUND,
-                "MemberIds: " + missingIds
+                ErrorCode.MEMBER_NOT_FOUND, "MemberIds: " + missingIds
             );
         }
 
