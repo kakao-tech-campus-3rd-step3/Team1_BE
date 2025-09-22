@@ -55,13 +55,17 @@ class TaskServiceTest {
 
     TaskService taskService;
 
-    UUID userId = UUID.randomUUID();
-    UserPrincipalDto user = UserPrincipalDto.from(userId, "test-user", "avatar-code");
+    final UUID userId = UUID.randomUUID();
+    final UserPrincipalDto user = UserPrincipalDto.from(userId, "test-user", "avatar-code");
+    final UUID projectId = UUID.randomUUID();
+    final Project project = Fixtures.project(projectId);
+    final Task baseTask = Fixtures.task(UUID.randomUUID(), project);
 
     @BeforeEach
     void setUp() {
         taskService = new TaskService(
-            taskRepository, memberRepository, projectRepository, accessPolicy);
+            taskRepository, memberRepository, projectRepository, accessPolicy
+        );
     }
 
     @Nested
@@ -72,25 +76,23 @@ class TaskServiceTest {
         @DisplayName("할 일 생성 성공")
         void test1() {
             // given
-            UUID projectId = UUID.randomUUID();
-            Project project = project(projectId);
             given(projectRepository.findById(projectId)).willReturn(Optional.of(project));
 
             UUID m1 = UUID.randomUUID();
             UUID m2 = UUID.randomUUID();
             given(memberRepository.findAllById(anyList()))
-                .willReturn(List.of(member(m1, "영진"), member(m2, "비버")));
+                .willReturn(List.of(Fixtures.member(m1, "영진"), Fixtures.member(m2, "비버")));
 
             doNothing().when(accessPolicy)
                 .ensureProjectMember(eq(projectId), eq(userId));
             doNothing().when(accessPolicy)
                 .ensureAssigneesAreProjectMembers(eq(projectId), any(Set.class));
 
-            TaskCreateRequestDto request = new TaskCreateRequestDto(
+            TaskCreateRequestDto request = Fixtures.reqCreate(
                 "1회차 기술 멘토링 피드백 반영",
                 "기술 멘토링에서 나온 멘토님의 피드백을 반영한다.",
                 TaskStatus.TODO,
-                LocalDate.of(2025, 9, 17),
+                Fixtures.DUE,
                 false,
                 1,
                 List.of("피드백", "멘토링"),
@@ -101,22 +103,22 @@ class TaskServiceTest {
                 .willAnswer(invocation -> invocation.getArgument(0));
 
             // when
-            TaskResponseDto response = taskService.createTask(projectId, request, user);
+            TaskResponseDto res = taskService.createTask(projectId, request, user);
 
             // then
-            assertThat(response.projectId()).isEqualTo(projectId);
-            assertThat(response.title()).isEqualTo("1회차 기술 멘토링 피드백 반영");
-            assertThat(response.description()).isEqualTo("기술 멘토링에서 나온 멘토님의 피드백을 반영한다.");
-            assertThat(response.status()).isEqualTo(TaskStatus.TODO);
-            assertThat(response.dueDate()).isEqualTo(LocalDate.of(2025, 9, 17));
-            assertThat(response.urgent()).isFalse();
-            assertThat(response.requiredReviewerCount()).isEqualTo(1);
-            assertThat(response.tags()).containsExactlyInAnyOrder("피드백", "멘토링");
-            assertThat(response.assignees()).hasSize(2);
+            assertThat(res.projectId()).isEqualTo(projectId);
+            assertThat(res.title()).isEqualTo("1회차 기술 멘토링 피드백 반영");
+            assertThat(res.description()).isEqualTo("기술 멘토링에서 나온 멘토님의 피드백을 반영한다.");
+            assertThat(res.status()).isEqualTo(TaskStatus.TODO);
+            assertThat(res.dueDate()).isEqualTo(Fixtures.DUE);
+            assertThat(res.urgent()).isFalse();
+            assertThat(res.requiredReviewerCount()).isEqualTo(1);
+            assertThat(res.tags()).containsExactlyInAnyOrder("피드백", "멘토링");
+            assertThat(res.assignees()).hasSize(2);
 
-            ArgumentCaptor<Task> savedCap = ArgumentCaptor.forClass(Task.class);
-            verify(taskRepository).save(savedCap.capture());
-            Task saved = savedCap.getValue();
+            ArgumentCaptor<Task> cap = ArgumentCaptor.forClass(Task.class);
+            verify(taskRepository).save(cap.capture());
+            Task saved = cap.getValue();
             assertThat(saved.getProject()).isEqualTo(project);
             assertThat(saved.getAssignees()).extracting("id")
                 .containsExactlyInAnyOrder(m1, m2);
@@ -126,14 +128,13 @@ class TaskServiceTest {
         @DisplayName("할 일 생성 실패 - 404 (프로젝트 없음)")
         void test2() {
             // given
-            UUID projectId = UUID.randomUUID();
             given(projectRepository.findById(projectId)).willReturn(Optional.empty());
 
-            TaskCreateRequestDto request = new TaskCreateRequestDto(
+            TaskCreateRequestDto request = Fixtures.reqCreate(
                 "1회차 기술 멘토링 피드백 반영",
                 "기술 멘토링에서 나온 멘토님의 피드백을 반영한다.",
                 TaskStatus.TODO,
-                LocalDate.of(2025, 9, 17),
+                Fixtures.DUE,
                 false,
                 1,
                 List.of("피드백", "멘토링"),
@@ -152,20 +153,18 @@ class TaskServiceTest {
         @DisplayName("할 일 생성 실패 - 404 (담당자 일부 없음)")
         void test3() {
             // given
-            UUID projectId = UUID.randomUUID();
-            Project project = project(projectId);
             given(projectRepository.findById(projectId)).willReturn(Optional.of(project));
 
             UUID m1 = UUID.randomUUID();
             UUID missing = UUID.randomUUID();
             given(memberRepository.findAllById(anyList()))
-                .willReturn(List.of(member(m1, "비버")));
+                .willReturn(List.of(Fixtures.member(m1, "비버")));
 
-            TaskCreateRequestDto request = new TaskCreateRequestDto(
+            TaskCreateRequestDto request = Fixtures.reqCreate(
                 "1회차 기술 멘토링 피드백 반영",
                 "기술 멘토링에서 나온 멘토님의 피드백을 반영한다.",
                 TaskStatus.TODO,
-                LocalDate.of(2025, 9, 17),
+                Fixtures.DUE,
                 false,
                 1,
                 List.of("피드백", "멘토링"),
@@ -178,7 +177,10 @@ class TaskServiceTest {
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.MEMBER_NOT_FOUND);
 
             verify(taskRepository, never()).save(any());
-            verifyNoInteractions(accessPolicy);
+            verify(accessPolicy)
+                .ensureProjectMember(eq(projectId), eq(userId));
+            verify(accessPolicy, never())
+                .ensureAssigneesAreProjectMembers(eq(projectId), any(Set.class));
         }
 
     }
@@ -191,18 +193,14 @@ class TaskServiceTest {
         @DisplayName("할 일 수정 성공")
         void test1() {
             // given
-            UUID projectId = UUID.randomUUID();
-            UUID taskId = UUID.randomUUID();
+            UUID taskId = baseTask.getId();
 
-            Project project = project(projectId);
             given(projectRepository.findById(projectId)).willReturn(Optional.of(project));
-
-            Task existing = task(taskId, project);
-            given(taskRepository.findById(taskId)).willReturn(Optional.of(existing));
+            given(taskRepository.findById(taskId)).willReturn(Optional.of(baseTask));
 
             UUID m1 = UUID.randomUUID();
             given(memberRepository.findAllById(anyList()))
-                .willReturn(List.of(member(m1, "비버")));
+                .willReturn(List.of(Fixtures.member(m1, "비버")));
 
             doNothing().when(accessPolicy)
                 .ensureProjectMember(eq(projectId), eq(userId));
@@ -211,11 +209,11 @@ class TaskServiceTest {
             doNothing().when(accessPolicy)
                 .ensureAssigneesAreProjectMembers(eq(projectId), any(Set.class));
 
-            TaskUpdateRequestDto request = new TaskUpdateRequestDto(
+            TaskUpdateRequestDto request = Fixtures.reqUpdate(
                 "수정된 제목",
                 "수정된 설명",
                 TaskStatus.PROGRESS,
-                LocalDate.of(2025, 10, 1),
+                Fixtures.DUE2,
                 true,
                 3,
                 List.of("수정"),
@@ -223,32 +221,31 @@ class TaskServiceTest {
             );
 
             // when
-            TaskResponseDto response = taskService.updateTask(projectId, taskId, request, user);
+            TaskResponseDto res = taskService.updateTask(projectId, taskId, request, user);
 
             // then
-            assertThat(response.title()).isEqualTo("수정된 제목");
-            assertThat(response.description()).isEqualTo("수정된 설명");
-            assertThat(response.status()).isEqualTo(TaskStatus.PROGRESS);
-            assertThat(response.dueDate()).isEqualTo(LocalDate.of(2025, 10, 1));
-            assertThat(response.urgent()).isTrue();
-            assertThat(response.requiredReviewerCount()).isEqualTo(3);
-            assertThat(response.tags()).containsExactlyInAnyOrder("수정");
-            assertThat(response.assignees()).hasSize(1);
+            assertThat(res.title()).isEqualTo("수정된 제목");
+            assertThat(res.description()).isEqualTo("수정된 설명");
+            assertThat(res.status()).isEqualTo(TaskStatus.PROGRESS);
+            assertThat(res.dueDate()).isEqualTo(Fixtures.DUE2);
+            assertThat(res.urgent()).isTrue();
+            assertThat(res.requiredReviewerCount()).isEqualTo(3);
+            assertThat(res.tags()).containsExactlyInAnyOrder("수정");
+            assertThat(res.assignees()).hasSize(1);
         }
 
         @Test
         @DisplayName("할 일 수정 실패 - 404 (프로젝트 없음)")
         void test2() {
             // given
-            UUID projectId = UUID.randomUUID();
             UUID taskId = UUID.randomUUID();
             given(projectRepository.findById(projectId)).willReturn(Optional.empty());
 
-            TaskUpdateRequestDto request = new TaskUpdateRequestDto(
+            TaskUpdateRequestDto request = Fixtures.reqUpdate(
                 "수정된 제목",
                 "수정된 설명",
                 TaskStatus.PROGRESS,
-                LocalDate.of(2025, 10, 1),
+                Fixtures.DUE2,
                 true,
                 3,
                 List.of("수정"),
@@ -267,17 +264,15 @@ class TaskServiceTest {
         @DisplayName("할 일 수정 실패 - 404 (할 일 없음)")
         void test3() {
             // given
-            UUID projectId = UUID.randomUUID();
             UUID taskId = UUID.randomUUID();
-            given(projectRepository.findById(projectId)).willReturn(
-                Optional.of(project(projectId)));
+            given(projectRepository.findById(projectId)).willReturn(Optional.of(project));
             given(taskRepository.findById(taskId)).willReturn(Optional.empty());
 
-            TaskUpdateRequestDto request = new TaskUpdateRequestDto(
+            TaskUpdateRequestDto request = Fixtures.reqUpdate(
                 "수정된 제목",
                 "수정된 설명",
                 TaskStatus.PROGRESS,
-                LocalDate.of(2025, 10, 1),
+                Fixtures.DUE2,
                 true,
                 3,
                 List.of("수정"),
@@ -296,21 +291,18 @@ class TaskServiceTest {
         @DisplayName("할 일 수정 실패 - 409 (다른 프로젝트의 할 일)")
         void test4() {
             // given
-            UUID projectId = UUID.randomUUID();
             UUID otherProjectId = UUID.randomUUID();
-
-            Project project = project(projectId);
-            Project otherProject = project(otherProjectId);
+            Project otherProject = Fixtures.project(otherProjectId);
             given(projectRepository.findById(projectId)).willReturn(Optional.of(project));
 
-            Task existing = task(UUID.randomUUID(), otherProject);
+            Task existing = Fixtures.task(UUID.randomUUID(), otherProject);
             given(taskRepository.findById(existing.getId())).willReturn(Optional.of(existing));
 
-            TaskUpdateRequestDto request = new TaskUpdateRequestDto(
+            TaskUpdateRequestDto request = Fixtures.reqUpdate(
                 "수정된 제목",
                 "수정된 설명",
                 TaskStatus.PROGRESS,
-                LocalDate.of(2025, 10, 1),
+                Fixtures.DUE2,
                 true,
                 3,
                 List.of("수정"),
@@ -336,14 +328,10 @@ class TaskServiceTest {
         @DisplayName("할 일 삭제 성공")
         void test1() {
             // given
-            UUID projectId = UUID.randomUUID();
-            UUID taskId = UUID.randomUUID();
+            UUID taskId = baseTask.getId();
 
-            Project project = project(projectId);
             given(projectRepository.findById(projectId)).willReturn(Optional.of(project));
-
-            Task existing = task(taskId, project);
-            given(taskRepository.findById(taskId)).willReturn(Optional.of(existing));
+            given(taskRepository.findById(taskId)).willReturn(Optional.of(baseTask));
 
             doNothing().when(accessPolicy).ensureProjectMember(eq(projectId), eq(userId));
             doNothing().when(accessPolicy).ensureTaskAssignee(eq(taskId), eq(userId));
@@ -352,14 +340,13 @@ class TaskServiceTest {
             taskService.deleteTask(projectId, taskId, user);
 
             // then
-            verify(taskRepository).delete(existing);
+            verify(taskRepository).delete(baseTask);
         }
 
         @Test
         @DisplayName("할 일 삭제 실패 - 404 (프로젝트 없음)")
         void test2() {
             // given
-            UUID projectId = UUID.randomUUID();
             UUID taskId = UUID.randomUUID();
             given(projectRepository.findById(projectId)).willReturn(Optional.empty());
 
@@ -371,15 +358,12 @@ class TaskServiceTest {
             verifyNoInteractions(taskRepository, accessPolicy);
         }
 
-
         @Test
         @DisplayName("할 일 삭제 실패 - 404 (할 일 없음)")
         void test3() {
             // given
-            UUID projectId = UUID.randomUUID();
             UUID taskId = UUID.randomUUID();
 
-            Project project = project(projectId);
             given(projectRepository.findById(projectId)).willReturn(Optional.of(project));
             given(taskRepository.findById(taskId)).willReturn(Optional.empty());
 
@@ -396,14 +380,11 @@ class TaskServiceTest {
         @DisplayName("할 일 삭제 실패 - 409 (다른 프로젝트의 할 일)")
         void test4() {
             // given
-            UUID projectId = UUID.randomUUID();
             UUID otherProjectId = UUID.randomUUID();
-
-            Project project = project(projectId);
-            Project otherProject = project(otherProjectId);
+            Project otherProject = Fixtures.project(otherProjectId);
             given(projectRepository.findById(projectId)).willReturn(Optional.of(project));
 
-            Task existing = task(UUID.randomUUID(), otherProject);
+            Task existing = Fixtures.task(UUID.randomUUID(), otherProject);
             given(taskRepository.findById(existing.getId())).willReturn(Optional.of(existing));
 
             // when & then
@@ -424,19 +405,15 @@ class TaskServiceTest {
         @DisplayName("할 일 상태 변경 성공")
         void test1() {
             // given
-            UUID projectId = UUID.randomUUID();
-            UUID taskId = UUID.randomUUID();
+            UUID taskId = baseTask.getId();
 
-            Project project = project(projectId);
             given(projectRepository.findById(projectId)).willReturn(Optional.of(project));
-
-            Task existing = task(taskId, project);
-            given(taskRepository.findById(taskId)).willReturn(Optional.of(existing));
+            given(taskRepository.findById(taskId)).willReturn(Optional.of(baseTask));
 
             doNothing().when(accessPolicy).ensureProjectMember(eq(projectId), eq(userId));
             doNothing().when(accessPolicy).ensureTaskAssignee(eq(taskId), eq(userId));
 
-            TaskStatusRequestDto request = new TaskStatusRequestDto(TaskStatus.REVIEW);
+            TaskStatusRequestDto request = Fixtures.reqStatus(TaskStatus.REVIEW);
 
             // when
             TaskResponseDto response = taskService.changeTaskStatus(
@@ -445,19 +422,17 @@ class TaskServiceTest {
 
             // then
             assertThat(response.status()).isEqualTo(TaskStatus.REVIEW);
-            assertThat(existing.getStatus()).isEqualTo(TaskStatus.REVIEW);
+            assertThat(baseTask.getStatus()).isEqualTo(TaskStatus.REVIEW);
         }
-
 
         @Test
         @DisplayName("할 일 상태 변경 실패 - 404 (프로젝트 없음)")
         void test2() {
             // given
-            UUID projectId = UUID.randomUUID();
             UUID taskId = UUID.randomUUID();
             given(projectRepository.findById(projectId)).willReturn(Optional.empty());
 
-            TaskStatusRequestDto request = new TaskStatusRequestDto(TaskStatus.DONE);
+            TaskStatusRequestDto request = Fixtures.reqStatus(TaskStatus.DONE);
 
             // when & then
             assertThatThrownBy(() -> taskService.changeTaskStatus(projectId, taskId, request, user))
@@ -471,13 +446,11 @@ class TaskServiceTest {
         @DisplayName("할 일 상태 변경 실패 - 404 (할 일 없음)")
         void test3() {
             // given
-            UUID projectId = UUID.randomUUID();
             UUID taskId = UUID.randomUUID();
-            given(projectRepository.findById(projectId)).willReturn(
-                Optional.of(project(projectId)));
+            given(projectRepository.findById(projectId)).willReturn(Optional.of(project));
             given(taskRepository.findById(taskId)).willReturn(Optional.empty());
 
-            TaskStatusRequestDto request = new TaskStatusRequestDto(TaskStatus.DONE);
+            TaskStatusRequestDto request = Fixtures.reqStatus(TaskStatus.DONE);
 
             // when & then
             assertThatThrownBy(() -> taskService.changeTaskStatus(projectId, taskId, request, user))
@@ -491,17 +464,14 @@ class TaskServiceTest {
         @DisplayName("할 일 상태 변경 실패 - 409 (다른 프로젝트의 할 일)")
         void test4() {
             // given
-            UUID projectId = UUID.randomUUID();
             UUID anotherProjectId = UUID.randomUUID();
-
-            Project project = project(projectId);
-            Project otherProject = project(anotherProjectId);
+            Project otherProject = Fixtures.project(anotherProjectId);
             given(projectRepository.findById(projectId)).willReturn(Optional.of(project));
 
-            Task existing = task(UUID.randomUUID(), otherProject);
+            Task existing = Fixtures.task(UUID.randomUUID(), otherProject);
             given(taskRepository.findById(existing.getId())).willReturn(Optional.of(existing));
 
-            TaskStatusRequestDto request = new TaskStatusRequestDto(TaskStatus.DONE);
+            TaskStatusRequestDto request = Fixtures.reqStatus(TaskStatus.DONE);
 
             // when & then
             assertThatThrownBy(
@@ -513,26 +483,66 @@ class TaskServiceTest {
         }
     }
 
-    private static Project project(UUID id) {
-        return Project.builder().id(id).name("테스트 프로젝트").build();
-    }
+    static class Fixtures {
 
-    private static Member member(UUID id, String name) {
-        return Member.builder().id(id).name(name).build();
-    }
+        static final LocalDate DUE = LocalDate.of(2025, 9, 17);
+        static final LocalDate DUE2 = LocalDate.of(2025, 10, 1);
 
-    private static Task task(UUID taskId, Project project) {
-        return Task.builder()
-            .id(taskId)
-            .project(project)
-            .title("1회차 기술 멘토링 피드백 반영")
-            .description("기술 멘토링에서 나온 멘토님의 피드백을 반영한다.")
-            .status(TaskStatus.TODO)
-            .dueDate(LocalDate.of(2025, 9, 17))
-            .urgent(false)
-            .requiredReviewerCount(1)
-            .tags(new ArrayList<>(List.of("피드백", "멘토링")))
-            .assignees(Set.of())
-            .build();
+        static Project project(UUID id) {
+            return Project.builder().id(id).name("테스트 프로젝트").build();
+        }
+
+        static Member member(UUID id, String name) {
+            return Member.builder().id(id).name(name).build();
+        }
+
+        static Task task(UUID taskId, Project project) {
+            return Task.builder()
+                .id(taskId)
+                .project(project)
+                .title("1회차 기술 멘토링 피드백 반영")
+                .description("기술 멘토링에서 나온 멘토님의 피드백을 반영한다.")
+                .status(TaskStatus.TODO)
+                .dueDate(DUE)
+                .urgent(false)
+                .requiredReviewerCount(1)
+                .tags(new ArrayList<>(List.of("피드백", "멘토링")))
+                .assignees(Set.of())
+                .build();
+        }
+
+        static TaskCreateRequestDto reqCreate(
+            String title,
+            String desc,
+            TaskStatus status,
+            LocalDate due,
+            boolean urgent,
+            int reviewers,
+            List<String> tags,
+            List<UUID> assignees
+        ) {
+            return new TaskCreateRequestDto(
+                title, desc, status, due, urgent, reviewers, tags, assignees
+            );
+        }
+
+        static TaskUpdateRequestDto reqUpdate(
+            String title,
+            String desc,
+            TaskStatus status,
+            LocalDate due,
+            boolean urgent,
+            int reviewers,
+            List<String> tags,
+            List<UUID> assignees
+        ) {
+            return new TaskUpdateRequestDto(
+                title, desc, status, due, urgent, reviewers, tags, assignees
+            );
+        }
+
+        static TaskStatusRequestDto reqStatus(TaskStatus status) {
+            return new TaskStatusRequestDto(status);
+        }
     }
 }
