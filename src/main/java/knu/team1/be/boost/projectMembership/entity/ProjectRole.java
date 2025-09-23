@@ -1,4 +1,4 @@
-package knu.team1.be.boost.projectMember.entity;
+package knu.team1.be.boost.projectMembership.entity;
 
 import lombok.Getter;
 

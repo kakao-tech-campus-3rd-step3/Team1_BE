@@ -1,4 +1,4 @@
-package knu.team1.be.boost.projectMember.entity;
+package knu.team1.be.boost.projectMembership.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

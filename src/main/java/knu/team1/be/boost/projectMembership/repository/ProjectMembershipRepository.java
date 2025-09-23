@@ -1,24 +1,24 @@
-package knu.team1.be.boost.projectMember.repository;
+package knu.team1.be.boost.projectMembership.repository;
 
 import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
-import knu.team1.be.boost.projectMember.entity.ProjectMember;
-import knu.team1.be.boost.projectMember.entity.ProjectRole;
+import knu.team1.be.boost.projectMembership.entity.ProjectMembership;
+import knu.team1.be.boost.projectMembership.entity.ProjectRole;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface ProjectMemberRepository extends JpaRepository<ProjectMember, UUID> {
+public interface ProjectMembershipRepository extends JpaRepository<ProjectMembership, UUID> {
 
-    Optional<ProjectMember> findByProjectIdAndMemberId(
+    Optional<ProjectMembership> findByProjectIdAndMemberId(
         @Param("projectId") UUID projectId,
         @Param("memberId") UUID memberId
     );
 
     @Query(value = "SELECT * FROM project_member WHERE project_id = :projectId AND member_id = :memberId",
         nativeQuery = true)
-    Optional<ProjectMember> findByProjectIdAndMemberIdIncludingDeleted(
+    Optional<ProjectMembership> findByProjectIdAndMemberIdIncludingDeleted(
         @Param("projectId") UUID projectId,
         @Param("memberId") UUID memberId
     );
