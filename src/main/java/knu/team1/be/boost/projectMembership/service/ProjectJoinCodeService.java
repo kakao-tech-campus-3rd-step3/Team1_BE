@@ -65,6 +65,20 @@ class ProjectJoinCodeService {
         return projectJoinCode;
     }
 
+    @Transactional
+    ProjectJoinCode validateJoinCode(String inviteCode) {
+        ProjectJoinCode projectJoinCode = projectJoinCodeRepository.findByJoinCode(inviteCode)
+            .orElseThrow(() -> new BusinessException(ErrorCode.JOIN_CODE_NOT_FOUND));
+
+        projectJoinCode.updateStatusIfExpired();
+
+        if (!projectJoinCode.isActive()) {
+            throw new BusinessException(ErrorCode.EXPIRED_JOIN_CODE);
+        }
+
+        return projectJoinCode;
+    }
+
     private String generateRandomCode() {
         StringBuilder sb = new StringBuilder(6);
         for (int i = 0; i < 6; i++) {

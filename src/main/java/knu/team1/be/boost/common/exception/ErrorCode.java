@@ -21,6 +21,7 @@ public enum ErrorCode {
     // Project Join Code 관련
     EXPIRED_JOIN_CODE(HttpStatus.BAD_REQUEST, "Expired join code", "만료된 참가 코드입니다."),
     JOIN_CODE_NOT_FOUND(HttpStatus.NOT_FOUND, "Join code not found", "참가 코드를 찾을 수 없습니다."),
+    INVALID_JOIN_CODE(HttpStatus.BAD_REQUEST, "Invalid join code", "유효하지 않은 참가 코드입니다."),
 
     // Task 관련
     TASK_NOT_FOUND(HttpStatus.NOT_FOUND, "Task not found", "할 일을 찾을 수 없습니다."),
