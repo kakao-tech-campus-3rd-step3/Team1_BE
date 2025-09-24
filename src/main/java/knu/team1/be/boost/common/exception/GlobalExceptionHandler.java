@@ -150,10 +150,10 @@ public class GlobalExceptionHandler {
     // 400: 필수 요청 헤더가 누락된 경우
     @ExceptionHandler(MissingRequestHeaderException.class)
     public ProblemDetail handleMissingRequestHeader(
-        MissingRequestCookieException e,
+        MissingRequestHeaderException e,
         HttpServletRequest req
     ) {
-        String message = String.format("필수 헤더 '%s'가 누락되었습니다.", e.getHeaders());
+        String message = String.format("필수 헤더 '%s'가 누락되었습니다.", e.getHeaderName());
 
         log.warn("[400 BAD_REQUEST] Missing header: {}", e.toString(), e);
 
