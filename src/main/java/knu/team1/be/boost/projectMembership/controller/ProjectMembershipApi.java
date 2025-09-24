@@ -7,11 +7,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.util.UUID;
+import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.projectMembership.dto.ProjectJoinCodeResponseDto;
 import knu.team1.be.boost.projectMembership.dto.ProjectJoinRequestDto;
 import knu.team1.be.boost.projectMembership.dto.ProjectJoinResponseDto;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -42,7 +45,10 @@ public interface ProjectMembershipApi {
         @ApiResponse(responseCode = "404", description = "프로젝트 없음", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
-    ResponseEntity<ProjectJoinCodeResponseDto> createProjectJoinCode(@PathVariable UUID projectId);
+    ResponseEntity<ProjectJoinCodeResponseDto> createProjectJoinCode(
+        @PathVariable UUID projectId,
+        @AuthenticationPrincipal UserPrincipalDto user
+    );
 
     @GetMapping("/join-code")
     @Operation(
@@ -62,7 +68,10 @@ public interface ProjectMembershipApi {
         @ApiResponse(responseCode = "404", description = "프로젝트 없음", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
-    ResponseEntity<ProjectJoinCodeResponseDto> getProjectJoinCode(@PathVariable UUID projectId);
+    ResponseEntity<ProjectJoinCodeResponseDto> getProjectJoinCode(
+        @PathVariable UUID projectId,
+        @AuthenticationPrincipal UserPrincipalDto user
+    );
 
     @PostMapping("/join")
     @Operation(summary = "프로젝트 참여", description = "프로젝트에 참여합니다.")
@@ -81,7 +90,8 @@ public interface ProjectMembershipApi {
     })
     ResponseEntity<ProjectJoinResponseDto> joinProject(
         @PathVariable UUID projectId,
-        @RequestBody ProjectJoinRequestDto projectJoinRequestDto
+        @AuthenticationPrincipal UserPrincipalDto user,
+        @Valid @RequestBody ProjectJoinRequestDto projectJoinRequestDto
     );
 
     @DeleteMapping("/leave")
@@ -98,6 +108,9 @@ public interface ProjectMembershipApi {
         @ApiResponse(responseCode = "404", description = "프로젝트 없음", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
-    ResponseEntity<Void> leaveProject(@PathVariable UUID projectId);
+    ResponseEntity<Void> leaveProject(
+        @PathVariable UUID projectId,
+        @AuthenticationPrincipal UserPrincipalDto user
+    );
 
 }
