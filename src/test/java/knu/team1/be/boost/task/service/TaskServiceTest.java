@@ -55,14 +55,20 @@ class TaskServiceTest {
 
     TaskService taskService;
 
-    final UUID userId = UUID.randomUUID();
-    final UserPrincipalDto user = UserPrincipalDto.from(userId, "test-user", "avatar-code");
-    final UUID projectId = UUID.randomUUID();
-    final Project project = Fixtures.project(projectId);
-    final Task baseTask = Fixtures.task(UUID.randomUUID(), project);
+    UUID userId;
+    UserPrincipalDto user;
+    UUID projectId;
+    Project project;
+    Task baseTask;
 
     @BeforeEach
     void setUp() {
+        userId = UUID.randomUUID();
+        user = UserPrincipalDto.from(userId, "test-user", "avatar-code");
+        projectId = UUID.randomUUID();
+        project = Fixtures.project(projectId);
+        baseTask = Fixtures.task(UUID.randomUUID(), project);
+        
         taskService = new TaskService(
             taskRepository, memberRepository, projectRepository, accessPolicy
         );

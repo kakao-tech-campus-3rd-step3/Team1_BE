@@ -65,15 +65,22 @@ class FileServiceTest {
 
     FileService fileService;
 
-    final UUID userId = UUID.randomUUID();
-    final UUID projectId = UUID.randomUUID();
-    final UserPrincipalDto user = UserPrincipalDto.from(userId, "test-user", "avatar-code");
-    final Member member = Fixtures.member(userId);
-    final Project project = Fixtures.project(projectId);
-    final Task task = Fixtures.task(UUID.randomUUID(), project);
+    UUID userId;
+    UUID projectId;
+    UserPrincipalDto user;
+    Member member;
+    Project project;
+    Task task;
 
     @BeforeEach
     void setUp() {
+        userId = UUID.randomUUID();
+        projectId = UUID.randomUUID();
+        user = UserPrincipalDto.from(userId, "test-user", "avatar-code");
+        member = Fixtures.member(userId);
+        project = Fixtures.project(projectId);
+        task = Fixtures.task(UUID.randomUUID(), project);
+        
         fileService = new FileService(
             fileRepository, taskRepository, memberRepository, accessPolicy, presignedUrlFactory
         );
