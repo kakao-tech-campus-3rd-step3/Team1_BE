@@ -1,7 +1,6 @@
 package knu.team1.be.boost.auth.controller;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.anonymous;
@@ -11,9 +10,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
 import java.util.List;
 import java.util.UUID;
+import knu.team1.be.boost.auth.dto.LoginRequestDto;
 import knu.team1.be.boost.auth.dto.TokenDto;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.auth.service.AuthService;
@@ -28,6 +29,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -44,6 +46,9 @@ class AuthControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     @MockitoBean
     private AuthService authService;
 
@@ -58,13 +63,14 @@ class AuthControllerTest {
         @DisplayName("성공")
         void kakaoLogin_Success() throws Exception {
             // given
-            String code = "test_kakao_auth_code";
+            LoginRequestDto requestDto = new LoginRequestDto("test_kakao_auth_code");
             TokenDto tokenDto = new TokenDto("mock_access_token", "mock_refresh_token");
-            given(authService.login(eq(code))).willReturn(tokenDto);
+            given(authService.login(requestDto.code())).willReturn(tokenDto);
 
             // when
             ResultActions resultActions = mockMvc.perform(post("/api/auth/login/kakao")
-                .param("code", code));
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)));
 
             // then
             resultActions
@@ -86,13 +92,14 @@ class AuthControllerTest {
         @DisplayName("실패: 유효하지 않은 인가 코드일 경우 KAKAO_INVALID_AUTH_CODE")
         void kakaoLogin_Fail_WhenServiceThrowsBusinessException() throws Exception {
             // given
-            String invalidCode = "invalid_kakao_code";
-            given(authService.login(eq(invalidCode)))
+            LoginRequestDto requestDto = new LoginRequestDto("invalid_kakao_code");
+            given(authService.login(requestDto.code()))
                 .willThrow(new BusinessException(ErrorCode.KAKAO_INVALID_AUTH_CODE));
 
             // when
             ResultActions resultActions = mockMvc.perform(post("/api/auth/login/kakao")
-                .param("code", invalidCode));
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)));
 
             // then
             resultActions.andExpect(status().isBadRequest());
