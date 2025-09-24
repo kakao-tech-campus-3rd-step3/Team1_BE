@@ -39,6 +39,7 @@ public interface ProjectMembershipApi {
         @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content),
         @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
         @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
+        @ApiResponse(responseCode = "404", description = "프로젝트 없음", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
     ResponseEntity<ProjectJoinCodeResponseDto> createProjectJoinCode(@PathVariable UUID projectId);
@@ -58,6 +59,7 @@ public interface ProjectMembershipApi {
         @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content),
         @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
         @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
+        @ApiResponse(responseCode = "404", description = "프로젝트 없음", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
     ResponseEntity<ProjectJoinCodeResponseDto> getProjectJoinCode(@PathVariable UUID projectId);
@@ -73,6 +75,8 @@ public interface ProjectMembershipApi {
         @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content),
         @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
         @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
+        @ApiResponse(responseCode = "404", description = "프로젝트 없음", content = @Content),
+        @ApiResponse(responseCode = "409", description = "이미 참여 중인 사용자", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
     ResponseEntity<ProjectJoinResponseDto> joinProject(
@@ -91,6 +95,7 @@ public interface ProjectMembershipApi {
         @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content),
         @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
         @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
+        @ApiResponse(responseCode = "404", description = "프로젝트 없음", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
     ResponseEntity<Void> leaveProject(@PathVariable UUID projectId);
