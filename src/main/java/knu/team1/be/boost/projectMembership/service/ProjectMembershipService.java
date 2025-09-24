@@ -61,5 +61,15 @@ public class ProjectMembershipService {
         return ProjectJoinResponseDto.from(joinCode);
 
     }
+
+    @Transactional
+    public void leaveProject(UUID projectId, UUID memberId) {
+
+        projectParticipantService.checkMemberExists(memberId);
+
+        accessPolicy.ensureProjectMember(projectId, memberId);
+
+        projectParticipantService.leaveProject(projectId, memberId);
+    }
 }
 
