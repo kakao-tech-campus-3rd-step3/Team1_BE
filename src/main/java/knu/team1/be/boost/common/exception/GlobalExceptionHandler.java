@@ -14,6 +14,7 @@ import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestCookieException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -146,6 +147,22 @@ public class GlobalExceptionHandler {
         );
     }
 
+    // 400: 필수 요청 헤더가 누락된 경우
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    public ProblemDetail handleMissingRequestHeader(
+        MissingRequestCookieException e,
+        HttpServletRequest req
+    ) {
+        String message = String.format("필수 헤더 '%s'가 누락되었습니다.", e.getHeaders());
+
+        log.warn("[400 BAD_REQUEST] Missing header: {}", e.toString(), e);
+
+        return ErrorResponses.of(
+            HttpStatus.BAD_REQUEST,
+            message,
+            instance(req)
+        );
+    }
 
     // 401: 컨트롤러/서비스 단에서 발생하는 JWT 관련 예외 처리
     // (주로 토큰 재발급 시 만료된 토큰을 파싱하려 할 때 발생)
@@ -159,7 +176,6 @@ public class GlobalExceptionHandler {
             instance(req)
         );
     }
-
 
     // 405/415 등: 스펙 위반
     @ExceptionHandler({
