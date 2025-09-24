@@ -193,9 +193,8 @@ public class TaskService {
             .map(Member::getId)
             .collect(Collectors.toSet());
 
-        List<UUID> missingIds = assigneeIds.stream()
-            .filter(id -> !foundIds.contains(id))
-            .toList();
+        Set<UUID> missingIds = new HashSet<>(assigneeIds);
+        missingIds.removeAll(foundIds);
 
         if (!missingIds.isEmpty()) {
             throw new BusinessException(
