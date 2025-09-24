@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.anonymous;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
@@ -19,7 +20,6 @@ import knu.team1.be.boost.auth.service.AuthService;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.security.util.JwtUtil;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -49,24 +49,6 @@ class AuthControllerTest {
 
     @MockitoBean
     private JwtUtil jwtUtil;
-
-    private Authentication testAuthentication;
-
-    @BeforeEach
-    void setUp() {
-        UserPrincipalDto principal = new UserPrincipalDto(
-            UUID.fromString("123e4567-e89b-12d3-a456-426614174000"),
-            "testUser",
-            "1111"
-        );
-        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("USER"));
-        this.testAuthentication = new UsernamePasswordAuthenticationToken(
-            principal,
-            null,
-            authorities
-        );
-    }
-
 
     @Nested
     @DisplayName("카카오 로그인 API")
@@ -125,6 +107,17 @@ class AuthControllerTest {
         @DisplayName("성공")
         void logout_Success() throws Exception {
             // given
+            UserPrincipalDto principal = new UserPrincipalDto(
+                UUID.randomUUID(),
+                "testUser",
+                "1111"
+            );
+            List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("USER"));
+            Authentication testAuthentication = new UsernamePasswordAuthenticationToken(
+                principal,
+                null,
+                authorities
+            );
             doNothing().when(authService).logout(any(UserPrincipalDto.class));
 
             // when
@@ -141,7 +134,8 @@ class AuthControllerTest {
         @DisplayName("실패: 인증되지 않은 사용자의 요청일 경우 AUTHENTICATION_FAILED")
         void logout_Fail_WhenNotAuthenticated() throws Exception {
             // when
-            ResultActions resultActions = mockMvc.perform(post("/api/auth/logout"));
+            ResultActions resultActions = mockMvc.perform(post("/api/auth/logout")
+                .with(anonymous()));
             // then
             resultActions.andExpect(status().isUnauthorized());
         }
