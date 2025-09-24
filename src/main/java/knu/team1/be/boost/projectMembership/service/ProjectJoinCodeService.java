@@ -48,6 +48,7 @@ class ProjectJoinCodeService {
         return projectJoinCodeRepository.save(joinCode);
     }
 
+    @Transactional
     ProjectJoinCode getJoinCode(UUID projectId) {
         ProjectJoinCode projectJoinCode = projectJoinCodeRepository.findByProjectId(projectId)
             .orElseThrow(() -> new BusinessException(
