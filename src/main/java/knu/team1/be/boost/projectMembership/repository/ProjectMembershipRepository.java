@@ -16,7 +16,7 @@ public interface ProjectMembershipRepository extends JpaRepository<ProjectMember
         @Param("memberId") UUID memberId
     );
 
-    @Query(value = "SELECT * FROM project_member WHERE project_id = :projectId AND member_id = :memberId",
+    @Query(value = "SELECT * FROM project_membership WHERE project_id = :projectId AND member_id = :memberId",
         nativeQuery = true)
     Optional<ProjectMembership> findByProjectIdAndMemberIdIncludingDeleted(
         @Param("projectId") UUID projectId,
