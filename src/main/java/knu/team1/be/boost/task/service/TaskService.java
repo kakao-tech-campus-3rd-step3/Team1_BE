@@ -1,5 +1,7 @@
 package knu.team1.be.boost.task.service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -17,11 +19,17 @@ import knu.team1.be.boost.project.entity.Project;
 import knu.team1.be.boost.project.repository.ProjectRepository;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
 import knu.team1.be.boost.task.dto.TaskResponseDto;
+import knu.team1.be.boost.task.dto.TaskSortBy;
+import knu.team1.be.boost.task.dto.TaskSortDirection;
 import knu.team1.be.boost.task.dto.TaskStatusRequestDto;
+import knu.team1.be.boost.task.dto.TaskStatusSectionDto;
 import knu.team1.be.boost.task.dto.TaskUpdateRequestDto;
 import knu.team1.be.boost.task.entity.Task;
+import knu.team1.be.boost.task.entity.TaskStatus;
 import knu.team1.be.boost.task.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -172,6 +180,52 @@ public class TaskService {
         task.changeStatus(request.status());
 
         return TaskResponseDto.from(task);
+    }
+
+    @Transactional(readOnly = true)
+    public TaskStatusSectionDto listByStatus(
+        UUID projectId,
+        TaskStatus status,
+        TaskSortBy sortBy,
+        TaskSortDirection direction,
+        UUID cursorId,
+        int limit
+    ) {
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
+            ));
+
+        LocalDateTime cursorCreatedAtKey = null;
+        LocalDate cursorDueDateKey = null;
+
+        if (cursorId != null) {
+            Task cursorTarget =
+                taskRepository.findByIdAndProjectId(cursorId, projectId).orElse(null);
+            if (cursorTarget != null) {
+                if (sortBy == TaskSortBy.CREATED_AT) {
+                    cursorCreatedAtKey = cursorTarget.getCreatedAt();
+                } else if (sortBy == TaskSortBy.DUE_DATE) {
+                    cursorDueDateKey = cursorTarget.getDueDate();
+                }
+            }
+        }
+
+        int safeLimit = Math.max(1, Math.min(limit, 50));
+        Pageable pageable = PageRequest.of(0, safeLimit + 1);
+
+        List<Task> tasks = taskRepository.findTasksByStatusWithCursor(
+            project,
+            status,
+            cursorCreatedAtKey,
+            cursorDueDateKey,
+            cursorId,
+            sortBy.name(),
+            direction.name(),
+            pageable
+        );
+
+        return TaskStatusSectionDto.from(tasks, limit);
     }
 
     private List<String> extractTags(List<String> tags) {
