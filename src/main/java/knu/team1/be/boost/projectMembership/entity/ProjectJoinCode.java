@@ -23,8 +23,8 @@ import lombok.experimental.SuperBuilder;
 @Table(name = "project_join_codes")
 public class ProjectJoinCode extends BaseEntity {
 
-    @Column(name = "invite_code", nullable = false, unique = true)
-    private String inviteCode;
+    @Column(name = "join_code", nullable = false, unique = true)
+    private String joinCode;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id", nullable = false)
@@ -55,11 +55,11 @@ public class ProjectJoinCode extends BaseEntity {
         }
     }
 
-    public static ProjectJoinCode create(Project project, String inviteCode,
+    public static ProjectJoinCode create(Project project, String joinCode,
         LocalDateTime expiresAt) {
         return ProjectJoinCode.builder()
             .project(project)
-            .inviteCode(inviteCode)
+            .joinCode(joinCode)
             .status(CodeStatus.ACTIVE)
             .expiresAt(expiresAt)
             .build();
