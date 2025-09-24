@@ -24,6 +24,26 @@ class ProjectParticipantService {
     private final ProjectRepository projectRepository;
     private final MemberRepository memberRepository;
 
+    void checkProjectExists(UUID projectId) {
+        boolean exists = projectRepository.existsById(projectId);
+        if (!exists) {
+            throw new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND,
+                "projectId: " + projectId
+            );
+        }
+    }
+
+    void checkMemberExists(UUID memberId) {
+        boolean exists = memberRepository.existsById(memberId);
+        if (!exists) {
+            throw new BusinessException(
+                ErrorCode.MEMBER_NOT_FOUND,
+                "memberId: " + memberId
+            );
+        }
+    }
+
     @Transactional
     void joinProject(UUID projectId, UUID memberId, ProjectRole role) {
 
