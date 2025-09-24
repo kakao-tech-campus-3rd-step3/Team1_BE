@@ -29,5 +29,15 @@ public class ProjectMembershipService {
         return ProjectJoinCodeResponseDto.from(projectJoinCode);
     }
 
+    public ProjectJoinCodeResponseDto getCode(UUID projectId, UUID memberId) {
+
+        projectParticipantService.checkProjectExists(projectId);
+        projectParticipantService.checkMemberExists(memberId);
+
+        accessPolicy.ensureProjectMember(projectId, memberId);
+
+        ProjectJoinCode projectJoinCode = projectJoinCodeService.getJoinCode(projectId);
+        return ProjectJoinCodeResponseDto.from(projectJoinCode);
+    }
 }
 

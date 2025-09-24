@@ -48,6 +48,22 @@ class ProjectJoinCodeService {
         return projectJoinCodeRepository.save(joinCode);
     }
 
+    ProjectJoinCode getJoinCode(UUID projectId) {
+        ProjectJoinCode projectJoinCode = projectJoinCodeRepository.findByProjectId(projectId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.JOIN_CODE_NOT_FOUND,
+                "projectId: " + projectId
+            ));
+
+        projectJoinCode.updateStatusIfExpired();
+
+        if (!projectJoinCode.isActive()) {
+            throw new BusinessException(ErrorCode.EXPIRED_JOIN_CODE);
+        }
+
+        return projectJoinCode;
+    }
+
     private String generateRandomCode() {
         StringBuilder sb = new StringBuilder(6);
         for (int i = 0; i < 6; i++) {
