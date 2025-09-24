@@ -13,6 +13,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestCookieException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -120,6 +121,23 @@ public class GlobalExceptionHandler {
         String message = String.format("필수 파라미터 '%s'가 누락되었습니다.", e.getParameterName());
 
         log.warn("[400 BAD_REQUEST] Missing parameter: {}", e.toString(), e);
+
+        return ErrorResponses.of(
+            HttpStatus.BAD_REQUEST,
+            message,
+            instance(req)
+        );
+    }
+
+    // 400: 필수 요청 쿠키가 누락된 경우
+    @ExceptionHandler(MissingRequestCookieException.class)
+    public ProblemDetail handleMissingRequestCookie(
+        MissingRequestCookieException e,
+        HttpServletRequest req
+    ) {
+        String message = String.format("필수 쿠키 '%s'가 누락되었습니다.", e.getCookieName());
+
+        log.warn("[400 BAD_REQUEST] Missing cookie: {}", e.toString(), e);
 
         return ErrorResponses.of(
             HttpStatus.BAD_REQUEST,
