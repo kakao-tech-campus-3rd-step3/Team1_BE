@@ -6,8 +6,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
+import knu.team1.be.boost.common.policy.AccessPolicy;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
 import knu.team1.be.boost.project.entity.Project;
@@ -30,18 +33,25 @@ public class TaskService {
     private final MemberRepository memberRepository;
     private final ProjectRepository projectRepository;
 
+    private final AccessPolicy accessPolicy;
+
     @Transactional
-    public TaskResponseDto createTask(UUID projectId, TaskCreateRequestDto request) {
+    public TaskResponseDto createTask(
+        UUID projectId,
+        TaskCreateRequestDto request,
+        UserPrincipalDto user
+    ) {
         Project project = projectRepository.findById(projectId)
             .orElseThrow(() -> new BusinessException(
-                ErrorCode.PROJECT_NOT_FOUND,
-                "projectId: " + projectId
+                ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
             ));
 
-        // TODO: 인증 붙으면 현재 사용자 프로젝트 소속 여부 확인
+        accessPolicy.ensureProjectMember(projectId, user.id());
 
         List<String> tags = extractTags(request.tags());
         Set<Member> assignees = findAssignees(request.assignees());
+
+        accessPolicy.ensureAssigneesAreProjectMembers(projectId, assignees);
 
         Task task = Task.builder()
             .project(project)
@@ -61,30 +71,35 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskResponseDto updateTask(UUID projectId, UUID taskId, TaskUpdateRequestDto request) {
+    public TaskResponseDto updateTask(
+        UUID projectId,
+        UUID taskId,
+        TaskUpdateRequestDto request,
+        UserPrincipalDto user
+    ) {
         Project project = projectRepository.findById(projectId)
             .orElseThrow(() -> new BusinessException(
-                ErrorCode.PROJECT_NOT_FOUND,
-                "projectId: " + projectId
+                ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
             ));
 
         Task task = taskRepository.findById(taskId)
             .orElseThrow(() -> new BusinessException(
-                ErrorCode.TASK_NOT_FOUND,
-                "taskId: " + taskId
+                ErrorCode.TASK_NOT_FOUND, "taskId: " + taskId
             ));
-
-        // TODO: 인증 붙으면 현재 사용자 프로젝트 소속 여부 확인 + 해당 할 일에 담당자인지 확인
 
         if (!task.getProject().getId().equals(project.getId())) {
             throw new BusinessException(
-                ErrorCode.TASK_NOT_IN_PROJECT,
-                "projectId: " + projectId + ", taskId: " + taskId
+                ErrorCode.TASK_NOT_IN_PROJECT, "projectId: " + projectId + ", taskId: " + taskId
             );
         }
 
+        accessPolicy.ensureProjectMember(projectId, user.id());
+        accessPolicy.ensureTaskAssignee(taskId, user.id());
+
         List<String> tags = extractTags(request.tags());
         Set<Member> assignees = findAssignees(request.assignees());
+
+        accessPolicy.ensureAssigneesAreProjectMembers(projectId, assignees);
 
         task.update(
             request.title(),
@@ -101,54 +116,58 @@ public class TaskService {
     }
 
     @Transactional
-    public void deleteTask(UUID projectId, UUID taskId) {
+    public void deleteTask(
+        UUID projectId,
+        UUID taskId,
+        UserPrincipalDto user
+    ) {
         Project project = projectRepository.findById(projectId)
             .orElseThrow(() -> new BusinessException(
-                ErrorCode.PROJECT_NOT_FOUND,
-                "projectId: " + projectId
+                ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
             ));
 
         Task task = taskRepository.findById(taskId)
             .orElseThrow(() -> new BusinessException(
-                ErrorCode.TASK_NOT_FOUND,
-                "taskId: " + taskId
+                ErrorCode.TASK_NOT_FOUND, "taskId: " + taskId
             ));
-
-        // TODO: 인증 붙으면 현재 사용자 프로젝트 소속 여부 확인 + 해당 할 일에 담당자인지 확인
 
         if (!task.getProject().getId().equals(project.getId())) {
             throw new BusinessException(
-                ErrorCode.TASK_NOT_IN_PROJECT,
-                "projectId: " + projectId + ", taskId: " + taskId
+                ErrorCode.TASK_NOT_IN_PROJECT, "projectId: " + projectId + ", taskId: " + taskId
             );
         }
+
+        accessPolicy.ensureProjectMember(projectId, user.id());
+        accessPolicy.ensureTaskAssignee(taskId, user.id());
 
         taskRepository.delete(task);
     }
 
     @Transactional
-    public TaskResponseDto changeTaskStatus(UUID projectId, UUID taskId,
-        TaskStatusRequestDto request) {
+    public TaskResponseDto changeTaskStatus(
+        UUID projectId,
+        UUID taskId,
+        TaskStatusRequestDto request,
+        UserPrincipalDto user
+    ) {
         Project project = projectRepository.findById(projectId)
             .orElseThrow(() -> new BusinessException(
-                ErrorCode.PROJECT_NOT_FOUND,
-                "projectId: " + projectId
+                ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
             ));
 
         Task task = taskRepository.findById(taskId)
             .orElseThrow(() -> new BusinessException(
-                ErrorCode.TASK_NOT_FOUND,
-                "taskId: " + taskId
+                ErrorCode.TASK_NOT_FOUND, "taskId: " + taskId
             ));
-
-        // TODO: 인증 붙으면 현재 사용자 프로젝트 소속 여부 확인 + 해당 할 일에 담당자인지 확인
 
         if (!task.getProject().getId().equals(project.getId())) {
             throw new BusinessException(
-                ErrorCode.TASK_NOT_IN_PROJECT,
-                "projectId: " + projectId + ", taskId: " + taskId
+                ErrorCode.TASK_NOT_IN_PROJECT, "projectId: " + projectId + ", taskId: " + taskId
             );
         }
+
+        accessPolicy.ensureProjectMember(projectId, user.id());
+        accessPolicy.ensureTaskAssignee(taskId, user.id());
 
         task.changeStatus(request.status());
 
@@ -170,22 +189,16 @@ public class TaskService {
 
         List<Member> foundAssignees = memberRepository.findAllById(assigneeIds);
 
-        if (assigneeIds.size() != foundAssignees.size()) {
-            Set<UUID> foundIds = new HashSet<>();
-            for (Member member : foundAssignees) {
-                foundIds.add(member.getId());
-            }
+        Set<UUID> foundIds = foundAssignees.stream()
+            .map(Member::getId)
+            .collect(Collectors.toSet());
 
-            List<UUID> missingIds = new ArrayList<>();
-            for (UUID id : assigneeIds) {
-                if (!foundIds.contains(id)) {
-                    missingIds.add(id);
-                }
-            }
+        Set<UUID> missingIds = new HashSet<>(assigneeIds);
+        missingIds.removeAll(foundIds);
 
+        if (!missingIds.isEmpty()) {
             throw new BusinessException(
-                ErrorCode.MEMBER_NOT_FOUND,
-                "MemberIds: " + missingIds
+                ErrorCode.MEMBER_NOT_FOUND, "MemberIds: " + missingIds
             );
         }
 

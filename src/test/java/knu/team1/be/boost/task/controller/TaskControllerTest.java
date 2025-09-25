@@ -16,6 +16,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.member.dto.MemberResponseDto;
 import knu.team1.be.boost.security.filter.JwtAuthFilter;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
@@ -114,8 +115,11 @@ class TaskControllerTest {
                 LocalDateTime.of(2025, 9, 17, 12, 0, 0)
             );
 
-            given(taskService.createTask(eq(PROJECT_ID), any(TaskCreateRequestDto.class)))
-                .willReturn(response);
+            given(
+                taskService.createTask(
+                    eq(PROJECT_ID), any(TaskCreateRequestDto.class), any(UserPrincipalDto.class)
+                )
+            ).willReturn(response);
 
             // when & then
             mockMvc.perform(
@@ -261,9 +265,12 @@ class TaskControllerTest {
                 LocalDateTime.of(2025, 9, 17, 13, 0, 0)
             );
 
-            given(taskService.updateTask(eq(PROJECT_ID), eq(TASK_ID),
-                any(TaskUpdateRequestDto.class)))
-                .willReturn(response);
+            given(
+                taskService.updateTask(
+                    eq(PROJECT_ID), eq(TASK_ID), any(TaskUpdateRequestDto.class),
+                    any(UserPrincipalDto.class)
+                )
+            ).willReturn(response);
 
             // when & then
             mockMvc.perform(
@@ -361,9 +368,12 @@ class TaskControllerTest {
                 LocalDateTime.of(2025, 9, 17, 12, 0, 0),
                 LocalDateTime.of(2025, 9, 17, 13, 0, 0)
             );
-            given(taskService.changeTaskStatus(eq(PROJECT_ID), eq(TASK_ID),
-                any(TaskStatusRequestDto.class)))
-                .willReturn(response);
+            given(
+                taskService.changeTaskStatus(
+                    eq(PROJECT_ID), eq(TASK_ID), any(TaskStatusRequestDto.class),
+                    any(UserPrincipalDto.class)
+                )
+            ).willReturn(response);
 
             // when & then
             mockMvc.perform(
