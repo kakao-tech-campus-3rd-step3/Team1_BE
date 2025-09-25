@@ -34,8 +34,7 @@ class ProjectJoinCodeService {
                 "projectId: " + projectId
             ));
 
-        projectJoinCodeRepository.findByProjectId(projectId)
-            .ifPresent(ProjectJoinCode::revoke);
+        projectJoinCodeRepository.revokeActiveCodesByProjectId(projectId);
 
         String inviteCode;
         do {
@@ -43,14 +42,14 @@ class ProjectJoinCodeService {
         } while (projectJoinCodeRepository.existsByJoinCode(inviteCode));
 
         LocalDateTime expiresAt = LocalDateTime.now().plusDays(1);
-
         ProjectJoinCode joinCode = ProjectJoinCode.create(project, inviteCode, expiresAt);
+
         return projectJoinCodeRepository.save(joinCode);
     }
 
     @Transactional
     ProjectJoinCode getJoinCode(UUID projectId) {
-        ProjectJoinCode projectJoinCode = projectJoinCodeRepository.findByProjectId(projectId)
+        ProjectJoinCode projectJoinCode = projectJoinCodeRepository.findActiveByProjectId(projectId)
             .orElseThrow(() -> new BusinessException(
                 ErrorCode.JOIN_CODE_NOT_FOUND,
                 "projectId: " + projectId
