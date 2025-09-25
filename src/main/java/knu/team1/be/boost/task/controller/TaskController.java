@@ -7,6 +7,7 @@ import java.net.URI;
 import java.util.UUID;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
+import knu.team1.be.boost.task.dto.TaskMemberSectionResponseDto;
 import knu.team1.be.boost.task.dto.TaskResponseDto;
 import knu.team1.be.boost.task.dto.TaskSortBy;
 import knu.team1.be.boost.task.dto.TaskSortDirection;
@@ -82,9 +83,21 @@ public class TaskController implements TaskApi {
         @RequestParam(required = false) UUID cursor,
         @RequestParam(defaultValue = "20") @Min(1) @Max(50) int limit
     ) {
-        TaskStatusSectionDto body = taskService.listByStatus(
-            projectId, status, sortBy, direction, cursor, limit
-        );
-        return ResponseEntity.ok(body);
+        TaskStatusSectionDto response =
+            taskService.listByStatus(projectId, status, sortBy, direction, cursor, limit);
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<TaskMemberSectionResponseDto> listTasksByMember(
+        @PathVariable UUID projectId,
+        @PathVariable UUID memberId,
+        @RequestParam(required = false) UUID cursor,
+        @RequestParam(defaultValue = "20") @Min(1) @Max(50) int limit
+    ) {
+        TaskMemberSectionResponseDto response =
+            taskService.listByMember(projectId, memberId, cursor, limit);
+
+        return ResponseEntity.ok(response);
     }
 }
