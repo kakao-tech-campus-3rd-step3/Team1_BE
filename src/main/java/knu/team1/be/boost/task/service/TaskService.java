@@ -17,7 +17,10 @@ import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
 import knu.team1.be.boost.project.entity.Project;
 import knu.team1.be.boost.project.repository.ProjectRepository;
+import knu.team1.be.boost.projectMember.entity.ProjectMember;
+import knu.team1.be.boost.projectMember.repository.ProjectMemberRepository;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
+import knu.team1.be.boost.task.dto.TaskMemberSectionResponseDto;
 import knu.team1.be.boost.task.dto.TaskResponseDto;
 import knu.team1.be.boost.task.dto.TaskSortBy;
 import knu.team1.be.boost.task.dto.TaskSortDirection;
@@ -40,6 +43,7 @@ public class TaskService {
     private final TaskRepository taskRepository;
     private final MemberRepository memberRepository;
     private final ProjectRepository projectRepository;
+    private final ProjectMemberRepository projectMemberRepository;
 
     private final AccessPolicy accessPolicy;
 
@@ -227,6 +231,59 @@ public class TaskService {
 
         return TaskStatusSectionDto.from(tasks, limit);
     }
+
+    @Transactional(readOnly = true)
+    public TaskMemberSectionResponseDto listByMember(
+        UUID projectId,
+        UUID memberId,
+        UUID cursorId,
+        int limit
+    ) {
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId)
+            );
+
+        ProjectMember projectMember =
+            projectMemberRepository.findByProjectIdAndMemberId(projectId, memberId)
+                .orElseThrow(() -> new BusinessException(
+                    ErrorCode.MEMBER_NOT_FOUND,
+                    "projectId: " + projectId + ", memberId: " + memberId)
+                );
+
+        Member member = projectMember.getMember();
+
+        int safeLimit = Math.max(1, Math.min(limit, 50));
+
+        Integer cursorStatusOrder = null;
+        LocalDateTime cursorCreatedAt = null;
+        UUID cursorTaskId = null;
+
+        if (cursorId != null) {
+            Task cursorTarget = taskRepository.findById(cursorId)
+                .orElseThrow(() -> new BusinessException(
+                    ErrorCode.TASK_NOT_FOUND, "taskId: " + cursorId)
+                );
+
+            cursorStatusOrder = cursorTarget.getStatus().getOrder();
+            cursorCreatedAt = cursorTarget.getCreatedAt();
+            cursorTaskId = cursorTarget.getId();
+        }
+
+        Pageable pageable = PageRequest.of(0, safeLimit + 1);
+
+        List<Task> tasks = taskRepository.findTasksByAssigneeWithCursor(
+            member,
+            project,
+            cursorStatusOrder,
+            cursorCreatedAt,
+            cursorTaskId,
+            pageable
+        );
+
+        return TaskMemberSectionResponseDto.from(member, tasks, safeLimit);
+    }
+
 
     private List<String> extractTags(List<String> tags) {
         return Optional.ofNullable(tags)
