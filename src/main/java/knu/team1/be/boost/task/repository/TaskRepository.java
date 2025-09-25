@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.project.entity.Project;
 import knu.team1.be.boost.task.entity.Task;
 import knu.team1.be.boost.task.entity.TaskStatus;
@@ -59,6 +60,37 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
         @Param("cursorId") UUID cursorId,
         @Param("sortBy") String sortBy,
         @Param("direction") String direction,
+        Pageable pageable
+    );
+
+    @Query("""
+            SELECT t
+            FROM Task t
+            JOIN t.assignees a
+            WHERE a = :assignee
+              AND t.project = :project
+              AND t.status <> knu.team1.be.boost.task.entity.TaskStatus.DONE
+              AND (:cursorStatusOrder IS NULL
+                   OR (CASE t.status
+                           WHEN knu.team1.be.boost.task.entity.TaskStatus.REVIEW THEN 1
+                           WHEN knu.team1.be.boost.task.entity.TaskStatus.PROGRESS THEN 2
+                           WHEN knu.team1.be.boost.task.entity.TaskStatus.TODO THEN 3
+                       END, t.createdAt, t.id) > (:cursorStatusOrder, :cursorCreatedAt, :cursorId))
+            ORDER BY
+              CASE t.status
+                  WHEN knu.team1.be.boost.task.entity.TaskStatus.REVIEW THEN 1
+                  WHEN knu.team1.be.boost.task.entity.TaskStatus.PROGRESS THEN 2
+                  WHEN knu.team1.be.boost.task.entity.TaskStatus.TODO THEN 3
+              END ASC,
+              t.createdAt ASC,
+              t.id ASC
+        """)
+    List<Task> findTasksByAssigneeWithCursor(
+        @Param("assignee") Member assignee,
+        @Param("project") Project project,
+        @Param("cursorStatusOrder") Integer cursorStatusOrder,
+        @Param("cursorCreatedAt") LocalDateTime cursorCreatedAt,
+        @Param("cursorId") UUID cursorId,
         Pageable pageable
     );
 
