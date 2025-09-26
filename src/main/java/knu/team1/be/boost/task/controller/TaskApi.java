@@ -146,7 +146,8 @@ public interface TaskApi {
         @RequestParam(required = false, defaultValue = "CREATED_AT") TaskSortBy sortBy,
         @RequestParam(required = false, defaultValue = "ASC") TaskSortDirection direction,
         @RequestParam(required = false) UUID cursor,
-        @RequestParam(defaultValue = "20") @Min(1) @Max(50) int limit
+        @RequestParam(defaultValue = "20") @Min(1) @Max(50) int limit,
+        @AuthenticationPrincipal UserPrincipalDto user
     );
 
     @Operation(
@@ -199,7 +200,8 @@ public interface TaskApi {
         @PathVariable UUID projectId,
         @PathVariable UUID memberId,
         @RequestParam(required = false) UUID cursor,
-        @RequestParam(defaultValue = "20") @Min(1) @Max(50) int limit
+        @RequestParam(defaultValue = "20") @Min(1) @Max(50) int limit,
+        @AuthenticationPrincipal UserPrincipalDto user
     );
 
 }

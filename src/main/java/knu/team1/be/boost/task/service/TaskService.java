@@ -193,12 +193,15 @@ public class TaskService {
         TaskSortBy sortBy,
         TaskSortDirection direction,
         UUID cursorId,
-        int limit
+        int limit,
+        UserPrincipalDto user
     ) {
         Project project = projectRepository.findById(projectId)
             .orElseThrow(() -> new BusinessException(
                 ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
             ));
+
+        accessPolicy.ensureProjectMember(projectId, user.id());
 
         LocalDateTime cursorCreatedAtKey = null;
         LocalDate cursorDueDateKey = null;
@@ -288,12 +291,15 @@ public class TaskService {
         UUID projectId,
         UUID memberId,
         UUID cursorId,
-        int limit
+        int limit,
+        UserPrincipalDto user
     ) {
         Project project = projectRepository.findById(projectId)
             .orElseThrow(() -> new BusinessException(
                 ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId)
             );
+
+        accessPolicy.ensureProjectMember(projectId, user.id());
 
         ProjectMember projectMember =
             projectMemberRepository.findByProjectIdAndMemberId(projectId, memberId)

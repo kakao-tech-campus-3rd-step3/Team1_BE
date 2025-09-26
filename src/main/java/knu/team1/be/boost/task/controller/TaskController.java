@@ -81,10 +81,11 @@ public class TaskController implements TaskApi {
         @RequestParam(required = false, defaultValue = "CREATED_AT") TaskSortBy sortBy,
         @RequestParam(required = false, defaultValue = "ASC") TaskSortDirection direction,
         @RequestParam(required = false) UUID cursor,
-        @RequestParam(defaultValue = "20") @Min(1) @Max(50) int limit
+        @RequestParam(defaultValue = "20") @Min(1) @Max(50) int limit,
+        @AuthenticationPrincipal UserPrincipalDto user
     ) {
         TaskStatusSectionDto response =
-            taskService.listByStatus(projectId, status, sortBy, direction, cursor, limit);
+            taskService.listByStatus(projectId, status, sortBy, direction, cursor, limit, user);
         return ResponseEntity.ok(response);
     }
 
@@ -115,10 +116,11 @@ public class TaskController implements TaskApi {
         @PathVariable UUID projectId,
         @PathVariable UUID memberId,
         @RequestParam(required = false) UUID cursor,
-        @RequestParam(defaultValue = "20") @Min(1) @Max(50) int limit
+        @RequestParam(defaultValue = "20") @Min(1) @Max(50) int limit,
+        @AuthenticationPrincipal UserPrincipalDto user
     ) {
         TaskMemberSectionResponseDto response =
-            taskService.listByMember(projectId, memberId, cursor, limit);
+            taskService.listByMember(projectId, memberId, cursor, limit, user);
 
         return ResponseEntity.ok(response);
     }
