@@ -150,6 +150,33 @@ public interface TaskApi {
     );
 
     @Operation(
+        summary = "내 할 일 목록 조회 - 상태 기준 (커서 페이지네이션)",
+        description = """
+                로그인한 사용자가 속한 프로젝트들의 특정 상태(TaskStatus)에 해당하는 자신의 할 일 목록을 반환합니다.<br>
+                정렬(sortBy/direction) 가능
+            """
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "조회 성공",
+            content = @Content(schema = @Schema(implementation = TaskStatusSectionDto.class))
+        ),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
+        @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
+        @ApiResponse(responseCode = "404", description = "프로젝트/상태 없음", content = @Content),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
+    })
+    @GetMapping("/status/{status}/me")
+    ResponseEntity<TaskStatusSectionDto> listMyTasksByStatus(
+        @PathVariable TaskStatus status,
+        @RequestParam(required = false, defaultValue = "CREATED_AT") TaskSortBy sortBy,
+        @RequestParam(required = false, defaultValue = "ASC") TaskSortDirection direction,
+        @RequestParam(required = false) UUID cursor,
+        @RequestParam(defaultValue = "20") @Min(1) @Max(50) int limit,
+        @AuthenticationPrincipal UserPrincipalDto user
+    );
+
+    @Operation(
         summary = "프로젝트별 할 일 목록 조회 - 특정 팀원 (커서 페이지네이션)",
         description = """
                 특정 팀원의 프로젝트의 할 일 목록을 상태별 섹션으로 반환합니다.<br>

@@ -89,6 +89,28 @@ public class TaskController implements TaskApi {
     }
 
     @Override
+    public ResponseEntity<TaskStatusSectionDto> listMyTasksByStatus(
+        @PathVariable TaskStatus status,
+        @RequestParam(required = false, defaultValue = "CREATED_AT") TaskSortBy sortBy,
+        @RequestParam(required = false, defaultValue = "ASC") TaskSortDirection direction,
+        @RequestParam(required = false) UUID cursor,
+        @RequestParam(defaultValue = "20") @Min(1) @Max(50) int limit,
+        @AuthenticationPrincipal UserPrincipalDto user
+
+    ) {
+        TaskStatusSectionDto result =
+            taskService.listMyTasksByStatus(
+                status,
+                sortBy,
+                direction,
+                cursor,
+                limit,
+                user
+            );
+        return ResponseEntity.ok(result);
+    }
+
+    @Override
     public ResponseEntity<TaskMemberSectionResponseDto> listTasksByMember(
         @PathVariable UUID projectId,
         @PathVariable UUID memberId,
