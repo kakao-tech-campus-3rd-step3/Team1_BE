@@ -125,8 +125,8 @@ public interface TaskApi {
     @Operation(
         summary = "프로젝트별 할 일 목록 조회 - 상태 기준 (커서 페이지네이션)",
         description = """
-                특정 상태(TaskStatus)에 해당하는 프로젝트의 할 일 목록을 반환합니다.<br>
-                정렬(sortBy/direction) 가능
+            특정 상태(TaskStatus)에 해당하는 프로젝트의 할 일 목록을 반환합니다.<br>
+            정렬(sortBy/direction) 가능
             """
     )
     @ApiResponses({
@@ -153,8 +153,8 @@ public interface TaskApi {
     @Operation(
         summary = "내 할 일 목록 조회 - 상태 기준 (커서 페이지네이션)",
         description = """
-                로그인한 사용자가 속한 프로젝트들의 특정 상태(TaskStatus)에 해당하는 자신의 할 일 목록을 반환합니다.<br>
-                정렬(sortBy/direction) 가능
+            로그인한 사용자가 속한 프로젝트들의 특정 상태(TaskStatus)에 해당하는 자신의 할 일 목록을 반환합니다.<br>
+            정렬(sortBy/direction) 가능
             """
     )
     @ApiResponses({
@@ -180,9 +180,9 @@ public interface TaskApi {
     @Operation(
         summary = "프로젝트별 할 일 목록 조회 - 특정 팀원 (커서 페이지네이션)",
         description = """
-                특정 팀원의 프로젝트의 할 일 목록을 상태별 섹션으로 반환합니다.<br>
-                정렬은 지원하지 않으며, 기본 정렬만 제공됩니다.(생성일자 오름차순 + REVIEW -> PROGRESS -> TODO 순)<br>
-                DONE 상태는 제공되지 않으며  TODO, PROGRESS, REVIEW로 제공됩니다.
+            특정 팀원의 프로젝트의 할 일 목록을 상태별 섹션으로 반환합니다.<br>
+            정렬은 지원하지 않으며, 기본 정렬만 제공됩니다.(생성일자 오름차순 + REVIEW -> PROGRESS -> TODO 순)<br>
+            DONE 상태는 제공되지 않으며  TODO, PROGRESS, REVIEW로 제공됩니다.
             """
     )
     @ApiResponses({
