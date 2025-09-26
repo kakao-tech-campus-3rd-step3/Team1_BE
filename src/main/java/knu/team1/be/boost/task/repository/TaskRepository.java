@@ -27,11 +27,11 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
               AND (
                   (:cursorCreatedAtKey IS NULL AND :cursorDueDateKey IS NULL)
                   OR (
-                      (:sortBy = 'createdAt' AND :direction = 'ASC' AND (
+                      (:sortBy = 'CREATED_AT' AND :direction = 'ASC' AND (
                           t.createdAt > :cursorCreatedAtKey
                           OR (t.createdAt = :cursorCreatedAtKey AND t.id > :cursorId)
                       ))
-                      OR (:sortBy = 'createdAt' AND :direction = 'DESC' AND (
+                      OR (:sortBy = 'CREATED_AT' AND :direction = 'DESC' AND (
                           t.createdAt < :cursorCreatedAtKey
                           OR (t.createdAt = :cursorCreatedAtKey AND t.id < :cursorId)
                       ))
@@ -39,21 +39,67 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
                           t.dueDate > :cursorDueDateKey
                           OR (t.dueDate = :cursorDueDateKey AND t.id > :cursorId)
                       ))
-                      OR (:sortBy = 'dueDate' AND :direction = 'DESC' AND (
+                      OR (:sortBy = 'DUE_DATE' AND :direction = 'DESC' AND (
                           t.dueDate < :cursorDueDateKey
                           OR (t.dueDate = :cursorDueDateKey AND t.id < :cursorId)
                       ))
                   )
               )
             ORDER BY
-                CASE WHEN :sortBy = 'createdAt' AND :direction = 'ASC' THEN t.createdAt END ASC,
-                CASE WHEN :sortBy = 'createdAt' AND :direction = 'DESC' THEN t.createdAt END DESC,
-                CASE WHEN :sortBy = 'dueDate' AND :direction = 'ASC' THEN t.dueDate END ASC,
-                CASE WHEN :sortBy = 'dueDate' AND :direction = 'DESC' THEN t.dueDate END DESC,
+                CASE WHEN :sortBy = 'CREATED_AT' AND :direction = 'ASC' THEN t.createdAt END ASC,
+                CASE WHEN :sortBy = 'CREATED_AT' AND :direction = 'DESC' THEN t.createdAt END DESC,
+                CASE WHEN :sortBy = 'DUE_DATE' AND :direction = 'ASC' THEN t.dueDate END ASC,
+                CASE WHEN :sortBy = 'DUE_DATE' AND :direction = 'DESC' THEN t.dueDate END DESC,
                 t.id ASC
         """)
     List<Task> findTasksByStatusWithCursor(
         @Param("project") Project project,
+        @Param("status") TaskStatus status,
+        @Param("cursorCreatedAtKey") LocalDateTime cursorCreatedAtKey,
+        @Param("cursorDueDateKey") LocalDate cursorDueDateKey,
+        @Param("cursorId") UUID cursorId,
+        @Param("sortBy") String sortBy,
+        @Param("direction") String direction,
+        Pageable pageable
+    );
+
+    @Query("""
+            SELECT t
+            FROM Task t
+            WHERE t.project IN :projects
+              AND :member MEMBER OF t.assignees
+              AND t.status = :status
+              AND (
+                  (:cursorCreatedAtKey IS NULL AND :cursorDueDateKey IS NULL)
+                  OR (
+                      (:sortBy = 'CREATED_AT' AND :direction = 'ASC' AND (
+                          t.createdAt > :cursorCreatedAtKey
+                          OR (t.createdAt = :cursorCreatedAtKey AND t.id > :cursorId)
+                      ))
+                      OR (:sortBy = 'CREATED_AT' AND :direction = 'DESC' AND (
+                          t.createdAt < :cursorCreatedAtKey
+                          OR (t.createdAt = :cursorCreatedAtKey AND t.id < :cursorId)
+                      ))
+                      OR (:sortBy = 'DUE_DATE' AND :direction = 'ASC' AND (
+                          t.dueDate > :cursorDueDateKey
+                          OR (t.dueDate = :cursorDueDateKey AND t.id > :cursorId)
+                      ))
+                      OR (:sortBy = 'DUE_DATE' AND :direction = 'DESC' AND (
+                          t.dueDate < :cursorDueDateKey
+                          OR (t.dueDate = :cursorDueDateKey AND t.id < :cursorId)
+                      ))
+                  )
+              )
+            ORDER BY
+                CASE WHEN :sortBy = 'CREATED_AT' AND :direction = 'ASC' THEN t.createdAt END ASC,
+                CASE WHEN :sortBy = 'CREATED_AT' AND :direction = 'DESC' THEN t.createdAt END DESC,
+                CASE WHEN :sortBy = 'DUE_DATE' AND :direction = 'ASC' THEN t.dueDate END ASC,
+                CASE WHEN :sortBy = 'DUE_DATE' AND :direction = 'DESC' THEN t.dueDate END DESC,
+                t.id ASC
+        """)
+    List<Task> findMyTasksByStatusWithCursor(
+        @Param("projects") List<Project> projects,
+        @Param("member") Member member,
         @Param("status") TaskStatus status,
         @Param("cursorCreatedAtKey") LocalDateTime cursorCreatedAtKey,
         @Param("cursorDueDateKey") LocalDate cursorDueDateKey,

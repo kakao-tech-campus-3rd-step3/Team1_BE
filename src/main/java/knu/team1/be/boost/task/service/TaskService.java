@@ -233,6 +233,57 @@ public class TaskService {
     }
 
     @Transactional(readOnly = true)
+    public TaskStatusSectionDto listMyTasksByStatus(
+        TaskStatus status,
+        TaskSortBy sortBy,
+        TaskSortDirection direction,
+        UUID cursorId,
+        int limit,
+        UserPrincipalDto user
+    ) {
+        Member member = memberRepository.findById(user.id())
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.MEMBER_NOT_FOUND, "memberId: " + user.id()
+            ));
+
+        List<Project> projects = projectMemberRepository.findAllByMember(member)
+            .stream()
+            .map(ProjectMember::getProject)
+            .toList();
+
+        LocalDateTime cursorCreatedAtKey = null;
+        LocalDate cursorDueDateKey = null;
+
+        if (cursorId != null) {
+            Task cursorTarget = taskRepository.findById(cursorId).orElse(null);
+            if (cursorTarget != null) {
+                if (sortBy == TaskSortBy.CREATED_AT) {
+                    cursorCreatedAtKey = cursorTarget.getCreatedAt();
+                } else if (sortBy == TaskSortBy.DUE_DATE) {
+                    cursorDueDateKey = cursorTarget.getDueDate();
+                }
+            }
+        }
+
+        int safeLimit = Math.max(1, Math.min(limit, 50));
+        Pageable pageable = PageRequest.of(0, safeLimit + 1);
+
+        List<Task> tasks = taskRepository.findMyTasksByStatusWithCursor(
+            projects,
+            member,
+            status,
+            cursorCreatedAtKey,
+            cursorDueDateKey,
+            cursorId,
+            sortBy.name(),
+            direction.name(),
+            pageable
+        );
+
+        return TaskStatusSectionDto.from(tasks, limit);
+    }
+
+    @Transactional(readOnly = true)
     public TaskMemberSectionResponseDto listByMember(
         UUID projectId,
         UUID memberId,

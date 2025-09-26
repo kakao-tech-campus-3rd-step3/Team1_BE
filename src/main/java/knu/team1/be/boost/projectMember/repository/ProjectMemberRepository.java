@@ -1,8 +1,10 @@
 package knu.team1.be.boost.projectMember.repository;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.projectMember.entity.ProjectMember;
 import knu.team1.be.boost.projectMember.entity.ProjectRole;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -28,4 +30,6 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, UU
     int countByProjectIdAndMemberIdIn(UUID projectId, Collection<UUID> memberIds);
 
     boolean existsByProjectIdAndMemberIdAndRole(UUID projectId, UUID memberId, ProjectRole role);
+
+    List<ProjectMember> findAllByMember(Member member);
 }
