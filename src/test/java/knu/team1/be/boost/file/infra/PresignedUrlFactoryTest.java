@@ -31,14 +31,6 @@ class PresignedUrlFactoryTest {
 
     private PresignedUrlFactory factory;
 
-    private static String sanitize(String name) {
-        return ReflectionTestUtils.invokeMethod(
-            PresignedUrlFactory.class,
-            "sanitizeFilename",
-            name
-        );
-    }
-
     @BeforeEach
     void setUp() {
         factory = new PresignedUrlFactory(s3Presigner);
@@ -191,5 +183,13 @@ class PresignedUrlFactoryTest {
             String out = sanitize(longName);
             assertEquals(255, out.length());
         }
+    }
+
+    private static String sanitize(String name) {
+        return ReflectionTestUtils.invokeMethod(
+            PresignedUrlFactory.class,
+            "sanitizeFilename",
+            name
+        );
     }
 }

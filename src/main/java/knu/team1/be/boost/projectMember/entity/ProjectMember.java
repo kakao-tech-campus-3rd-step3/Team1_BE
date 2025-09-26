@@ -23,7 +23,7 @@ import org.hibernate.annotations.SQLRestriction;
 @Getter
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@SQLDelete(sql = "UPDATE project_member SET deleted = true WHERE id = ?")
+@SQLDelete(sql = "UPDATE project_member SET deleted = true, deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
 @SQLRestriction("deleted = false")
 @Table(name = "project_member", uniqueConstraints = {
     @UniqueConstraint(
@@ -46,8 +46,7 @@ public class ProjectMember extends SoftDeletableEntity {
     private ProjectRole role;
 
     /**
-     * 프로젝트와 멤버 간의 연관관계를 나타내는 ProjectMember 엔티티를 생성합니다.
-     * 생성된 엔티티는 프로젝트와 멤버의 컬렉션에 자동으로 추가됩니다.
+     * 프로젝트와 멤버 간의 연관관계를 나타내는 ProjectMember 엔티티를 생성합니다. 생성된 엔티티는 프로젝트와 멤버의 컬렉션에 자동으로 추가됩니다.
      *
      * @param project 연관 지을 프로젝트
      * @param member  연관 지을 멤버

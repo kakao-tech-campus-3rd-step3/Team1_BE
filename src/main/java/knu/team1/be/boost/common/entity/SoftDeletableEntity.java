@@ -19,7 +19,7 @@ public abstract class SoftDeletableEntity extends BaseEntity {
     @Builder.Default
     private boolean deleted = false;
 
-    @Column(name = "deletedAt")
+    @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
     public void reactivate() {

@@ -1,7 +1,9 @@
 {
   "family": "boost-task-jh",
   "networkMode": "awsvpc",
-  "requiresCompatibilities": ["EC2"],
+  "requiresCompatibilities": [
+    "EC2"
+  ],
   "cpu": "1024",
   "executionRoleArn": "arn:aws:iam::994523636482:role/ecsTaskExecutionRole-jh",
   "taskRoleArn": "arn:aws:iam::994523636482:role/ecsTaskRoleS3-seo",
@@ -11,7 +13,10 @@
       "image": "994523636482.dkr.ecr.ap-northeast-2.amazonaws.com/boost-ecr:latest",
       "essential": true,
       "portMappings": [
-        { "containerPort": 8080, "protocol": "tcp" }
+        {
+          "containerPort": 8080,
+          "protocol": "tcp"
+        }
       ],
       "logConfiguration": {
         "logDriver": "awslogs",
@@ -24,7 +29,53 @@
       "environment": [
         {
           "name": "JAVA_TOOL_OPTIONS",
-          "value": "-XX:MaxRAMPercentage=70 -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError"
+          "value": "-XX:MaxRAMPercentage=70 -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError -Dspring.profiles.active=prod"
+        }
+      ],
+      "secrets": [
+        {
+          "name": "RDS_URL",
+          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:994523636482:secret:boost-secret-yj-vhponB:RDS_URL::"
+        },
+        {
+          "name": "RDS_USERNAME",
+          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:994523636482:secret:boost-secret-yj-vhponB:RDS_USERNAME::"
+        },
+        {
+          "name": "RDS_PASSWORD",
+          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:994523636482:secret:boost-secret-yj-vhponB:RDS_PASSWORD::"
+        },
+        {
+          "name": "JWT_SECRET_KEY",
+          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:994523636482:secret:boost-secret-yj-vhponB:JWT_SECRET_KEY::"
+        },
+        {
+          "name": "KAKAO_CLIENT_ID",
+          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:994523636482:secret:boost-secret-yj-vhponB:KAKAO_CLIENT_ID::"
+        },
+        {
+          "name": "KAKAO_CLIENT_SECRET",
+          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:994523636482:secret:boost-secret-yj-vhponB:KAKAO_CLIENT_SECRET::"
+        },
+        {
+          "name": "KAKAO_REDIRECT_URI",
+          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:994523636482:secret:boost-secret-yj-vhponB:KAKAO_REDIRECT_URI::"
+        },
+        {
+          "name": "AWS_REGION",
+          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:994523636482:secret:boost-secret-yj-vhponB:AWS_REGION::"
+        },
+        {
+          "name": "AWS_S3_BUCKET",
+          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:994523636482:secret:boost-secret-yj-vhponB:AWS_S3_BUCKET::"
+        },
+        {
+          "name": "AWS_ACCESS_KEY",
+          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:994523636482:secret:boost-secret-yj-vhponB:AWS_ACCESS_KEY::"
+        },
+        {
+          "name": "AWS_SECRET_KEY",
+          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:994523636482:secret:boost-secret-yj-vhponB:AWS_SECRET_KEY::"
         }
       ],
       "memoryReservation": 512,
