@@ -35,7 +35,7 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
                           t.createdAt < :cursorCreatedAtKey
                           OR (t.createdAt = :cursorCreatedAtKey AND t.id < :cursorId)
                       ))
-                      OR (:sortBy = 'dueDate' AND :direction = 'ASC' AND (
+                      OR (:sortBy = 'DUE_DATE' AND :direction = 'ASC' AND (
                           t.dueDate > :cursorDueDateKey
                           OR (t.dueDate = :cursorDueDateKey AND t.id > :cursorId)
                       ))
