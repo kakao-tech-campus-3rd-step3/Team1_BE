@@ -8,7 +8,7 @@ import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
 import knu.team1.be.boost.common.entity.SoftDeletableEntity;
-import knu.team1.be.boost.projectMember.entity.ProjectMember;
+import knu.team1.be.boost.projectMembership.entity.ProjectMembership;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -34,7 +34,7 @@ public class Project extends SoftDeletableEntity {
 
     @OneToMany(mappedBy = "project", fetch = FetchType.LAZY)
     @Builder.Default
-    private List<ProjectMember> projectMembers = new ArrayList<>();
+    private List<ProjectMembership> projectMemberships = new ArrayList<>();
 
     public void updateProject(String name, Integer defaultReviewerCount) {
         if (name != null) {

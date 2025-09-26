@@ -17,6 +17,10 @@ public enum ErrorCode {
     PROJECT_MEMBER_ONLY(HttpStatus.FORBIDDEN, "Project member only", "프로젝트 멤버만 사용할 수 있습니다."),
     PROJECT_OWNER_ONLY(HttpStatus.FORBIDDEN, "Project owner only", "프로젝트 소유자만 수행할 수 있습니다."),
 
+    // Project Join Code 관련
+    EXPIRED_JOIN_CODE(HttpStatus.BAD_REQUEST, "Expired join code", "만료된 참가 코드입니다."),
+    JOIN_CODE_NOT_FOUND(HttpStatus.NOT_FOUND, "Join code not found", "참가 코드를 찾을 수 없습니다."),
+
     // Task 관련
     TASK_NOT_FOUND(HttpStatus.NOT_FOUND, "Task not found", "할 일을 찾을 수 없습니다."),
     TASK_NOT_IN_PROJECT(HttpStatus.CONFLICT, "Task not in project", "해당 할 일이 프로젝트에 속하지 않습니다."),
