@@ -25,6 +25,7 @@ import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
 import knu.team1.be.boost.project.entity.Project;
 import knu.team1.be.boost.project.repository.ProjectRepository;
+import knu.team1.be.boost.projectMember.repository.ProjectMemberRepository;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
 import knu.team1.be.boost.task.dto.TaskResponseDto;
 import knu.team1.be.boost.task.dto.TaskStatusRequestDto;
@@ -49,9 +50,11 @@ class TaskServiceTest {
     @Mock
     MemberRepository memberRepository;
     @Mock
-    AccessPolicy accessPolicy;
-    @Mock
     ProjectRepository projectRepository;
+    @Mock
+    ProjectMemberRepository projectMemberRepository;
+    @Mock
+    AccessPolicy accessPolicy;
 
     TaskService taskService;
 
@@ -68,9 +71,10 @@ class TaskServiceTest {
         projectId = UUID.randomUUID();
         project = Fixtures.project(projectId);
         baseTask = Fixtures.task(UUID.randomUUID(), project);
-        
+
         taskService = new TaskService(
-            taskRepository, memberRepository, projectRepository, accessPolicy
+            taskRepository, memberRepository, projectRepository, projectMemberRepository,
+            accessPolicy
         );
     }
 
