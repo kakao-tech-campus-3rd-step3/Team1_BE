@@ -5,14 +5,17 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.UUID;
+import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.file.dto.FileCompleteRequestDto;
 import knu.team1.be.boost.file.dto.FileCompleteResponseDto;
 import knu.team1.be.boost.file.dto.FileRequestDto;
 import knu.team1.be.boost.file.dto.FileResponseDto;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Tag(name = "Files", description = "파일 관련 API")
 @RequestMapping("/api/files")
+@SecurityRequirement(name = "bearerAuth")
 public interface FileApi {
 
     @Operation(
@@ -41,7 +45,10 @@ public interface FileApi {
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
     @PostMapping("/upload-url")
-    ResponseEntity<FileResponseDto> uploadFile(@Valid @RequestBody FileRequestDto request);
+    ResponseEntity<FileResponseDto> uploadFile(
+        @Valid @RequestBody FileRequestDto request,
+        @AuthenticationPrincipal UserPrincipalDto user
+    );
 
     @Operation(
         summary = "다운로드 Presigned URL 발급",
@@ -62,7 +69,10 @@ public interface FileApi {
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
     @GetMapping("/{fileId}/download-url")
-    ResponseEntity<FileResponseDto> downloadFile(@PathVariable UUID fileId);
+    ResponseEntity<FileResponseDto> downloadFile(
+        @PathVariable UUID fileId,
+        @AuthenticationPrincipal UserPrincipalDto user
+    );
 
     @Operation(
         summary = "업로드 완료 콜백",
@@ -84,6 +94,7 @@ public interface FileApi {
     @PatchMapping("/{fileId}/complete")
     ResponseEntity<FileCompleteResponseDto> completeUpload(
         @PathVariable UUID fileId,
-        @Valid @RequestBody FileCompleteRequestDto request
+        @Valid @RequestBody FileCompleteRequestDto request,
+        @AuthenticationPrincipal UserPrincipalDto user
     );
 }

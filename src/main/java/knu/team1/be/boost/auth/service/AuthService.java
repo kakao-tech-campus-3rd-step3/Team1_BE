@@ -7,10 +7,9 @@ import knu.team1.be.boost.auth.dto.KakaoDto;
 import knu.team1.be.boost.auth.dto.TokenDto;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.auth.entity.RefreshToken;
-import knu.team1.be.boost.auth.exception.InvalidRefreshTokenException;
-import knu.team1.be.boost.auth.exception.RefreshTokenNotEqualsException;
-import knu.team1.be.boost.auth.exception.RefreshTokenNotFoundException;
 import knu.team1.be.boost.auth.repository.RefreshTokenRepository;
+import knu.team1.be.boost.common.exception.BusinessException;
+import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.entity.vo.OauthInfo;
 import knu.team1.be.boost.member.repository.MemberRepository;
@@ -62,7 +61,7 @@ public class AuthService {
         try {
             jwtUtil.validateToken(refreshToken);
         } catch (JwtException e) {
-            throw new InvalidRefreshTokenException();
+            throw new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
 
         // 만료된 Access Token에서 memberId 추출
@@ -71,10 +70,16 @@ public class AuthService {
 
         RefreshToken storedRefreshToken = refreshTokenRepository.findByMemberId(
                 userPrincipalDto.id())
-            .orElseThrow(RefreshTokenNotFoundException::new);
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.REFRESH_TOKEN_NOT_FOUND,
+                "memberId: " + userPrincipalDto.id()
+            ));
 
         if (!storedRefreshToken.getRefreshToken().equals(refreshToken)) {
-            throw new RefreshTokenNotEqualsException();
+            throw new BusinessException(
+                ErrorCode.REFRESH_TOKEN_NOT_EQUALS,
+                "refreshToken mismatch for memberId: " + userPrincipalDto.id()
+            );
         }
 
         // 모든 검증을 통과하면 새로운 토큰을 생성

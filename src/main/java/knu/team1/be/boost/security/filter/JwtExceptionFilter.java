@@ -11,15 +11,17 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
-import java.util.Map;
 import knu.team1.be.boost.auth.exception.MissingAuthoritiesClaimException;
+import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.common.exception.ErrorResponses;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+@Slf4j
 @Component
 public class JwtExceptionFilter extends OncePerRequestFilter {
 
@@ -44,35 +46,34 @@ public class JwtExceptionFilter extends OncePerRequestFilter {
         Exception e
     ) throws IOException {
 
-        String errorCode = "INVALID_TOKEN";
-        String message = "유효하지 않은 토큰입니다.";
-        HttpStatus status = HttpStatus.UNAUTHORIZED;
+        ErrorCode errorCode = resolveJwtErrorCode(e);
+        HttpStatus httpStatus = errorCode.getHttpStatus();
+        String errorMessage = errorCode.getErrorMessage();
 
-        if (e instanceof ExpiredJwtException) {
-            errorCode = "TOKEN_EXPIRED";
-            message = "만료된 토큰입니다.";
-        } else if (e instanceof MalformedJwtException
-            || e instanceof io.jsonwebtoken.security.SecurityException) {
-            errorCode = "INVALID_SIGNATURE";
-            message = "잘못된 서명이거나 유효하지 않은 형식의 토큰입니다.";
-        } else if (e instanceof UnsupportedJwtException) {
-            errorCode = "UNSUPPORTED_TOKEN";
-            message = "지원하지 않는 형식의 토큰입니다.";
-        } else if (e instanceof MissingAuthoritiesClaimException) {
-            errorCode = "MISSING_CLAIMS";
-            message = e.getMessage();
-            status = HttpStatus.BAD_REQUEST; // 내용물 부재이기 때문에 400
-        }
-
-        // ErrorResponses를 사용하여 ProblemDetail 객체 생성
-        ProblemDetail problemDetail = ErrorResponses.of(
-            status,
-            message,
-            URI.create(request.getRequestURI()),
-            Map.of("errorCode", errorCode) // 커스텀 프로퍼티 추가
+        ProblemDetail problemDetail = ErrorResponses.forBusiness(
+            errorCode,
+            URI.create(request.getRequestURI())
         );
 
+        log.warn("[{} {}] {}", httpStatus.value(), errorCode, errorMessage, e);
+
         setErrorResponse(response, problemDetail);
+    }
+
+    private ErrorCode resolveJwtErrorCode(Exception e) {
+        if (e instanceof ExpiredJwtException) {
+            return ErrorCode.TOKEN_EXPIRED;
+        }
+        if (e instanceof MalformedJwtException || e instanceof SecurityException) {
+            return ErrorCode.INVALID_SIGNATURE;
+        }
+        if (e instanceof UnsupportedJwtException) {
+            return ErrorCode.UNSUPPORTED_TOKEN;
+        }
+        if (e instanceof MissingAuthoritiesClaimException) {
+            return ErrorCode.MISSING_CLAIMS;
+        }
+        return ErrorCode.AUTHENTICATION_FAILED;
     }
 
     private void setErrorResponse(HttpServletResponse response, ProblemDetail problemDetail)

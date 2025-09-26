@@ -1,8 +1,10 @@
 package knu.team1.be.boost.auth.exception;
 
+import knu.team1.be.boost.common.exception.ErrorCode;
+
 public class MissingAuthoritiesClaimException extends RuntimeException {
 
     public MissingAuthoritiesClaimException() {
-        super("권한 정보가 없는 토큰입니다.");
+        super(ErrorCode.MISSING_CLAIMS.getClientMessage());
     }
 }

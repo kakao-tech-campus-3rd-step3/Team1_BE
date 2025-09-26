@@ -8,7 +8,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.function.Consumer;
-import knu.team1.be.boost.file.exception.StorageServiceException;
+import knu.team1.be.boost.common.exception.BusinessException;
+import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.file.infra.s3.PresignedUrlFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -70,7 +71,7 @@ class PresignedUrlFactoryTest {
                 .thenThrow(SdkClientException.class);
 
             // when & then
-            assertThrows(StorageServiceException.class, () ->
+            BusinessException exception = assertThrows(BusinessException.class, () ->
                 factory.forUpload(
                     "test-bucket",
                     "test-key",
@@ -78,6 +79,8 @@ class PresignedUrlFactoryTest {
                     900
                 )
             );
+
+            assertEquals(ErrorCode.STORAGE_SERVICE_ERROR, exception.getErrorCode());
         }
     }
 
@@ -116,7 +119,7 @@ class PresignedUrlFactoryTest {
                 .thenThrow(SdkClientException.builder().message("test-exception").build());
 
             // when & then
-            assertThrows(StorageServiceException.class, () ->
+            BusinessException exception = assertThrows(BusinessException.class, () ->
                 factory.forDownload(
                     "test-bucket",
                     "test-key",
@@ -125,6 +128,8 @@ class PresignedUrlFactoryTest {
                     900
                 )
             );
+
+            assertEquals(ErrorCode.STORAGE_SERVICE_ERROR, exception.getErrorCode());
         }
     }
 

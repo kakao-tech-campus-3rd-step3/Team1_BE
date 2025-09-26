@@ -2,6 +2,7 @@ package knu.team1.be.boost.auth.controller;
 
 import java.time.Duration;
 import knu.team1.be.boost.auth.dto.AccessTokenResponseDto;
+import knu.team1.be.boost.auth.dto.LoginRequestDto;
 import knu.team1.be.boost.auth.dto.TokenDto;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.auth.service.AuthService;
@@ -13,8 +14,8 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -29,8 +30,10 @@ public class AuthController implements AuthApi {
     private Duration refreshTokenExpireTime;
 
     @Override
-    public ResponseEntity<AccessTokenResponseDto> kakaoLogin(@RequestParam("code") String code) {
-        TokenDto tokenDto = authService.login(code);
+    public ResponseEntity<AccessTokenResponseDto> kakaoLogin(
+        @RequestBody LoginRequestDto requestDto
+    ) {
+        TokenDto tokenDto = authService.login(requestDto.code());
 
         // 헤더에 Refresh Token 쿠키 추가
         HttpHeaders headers = createCookieHeaders(tokenDto.refreshToken());

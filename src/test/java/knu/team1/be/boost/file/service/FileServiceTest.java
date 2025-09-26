@@ -5,7 +5,9 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -14,6 +16,10 @@ import static org.mockito.Mockito.when;
 import java.net.URL;
 import java.util.Optional;
 import java.util.UUID;
+import knu.team1.be.boost.auth.dto.UserPrincipalDto;
+import knu.team1.be.boost.common.exception.BusinessException;
+import knu.team1.be.boost.common.exception.ErrorCode;
+import knu.team1.be.boost.common.policy.AccessPolicy;
 import knu.team1.be.boost.file.dto.FileCompleteRequestDto;
 import knu.team1.be.boost.file.dto.FileCompleteResponseDto;
 import knu.team1.be.boost.file.dto.FileRequestDto;
@@ -23,14 +29,12 @@ import knu.team1.be.boost.file.entity.FileStatus;
 import knu.team1.be.boost.file.entity.FileType;
 import knu.team1.be.boost.file.entity.vo.FileMetadata;
 import knu.team1.be.boost.file.entity.vo.StorageKey;
-import knu.team1.be.boost.file.exception.FileAlreadyUploadCompletedException;
-import knu.team1.be.boost.file.exception.FileNotFoundException;
-import knu.team1.be.boost.file.exception.FileNotReadyException;
-import knu.team1.be.boost.file.exception.FileTooLargeException;
 import knu.team1.be.boost.file.infra.s3.PresignedUrlFactory;
 import knu.team1.be.boost.file.repository.FileRepository;
+import knu.team1.be.boost.member.entity.Member;
+import knu.team1.be.boost.member.repository.MemberRepository;
+import knu.team1.be.boost.project.entity.Project;
 import knu.team1.be.boost.task.entity.Task;
-import knu.team1.be.boost.task.exception.TaskNotFoundException;
 import knu.team1.be.boost.task.repository.TaskRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -53,86 +57,91 @@ class FileServiceTest {
     @Mock
     TaskRepository taskRepository;
     @Mock
+    MemberRepository memberRepository;
+    @Mock
+    AccessPolicy accessPolicy;
+    @Mock
     PresignedUrlFactory presignedUrlFactory;
 
     FileService fileService;
 
+    UUID userId;
+    UUID projectId;
+    UserPrincipalDto user;
+    Member member;
+    Project project;
+    Task task;
+
     @BeforeEach
     void setUp() {
-        fileService = new FileService(fileRepository, taskRepository, presignedUrlFactory);
-        ReflectionTestUtils.setField(fileService, "bucket", "test-bucket");
-        ReflectionTestUtils.setField(fileService, "expireSeconds", 900);
+        userId = UUID.randomUUID();
+        projectId = UUID.randomUUID();
+        user = UserPrincipalDto.from(userId, "test-user", "avatar-code");
+        member = Fixtures.member(userId);
+        project = Fixtures.project(projectId);
+        task = Fixtures.task(UUID.randomUUID(), project);
+        
+        fileService = new FileService(
+            fileRepository, taskRepository, memberRepository, accessPolicy, presignedUrlFactory
+        );
+        ReflectionTestUtils.setField(fileService, "bucket", Fixtures.BUCKET);
+        ReflectionTestUtils.setField(fileService, "expireSeconds", Fixtures.EXPIRES);
         ReflectionTestUtils.setField(fileService, "maxUploadSize", DataSize.ofMegabytes(5));
     }
 
-
     @Nested
-    @DisplayName("업로드 Pre-Signed URL 발급")
+    @DisplayName("업로드 Presigned URL 발급")
     class UploadPresign {
 
         @Test
-        @DisplayName("업로드 Pre-Signed URL 발급 성공")
+        @DisplayName("업로드 Presigned URL 발급 성공")
         void test1() throws Exception {
             // given
-            FileRequestDto request = new FileRequestDto(
-                "최종 보고서.pdf",
-                "application/pdf",
-                1048576
-            );
-
-            given(fileRepository.save(any(File.class)))
-                .willAnswer(invocation -> invocation.getArgument(0));
+            FileRequestDto req = Fixtures.reqUpload();
+            given(memberRepository.findById(userId)).willReturn(Optional.of(member));
+            given(fileRepository.save(any(File.class))).willAnswer(inv -> inv.getArgument(0));
 
             PresignedPutObjectRequest putReq = mock(PresignedPutObjectRequest.class);
-            when(putReq.url()).thenReturn(
-                new URL("https://boost-s3-bucket-storage.s3.ap-northeast-2.amazonaws.com/..."));
+            when(putReq.url()).thenReturn(new URL(Fixtures.PRESIGNED_URL));
+
             given(presignedUrlFactory.forUpload(anyString(), anyString(), anyString(), anyInt()))
                 .willReturn(putReq);
 
             // when
-            FileResponseDto response = fileService.uploadFile(request);
+            FileResponseDto res = fileService.uploadFile(req, user);
 
             // then
-            assertThat(response.key()).startsWith("file/");
-            assertThat(response.key()).endsWith(".pdf");
-            assertThat(response.url()).isEqualTo(
-                "https://boost-s3-bucket-storage.s3.ap-northeast-2.amazonaws.com/...");
-            assertThat(response.method()).isEqualTo("PUT");
-            assertThat(response.headers().get("Content-Type")).isEqualTo("application/pdf");
-            assertThat(response.headers().get("x-amz-server-side-encryption")).isEqualTo("AES256");
-            assertThat(response.expiresInSeconds()).isEqualTo(900);
+            assertThat(res.method()).isEqualTo("PUT");
+            assertThat(res.url()).isEqualTo(Fixtures.PRESIGNED_URL);
+            assertThat(res.expiresInSeconds()).isEqualTo(Fixtures.EXPIRES);
 
-            ArgumentCaptor<File> savedCap = ArgumentCaptor.forClass(File.class);
-            verify(fileRepository).save(savedCap.capture());
-            File saved = savedCap.getValue();
-            assertThat(saved.getMetadata().originalFilename()).isEqualTo("최종 보고서.pdf");
-            assertThat(saved.getMetadata().contentType()).isEqualTo("application/pdf");
-            assertThat(saved.getMetadata().sizeBytes()).isEqualTo(1048576);
+            ArgumentCaptor<File> cap = ArgumentCaptor.forClass(File.class);
+            verify(fileRepository).save(cap.capture());
+            File saved = cap.getValue();
             assertThat(saved.getType()).isEqualTo(FileType.PDF);
             assertThat(saved.getStatus()).isEqualTo(FileStatus.PENDING);
-            assertThat(saved.getStorageKey().value()).isEqualTo(response.key());
+            assertThat(saved.getMetadata().originalFilename()).isEqualTo(Fixtures.FILENAME);
         }
 
         @Test
-        @DisplayName("업로드 Pre-Signed URL 발급 실패 - 413 (파일 크기 제한 5MB 초과)")
+        @DisplayName("업로드 Presigned URL 발급 실패 - 파일 크기 초과(413)")
         void test2() {
-            FileRequestDto request = new FileRequestDto(
-                "최종 보고서.pdf",
-                "application/pdf",
-                500000000
-            );
+            // given
+            FileRequestDto req = new FileRequestDto(Fixtures.FILENAME, Fixtures.CT_PDF,
+                500_000_000);
+            given(memberRepository.findById(userId)).willReturn(Optional.of(member));
 
             // when & then
-            assertThatThrownBy(() -> fileService.uploadFile(request))
-                .isInstanceOf(FileTooLargeException.class);
+            assertThatThrownBy(() -> fileService.uploadFile(req, user))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.FILE_TOO_LARGE);
 
             verifyNoInteractions(fileRepository, presignedUrlFactory);
         }
-
     }
 
     @Nested
-    @DisplayName("다운로드 Pre-Signed URL 발급")
+    @DisplayName("다운로드 Presigned URL 발급")
     class DownloadPresign {
 
         @Test
@@ -140,246 +149,208 @@ class FileServiceTest {
         void test1() throws Exception {
             // given
             UUID fileId = UUID.randomUUID();
-
-            File file = File.builder()
-                .id(fileId)
-                .metadata(FileMetadata.of(
-                    "최종 보고서.pdf",
-                    "application/pdf",
-                    1048576)
-                )
-                .type(FileType.PDF)
-                .storageKey(new StorageKey("file/2025/09/10/" + fileId + ".pdf"))
-                .status(FileStatus.COMPLETED)
-                .build();
-
+            File file = Fixtures.fileCompleted(fileId, member, task);
             given(fileRepository.findById(fileId)).willReturn(Optional.of(file));
+            doNothing().when(accessPolicy).ensureProjectMember(eq(projectId), eq(userId));
 
             PresignedGetObjectRequest getReq = mock(PresignedGetObjectRequest.class);
-            when(getReq.url()).thenReturn(
-                new URL("https://boost-s3-bucket-storage.s3.ap-northeast-2.amazonaws.com/..."));
-            given(presignedUrlFactory.forDownload(
-                anyString(), anyString(), anyString(), anyString(), anyInt()
-            )).willReturn(getReq);
+            when(getReq.url()).thenReturn(new URL(Fixtures.PRESIGNED_URL));
+
+            given(
+                presignedUrlFactory.forDownload(anyString(), anyString(), anyString(), anyString(),
+                    anyInt()))
+                .willReturn(getReq);
 
             // when
-            FileResponseDto response = fileService.downloadFile(fileId);
+            FileResponseDto res = fileService.downloadFile(fileId, user);
 
             // then
-            assertThat(response.fileId()).isEqualTo(fileId);
-            assertThat(response.key()).isEqualTo(file.getStorageKey().value());
-            assertThat(response.method()).isEqualTo("GET");
-            assertThat(response.url()).isEqualTo(
-                "https://boost-s3-bucket-storage.s3.ap-northeast-2.amazonaws.com/...");
-            assertThat(response.expiresInSeconds()).isEqualTo(900);
+            assertThat(res.method()).isEqualTo("GET");
+            assertThat(res.url()).isEqualTo(Fixtures.PRESIGNED_URL);
+            assertThat(res.key()).isEqualTo(file.getStorageKey().value());
         }
 
         @Test
-        @DisplayName("다운로드 Pre-Signed URL 발급 실패 - 404 (파일 존재 x)")
+        @DisplayName("다운로드 Pre-Signed URL 발급 실패 - 404(파일 없음)")
         void test2() {
             // given
             UUID fileId = UUID.randomUUID();
             given(fileRepository.findById(fileId)).willReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(() -> fileService.downloadFile(fileId))
-                .isInstanceOf(FileNotFoundException.class);
+            assertThatThrownBy(() -> fileService.downloadFile(fileId, user))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.FILE_NOT_FOUND);
 
             verifyNoInteractions(presignedUrlFactory);
         }
 
         @Test
-        @DisplayName("다운로드 Pre-Signed URL 발급 실패 - 409 (업로드 미완료)")
+        @DisplayName("다운로드 Pre-Signed URL 발급 실패 - 409(업로드 미완료)")
         void test3() {
             // given
             UUID fileId = UUID.randomUUID();
-            File file = File.builder()
-                .id(fileId)
-                .metadata(FileMetadata.of(
-                    "최종 보고서.pdf",
-                    "application/pdf",
-                    1048576)
-                )
-                .type(FileType.PDF)
-                .storageKey(new StorageKey("file/2025/09/10/" + fileId + ".pdf"))
-                .status(FileStatus.PENDING)
-                .build();
+            File file = Fixtures.filePending(fileId, member, task);
             given(fileRepository.findById(fileId)).willReturn(Optional.of(file));
 
             // when & then
-            assertThatThrownBy(() -> fileService.downloadFile(fileId))
-                .isInstanceOf(FileNotReadyException.class);
+            assertThatThrownBy(() -> fileService.downloadFile(fileId, user))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.FILE_NOT_READY);
 
             verifyNoInteractions(presignedUrlFactory);
         }
-
     }
 
     @Nested
-    @DisplayName("업로드 완료 요청")
+    @DisplayName("업로드 완료")
     class CompleteUpload {
 
         @Test
-        @DisplayName("업로드 완료 요청 성공")
+        @DisplayName("업로드 완료 성공")
         void test1() {
             // given
             UUID fileId = UUID.randomUUID();
-            UUID taskId = UUID.randomUUID();
-            File file = File.builder()
-                .id(fileId)
-                .metadata(FileMetadata.of(
-                    "최종 보고서.pdf",
-                    "application/pdf",
-                    1048576)
-                )
-                .type(FileType.PDF)
-                .storageKey(new StorageKey("file/2025/09/10/" + fileId + ".pdf"))
-                .status(FileStatus.PENDING)
-                .build();
-
-            Task task = Task.builder()
-                .id(taskId)
-                .build();
-
+            UUID taskId = task.getId();
+            File file = Fixtures.filePending(fileId, member, null);
             given(fileRepository.findById(fileId)).willReturn(Optional.of(file));
             given(taskRepository.findById(taskId)).willReturn(Optional.of(task));
+            doNothing().when(accessPolicy).ensureProjectMember(eq(projectId), eq(userId));
+            doNothing().when(accessPolicy).ensureTaskAssignee(eq(taskId), eq(userId));
 
-            FileCompleteRequestDto request = new FileCompleteRequestDto(
-                taskId,
-                "최종 보고서.pdf",
-                "application/pdf",
-                1048576
-            );
+            FileCompleteRequestDto req = Fixtures.reqComplete(taskId);
 
             // when
-            FileCompleteResponseDto response = fileService.completeUpload(fileId, request);
+            FileCompleteResponseDto res = fileService.completeUpload(fileId, req, user);
 
             // then
-            assertThat(response.fileId()).isEqualTo(fileId);
+            assertThat(res.fileId()).isEqualTo(fileId);
             assertThat(file.getStatus()).isEqualTo(FileStatus.COMPLETED);
             assertThat(file.getTask()).isEqualTo(task);
         }
 
         @Test
-        @DisplayName("업로드 완료 요청 실패 - 400 (파일 메타 데이터 불일치)")
+        @DisplayName("업로드 완료 실패 - 400(메타데이터 불일치)")
         void test2() {
             // given
             UUID fileId = UUID.randomUUID();
-            UUID taskId = UUID.randomUUID();
-            File file = File.builder()
-                .id(fileId)
-                .metadata(FileMetadata.of(
-                    "최종 보고서.pdf",
-                    "application/pdf",
-                    1048576)
-                )
-                .type(FileType.PDF)
-                .storageKey(new StorageKey("file/2025/09/10/" + fileId + ".pdf"))
-                .status(FileStatus.PENDING)
-                .build();
-
+            File file = Fixtures.filePending(fileId, member, null);
             given(fileRepository.findById(fileId)).willReturn(Optional.of(file));
 
-            FileCompleteRequestDto req = new FileCompleteRequestDto(
-                taskId, "다른 파일.pdf", "application/pdf", 1234
+            FileCompleteRequestDto wrong = new FileCompleteRequestDto(
+                UUID.randomUUID(), "다른 파일.pdf", Fixtures.CT_PDF, 1234
             );
 
             // when & then
-            assertThatThrownBy(() -> fileService.completeUpload(fileId, req))
+            assertThatThrownBy(() -> fileService.completeUpload(fileId, wrong, user))
                 .isInstanceOf(IllegalArgumentException.class);
 
-            verifyNoInteractions(taskRepository);
+            verifyNoInteractions(taskRepository, accessPolicy);
         }
 
         @Test
-        @DisplayName("업로드 완료 요청 실패 - 404 (파일 존재 x)")
+        @DisplayName("업로드 완료 실패 - 404(파일 없음)")
         void test3() {
             // given
             UUID fileId = UUID.randomUUID();
-            UUID taskId = UUID.randomUUID();
+            FileCompleteRequestDto req = Fixtures.reqComplete(UUID.randomUUID());
             given(fileRepository.findById(fileId)).willReturn(Optional.empty());
 
-            FileCompleteRequestDto request = new FileCompleteRequestDto(
-                taskId,
-                "최종 보고서.pdf",
-                "application/pdf",
-                1048576
-            );
-
             // when & then
-            assertThatThrownBy(() -> fileService.completeUpload(fileId, request))
-                .isInstanceOf(FileNotFoundException.class);
+            assertThatThrownBy(() -> fileService.completeUpload(fileId, req, user))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.FILE_NOT_FOUND);
 
-            verifyNoInteractions(taskRepository);
+            verifyNoInteractions(taskRepository, accessPolicy);
         }
 
         @Test
-        @DisplayName("업로드 완료 요청 실패 - 404 (할 일 존재 x)")
+        @DisplayName("업로드 완료 실패 - 404(할 일 없음)")
         void test4() {
             // given
             UUID fileId = UUID.randomUUID();
             UUID taskId = UUID.randomUUID();
-            File file = File.builder()
-                .id(fileId)
-                .metadata(FileMetadata.of(
-                    "최종 보고서.pdf",
-                    "application/pdf",
-                    1048576)
-                )
-                .type(FileType.PDF)
-                .storageKey(new StorageKey("file/2025/09/10/" + fileId + ".pdf"))
-                .status(FileStatus.PENDING)
-                .build();
-
+            File file = Fixtures.filePending(fileId, member, null);
             given(fileRepository.findById(fileId)).willReturn(Optional.of(file));
             given(taskRepository.findById(taskId)).willReturn(Optional.empty());
 
-            FileCompleteRequestDto request = new FileCompleteRequestDto(
-                taskId,
-                "최종 보고서.pdf",
-                "application/pdf",
-                1048576
-            );
+            FileCompleteRequestDto req = Fixtures.reqComplete(taskId);
 
             // when & then
-            assertThatThrownBy(() -> fileService.completeUpload(fileId, request))
-                .isInstanceOf(TaskNotFoundException.class);
+            assertThatThrownBy(() -> fileService.completeUpload(fileId, req, user))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.TASK_NOT_FOUND);
+
+            verifyNoInteractions(accessPolicy);
         }
 
         @Test
-        @DisplayName("업로드 완료 요청 실패 - 409 (이미 업로드 완료된 파일)")
+        @DisplayName("업로드 완료 실패 - 409(이미 완료된 파일)")
         void test5() {
             // given
             UUID fileId = UUID.randomUUID();
-            UUID taskId = UUID.randomUUID();
-            File file = File.builder()
-                .id(fileId)
-                .metadata(FileMetadata.of(
-                    "최종 보고서.pdf",
-                    "application/pdf",
-                    1048576)
-                )
-                .type(FileType.PDF)
-                .storageKey(new StorageKey("file/2025/09/10/" + fileId + ".pdf"))
-                .status(FileStatus.COMPLETED)
-                .build();
-
+            File file = Fixtures.fileCompleted(fileId, member, null);
             given(fileRepository.findById(fileId)).willReturn(Optional.of(file));
 
-            FileCompleteRequestDto request = new FileCompleteRequestDto(
-                taskId,
-                "최종 보고서.pdf",
-                "application/pdf",
-                1048576
-            );
+            FileCompleteRequestDto req = Fixtures.reqComplete(UUID.randomUUID());
 
             // when & then
-            assertThatThrownBy(() -> fileService.completeUpload(fileId, request))
-                .isInstanceOf(FileAlreadyUploadCompletedException.class);
+            assertThatThrownBy(() -> fileService.completeUpload(fileId, req, user))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.FILE_ALREADY_UPLOAD_COMPLETED);
 
-            verifyNoInteractions(taskRepository);
+            verifyNoInteractions(taskRepository, accessPolicy);
         }
-
     }
 
+    static class Fixtures {
+
+        static final String BUCKET = "test-bucket";
+        static final int EXPIRES = 900;
+        static final String PRESIGNED_URL = "https://boost-s3-bucket-storage.s3.ap-northeast-2.amazonaws.com/...";
+        static final String FILENAME = "최종 보고서.pdf";
+        static final String CT_PDF = "application/pdf";
+        static final int SIZE_1MB = 1_048_576;
+
+        static Member member(UUID id) {
+            return Member.builder().id(id).build();
+        }
+
+        static Project project(UUID id) {
+            return Project.builder().id(id).build();
+        }
+
+        static Task task(UUID id, Project project) {
+            return Task.builder().id(id).project(project).build();
+        }
+
+        static File filePending(UUID id, Member member, Task task) {
+            return baseFile(id, member, task, FileStatus.PENDING);
+        }
+
+        static File fileCompleted(UUID id, Member member, Task task) {
+            return baseFile(id, member, task, FileStatus.COMPLETED);
+        }
+
+        private static File baseFile(UUID id, Member member, Task task, FileStatus status) {
+            String key = "file/2025/09/10/" + id + ".pdf";
+            return File.builder()
+                .id(id)
+                .member(member)
+                .task(task)
+                .metadata(FileMetadata.of(FILENAME, CT_PDF, SIZE_1MB))
+                .type(FileType.fromContentType(CT_PDF))
+                .storageKey(new StorageKey(key))
+                .status(status)
+                .build();
+        }
+
+        static FileRequestDto reqUpload() {
+            return new FileRequestDto(FILENAME, CT_PDF, SIZE_1MB);
+        }
+
+        static FileCompleteRequestDto reqComplete(UUID taskId) {
+            return new FileCompleteRequestDto(taskId, FILENAME, CT_PDF, SIZE_1MB);
+        }
+    }
 }

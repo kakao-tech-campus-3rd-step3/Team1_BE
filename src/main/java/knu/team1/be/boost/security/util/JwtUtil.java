@@ -74,10 +74,7 @@ public class JwtUtil {
             .signWith(key, SignatureAlgorithm.HS256)
             .compact();
 
-        return TokenDto.builder()
-            .accessToken(accessToken)
-            .refreshToken(refreshToken)
-            .build();
+        return TokenDto.of(accessToken, refreshToken);
     }
 
     public Authentication getAuthentication(String accessToken) {

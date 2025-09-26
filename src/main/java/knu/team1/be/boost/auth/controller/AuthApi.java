@@ -8,14 +8,15 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import knu.team1.be.boost.auth.dto.AccessTokenResponseDto;
+import knu.team1.be.boost.auth.dto.LoginRequestDto;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Auth", description = "로그인 관련 API")
 @RequestMapping("/api/auth")
@@ -35,7 +36,7 @@ public interface AuthApi {
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
     @PostMapping("/login/kakao")
-    ResponseEntity<AccessTokenResponseDto> kakaoLogin(@RequestParam("code") String code);
+    ResponseEntity<AccessTokenResponseDto> kakaoLogin(@RequestBody LoginRequestDto requestDto);
 
     @Operation(
         summary = "로그아웃",

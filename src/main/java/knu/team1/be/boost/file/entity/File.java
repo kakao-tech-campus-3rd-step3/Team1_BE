@@ -34,7 +34,7 @@ import org.hibernate.annotations.SQLRestriction;
 public class File extends SoftDeletableEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")   // TODO: 인증 붙이면 nullable = false 활성화
+    @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -59,9 +59,14 @@ public class File extends SoftDeletableEntity {
     @Column(name = "completed_at")
     private LocalDateTime completedAt;
 
-    public static File pendingUpload(FileRequestDto req, FileType fileType, StorageKey key) {
+    public static File pendingUpload(
+        FileRequestDto req,
+        FileType fileType,
+        StorageKey key,
+        Member member
+    ) {
         return File.builder()
-            .member(null) // TODO: 인증 붙이면 세팅
+            .member(member)
             .task(null)
             .metadata(FileMetadata.of(req.filename(), req.contentType(), req.sizeBytes()))
             .type(fileType)

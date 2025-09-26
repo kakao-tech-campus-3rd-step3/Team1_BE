@@ -45,4 +45,22 @@ public class ErrorResponses {
         return pd;
     }
 
+    /**
+     * 비즈니스 예외를 위한 ProblemDetail을 생성. ErrorCode의 name을 type으로 설정하여 클라이언트에서 오류 타입을 식별할 수 있도록 함.
+     *
+     * @param errorCode 비즈니스 오류 코드
+     * @param instance  uri
+     * @return problemDetail 객체
+     */
+    public static ProblemDetail forBusiness(ErrorCode errorCode, URI instance) {
+        ProblemDetail pd = ProblemDetail.forStatusAndDetail(
+            errorCode.getHttpStatus(),
+            errorCode.getClientMessage()
+        );
+        pd.setInstance(instance);
+        pd.setTitle(errorCode.getHttpStatus().getReasonPhrase());
+        pd.setType(URI.create("urn:problem:" + errorCode.name().toLowerCase()));
+        return pd;
+    }
+
 }
