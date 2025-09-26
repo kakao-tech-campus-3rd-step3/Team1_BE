@@ -126,7 +126,6 @@ public interface TaskApi {
         summary = "프로젝트별 할 일 목록 조회 - 상태 기준 (커서 페이지네이션)",
         description = """
                 특정 상태(TaskStatus)에 해당하는 프로젝트의 할 일 목록을 반환합니다.<br>
-                memberId가 있으면 해당 멤버 기준, 없으면 프로젝트 전체 기준 조회<br>
                 정렬(sortBy/direction) 가능
             """
     )
