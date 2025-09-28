@@ -5,11 +5,14 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.member.dto.MemberResponseDto;
 import knu.team1.be.boost.member.dto.MemberUpdateRequestDto;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -18,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Tag(name = "Members", description = "Member 관련 API")
 @RequestMapping("/api/members")
+@SecurityRequirement(name = "bearerAuth")
 public interface MemberApi {
 
     @Operation(
@@ -30,11 +34,12 @@ public interface MemberApi {
             description = "회원 정보 조회 성공",
             content = @Content(schema = @Schema(implementation = MemberResponseDto.class))
         ),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
         @ApiResponse(responseCode = "404", description = "회원을 찾을 수 없음", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
     @GetMapping("/me")
-    ResponseEntity<MemberResponseDto> getMyInfo();
+    ResponseEntity<MemberResponseDto> getMyInfo(@AuthenticationPrincipal UserPrincipalDto user);
 
     @Operation(
         summary = "내 정보 수정",
@@ -47,12 +52,14 @@ public interface MemberApi {
             content = @Content(schema = @Schema(implementation = MemberResponseDto.class))
         ),
         @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
         @ApiResponse(responseCode = "404", description = "회원을 찾을 수 없음", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
     @PutMapping("/me")
     ResponseEntity<MemberResponseDto> updateMyInfo(
-        @Valid @RequestBody MemberUpdateRequestDto requestDto
+        @Valid @RequestBody MemberUpdateRequestDto requestDto,
+        @AuthenticationPrincipal UserPrincipalDto user
     );
 
     @Operation(
@@ -61,9 +68,10 @@ public interface MemberApi {
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "204", description = "회원 탈퇴 성공", content = @Content),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
         @ApiResponse(responseCode = "404", description = "회원을 찾을 수 없음", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
     @DeleteMapping("/me")
-    ResponseEntity<Void> deleteMyAccount();
+    ResponseEntity<Void> deleteMyAccount(@AuthenticationPrincipal UserPrincipalDto user);
 }
