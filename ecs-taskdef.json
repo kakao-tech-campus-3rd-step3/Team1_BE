@@ -1,16 +1,16 @@
 {
-  "family": "boost-task-jh",
+  "family": "boost-task",
   "networkMode": "awsvpc",
   "requiresCompatibilities": [
     "EC2"
   ],
-  "cpu": "1024",
-  "executionRoleArn": "arn:aws:iam::994523636482:role/ecsTaskExecutionRole-jh",
-  "taskRoleArn": "arn:aws:iam::994523636482:role/ecsTaskRoleS3-seo",
+  "cpu": "2048",
+  "executionRoleArn": "arn:aws:iam::188010836764:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::188010836764:role/ecsTaskRoleS3",
   "containerDefinitions": [
     {
       "name": "app",
-      "image": "994523636482.dkr.ecr.ap-northeast-2.amazonaws.com/boost-ecr:latest",
+      "image": "188010836764.dkr.ecr.ap-northeast-2.amazonaws.com/boost-ecr:latest",
       "essential": true,
       "portMappings": [
         {
@@ -21,7 +21,7 @@
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/boost-task-jh",
+          "awslogs-group": "/ecs/boost-task",
           "awslogs-region": "ap-northeast-2",
           "awslogs-stream-prefix": "ecs"
         }
@@ -35,47 +35,39 @@
       "secrets": [
         {
           "name": "RDS_URL",
-          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:994523636482:secret:boost-secret-yj-vhponB:RDS_URL::"
+          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:188010836764:secret:boost-secret-CbSBpE:RDS_URL::"
         },
         {
           "name": "RDS_USERNAME",
-          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:994523636482:secret:boost-secret-yj-vhponB:RDS_USERNAME::"
+          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:188010836764:secret:boost-secret-CbSBpE:RDS_USERNAME::"
         },
         {
           "name": "RDS_PASSWORD",
-          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:994523636482:secret:boost-secret-yj-vhponB:RDS_PASSWORD::"
+          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:188010836764:secret:boost-secret-CbSBpE:RDS_PASSWORD::"
         },
         {
           "name": "JWT_SECRET_KEY",
-          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:994523636482:secret:boost-secret-yj-vhponB:JWT_SECRET_KEY::"
+          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:188010836764:secret:boost-secret-CbSBpE:JWT_SECRET_KEY::"
         },
         {
           "name": "KAKAO_CLIENT_ID",
-          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:994523636482:secret:boost-secret-yj-vhponB:KAKAO_CLIENT_ID::"
+          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:188010836764:secret:boost-secret-CbSBpE:KAKAO_CLIENT_ID::"
         },
         {
           "name": "KAKAO_CLIENT_SECRET",
-          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:994523636482:secret:boost-secret-yj-vhponB:KAKAO_CLIENT_SECRET::"
+          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:188010836764:secret:boost-secret-CbSBpE:KAKAO_CLIENT_SECRET::"
         },
         {
           "name": "KAKAO_REDIRECT_URI",
-          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:994523636482:secret:boost-secret-yj-vhponB:KAKAO_REDIRECT_URI::"
+          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:188010836764:secret:boost-secret-CbSBpE:KAKAO_REDIRECT_URI::"
         },
         {
           "name": "AWS_REGION",
-          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:994523636482:secret:boost-secret-yj-vhponB:AWS_REGION::"
+          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:188010836764:secret:boost-secret-CbSBpE:AWS_REGION::"
         },
         {
           "name": "AWS_S3_BUCKET",
-          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:994523636482:secret:boost-secret-yj-vhponB:AWS_S3_BUCKET::"
-        },
-        {
-          "name": "AWS_ACCESS_KEY",
-          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:994523636482:secret:boost-secret-yj-vhponB:AWS_ACCESS_KEY::"
-        },
-        {
-          "name": "AWS_SECRET_KEY",
-          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:994523636482:secret:boost-secret-yj-vhponB:AWS_SECRET_KEY::"
+          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:188010836764:secret:boost-secret-CbSBpE:AWS_S3_BUCKET::"
         }
       ],
       "memoryReservation": 512,
