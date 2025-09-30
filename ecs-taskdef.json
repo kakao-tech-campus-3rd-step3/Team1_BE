@@ -4,7 +4,7 @@
   "requiresCompatibilities": [
     "EC2"
   ],
-  "cpu": "512",
+  "cpu": "0",
   "executionRoleArn": "arn:aws:iam::188010836764:role/ecsTaskExecutionRole",
   "taskRoleArn": "arn:aws:iam::188010836764:role/ecsTaskRoleS3",
   "containerDefinitions": [
