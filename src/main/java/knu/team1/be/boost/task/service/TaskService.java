@@ -309,10 +309,8 @@ public class TaskService {
     }
 
     private Set<Member> findAssignees(List<UUID> assigneeIds) {
-        Set<Member> assignees = new HashSet<>();
-
         if (assigneeIds == null || assigneeIds.isEmpty()) {
-            return assignees;
+            return Set.of();
         }
 
         List<Member> foundAssignees = memberRepository.findAllById(assigneeIds);
@@ -330,8 +328,7 @@ public class TaskService {
             );
         }
 
-        assignees.addAll(foundAssignees);
-        return assignees;
+        return new HashSet<>(foundAssignees);
     }
 
     private CursorInfo extractCursorInfo(UUID cursorId) {
