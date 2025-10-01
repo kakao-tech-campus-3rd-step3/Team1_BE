@@ -66,12 +66,12 @@ public class TaskService {
                 ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
             ));
 
-        accessPolicy.ensureProjectMember(projectId, user.id());
+        accessPolicy.ensureProjectMember(project.getId(), user.id());
 
         List<String> tags = extractTags(request.tags());
         Set<Member> assignees = findAssignees(request.assignees());
 
-        accessPolicy.ensureAssigneesAreProjectMembers(projectId, assignees);
+        accessPolicy.ensureAssigneesAreProjectMembers(project.getId(), assignees);
 
         Task task = Task.builder()
             .project(project)
@@ -109,13 +109,13 @@ public class TaskService {
 
         task.ensureTaskInProject(project.getId());
 
-        accessPolicy.ensureProjectMember(projectId, user.id());
-        accessPolicy.ensureTaskAssignee(taskId, user.id());
+        accessPolicy.ensureProjectMember(project.getId(), user.id());
+        accessPolicy.ensureTaskAssignee(task.getId(), user.id());
 
         List<String> tags = extractTags(request.tags());
         Set<Member> assignees = findAssignees(request.assignees());
 
-        accessPolicy.ensureAssigneesAreProjectMembers(projectId, assignees);
+        accessPolicy.ensureAssigneesAreProjectMembers(project.getId(), assignees);
 
         task.update(
             request.title(),
@@ -149,8 +149,8 @@ public class TaskService {
 
         task.ensureTaskInProject(project.getId());
 
-        accessPolicy.ensureProjectMember(projectId, user.id());
-        accessPolicy.ensureTaskAssignee(taskId, user.id());
+        accessPolicy.ensureProjectMember(project.getId(), user.id());
+        accessPolicy.ensureTaskAssignee(task.getId(), user.id());
 
         taskRepository.delete(task);
     }
@@ -174,8 +174,8 @@ public class TaskService {
 
         task.ensureTaskInProject(project.getId());
 
-        accessPolicy.ensureProjectMember(projectId, user.id());
-        accessPolicy.ensureTaskAssignee(taskId, user.id());
+        accessPolicy.ensureProjectMember(project.getId(), user.id());
+        accessPolicy.ensureTaskAssignee(task.getId(), user.id());
 
         task.changeStatus(request.status());
 
@@ -200,7 +200,7 @@ public class TaskService {
 
         task.ensureTaskInProject(project.getId());
 
-        accessPolicy.ensureProjectMember(projectId, user.id());
+        accessPolicy.ensureProjectMember(project.getId(), user.id());
 
         List<Comment> comments = commentRepository.findAllByTask(task);
         List<File> files = fileRepository.findAllByTask(task);
@@ -223,7 +223,7 @@ public class TaskService {
                 ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
             ));
 
-        accessPolicy.ensureProjectMember(projectId, user.id());
+        accessPolicy.ensureProjectMember(project.getId(), user.id());
 
         CursorInfo cursorInfo = extractCursorInfo(cursorId);
         LocalDateTime cursorCreatedAtKey = cursorInfo.createdAt();
@@ -302,7 +302,7 @@ public class TaskService {
                 ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
             ));
 
-        accessPolicy.ensureProjectMember(projectId, user.id());
+        accessPolicy.ensureProjectMember(project.getId(), user.id());
 
         ProjectMember projectMember =
             projectMemberRepository.findByProjectIdAndMemberId(projectId, memberId)
