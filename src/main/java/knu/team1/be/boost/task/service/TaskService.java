@@ -221,14 +221,13 @@ public class TaskService {
         int safeLimit = Math.max(1, Math.min(limit, 50));
         Pageable pageable = PageRequest.of(0, safeLimit + 1);
 
-        List<Task> tasks = taskRepository.findTasksByStatusWithCursor(
+        List<Task> tasks = findTasksByStatusWithCursor(
             project,
             status,
+            sortBy,
+            direction,
             cursorCreatedAtKey,
             cursorDueDateKey,
-            cursorId,
-            sortBy.name(),
-            direction.name(),
             pageable
         );
 
@@ -271,15 +270,14 @@ public class TaskService {
         int safeLimit = Math.max(1, Math.min(limit, 50));
         Pageable pageable = PageRequest.of(0, safeLimit + 1);
 
-        List<Task> tasks = taskRepository.findMyTasksByStatusWithCursor(
+        List<Task> tasks = findMyTasksByStatusWithCursor(
             projects,
             member,
             status,
+            sortBy,
+            direction,
             cursorCreatedAtKey,
             cursorDueDateKey,
-            cursorId,
-            sortBy.name(),
-            direction.name(),
             pageable
         );
 
@@ -373,4 +371,68 @@ public class TaskService {
         assignees.addAll(foundAssignees);
         return assignees;
     }
+
+    private List<Task> findTasksByStatusWithCursor(
+        Project project,
+        TaskStatus status,
+        TaskSortBy sortBy,
+        TaskSortDirection direction,
+        LocalDateTime cursorCreatedAtKey,
+        LocalDate cursorDueDateKey,
+        Pageable pageable
+    ) {
+        switch (sortBy) {
+            case CREATED_AT:
+                if (direction == TaskSortDirection.ASC) {
+                    return taskRepository.findByStatusOrderByCreatedAtAsc(project, status,
+                        cursorCreatedAtKey, pageable);
+                } else {
+                    return taskRepository.findByStatusOrderByCreatedAtDesc(project, status,
+                        cursorCreatedAtKey, pageable);
+                }
+            case DUE_DATE:
+                if (direction == TaskSortDirection.ASC) {
+                    return taskRepository.findByStatusOrderByDueDateAsc(project, status,
+                        cursorDueDateKey, pageable);
+                } else {
+                    return taskRepository.findByStatusOrderByDueDateDesc(project, status,
+                        cursorDueDateKey, pageable);
+                }
+            default:
+                throw new IllegalArgumentException("올바르지 않은 sortBy 입니다. " + sortBy);
+        }
+    }
+
+    private List<Task> findMyTasksByStatusWithCursor(
+        List<Project> projects,
+        Member member,
+        TaskStatus status,
+        TaskSortBy sortBy,
+        TaskSortDirection direction,
+        LocalDateTime cursorCreatedAtKey,
+        LocalDate cursorDueDateKey,
+        Pageable pageable
+    ) {
+        switch (sortBy) {
+            case CREATED_AT:
+                if (direction == TaskSortDirection.ASC) {
+                    return taskRepository.findMyTasksOrderByCreatedAtAsc(projects, member, status,
+                        cursorCreatedAtKey, pageable);
+                } else {
+                    return taskRepository.findMyTasksOrderByCreatedAtDesc(projects, member, status,
+                        cursorCreatedAtKey, pageable);
+                }
+            case DUE_DATE:
+                if (direction == TaskSortDirection.ASC) {
+                    return taskRepository.findMyTasksOrderByDueDateAsc(projects, member, status,
+                        cursorDueDateKey, pageable);
+                } else {
+                    return taskRepository.findMyTasksOrderByDueDateDesc(projects, member, status,
+                        cursorDueDateKey, pageable);
+                }
+            default:
+                throw new IllegalArgumentException("올바르지 않은 sortBy 입니다. " + sortBy);
+        }
+    }
+
 }

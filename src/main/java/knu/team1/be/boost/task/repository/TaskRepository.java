@@ -24,88 +24,119 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
             SELECT t FROM Task t
             WHERE t.project = :project
               AND t.status = :status
-              AND (
-                  (:cursorCreatedAtKey IS NULL AND :cursorDueDateKey IS NULL)
-                  OR (
-                      (:sortBy = 'CREATED_AT' AND :direction = 'ASC' AND (
-                          t.createdAt > :cursorCreatedAtKey
-                          OR (t.createdAt = :cursorCreatedAtKey AND t.id > :cursorId)
-                      ))
-                      OR (:sortBy = 'CREATED_AT' AND :direction = 'DESC' AND (
-                          t.createdAt < :cursorCreatedAtKey
-                          OR (t.createdAt = :cursorCreatedAtKey AND t.id < :cursorId)
-                      ))
-                      OR (:sortBy = 'DUE_DATE' AND :direction = 'ASC' AND (
-                          t.dueDate > :cursorDueDateKey
-                          OR (t.dueDate = :cursorDueDateKey AND t.id > :cursorId)
-                      ))
-                      OR (:sortBy = 'DUE_DATE' AND :direction = 'DESC' AND (
-                          t.dueDate < :cursorDueDateKey
-                          OR (t.dueDate = :cursorDueDateKey AND t.id < :cursorId)
-                      ))
-                  )
-              )
-            ORDER BY
-                CASE WHEN :sortBy = 'CREATED_AT' AND :direction = 'ASC' THEN t.createdAt END ASC,
-                CASE WHEN :sortBy = 'CREATED_AT' AND :direction = 'DESC' THEN t.createdAt END DESC,
-                CASE WHEN :sortBy = 'DUE_DATE' AND :direction = 'ASC' THEN t.dueDate END ASC,
-                CASE WHEN :sortBy = 'DUE_DATE' AND :direction = 'DESC' THEN t.dueDate END DESC,
-                t.id ASC
+              AND (:cursorCreatedAtKey IS NULL OR t.createdAt > :cursorCreatedAtKey)
+            ORDER BY t.createdAt ASC, t.id ASC
         """)
-    List<Task> findTasksByStatusWithCursor(
+    List<Task> findByStatusOrderByCreatedAtAsc(
         @Param("project") Project project,
         @Param("status") TaskStatus status,
         @Param("cursorCreatedAtKey") LocalDateTime cursorCreatedAtKey,
-        @Param("cursorDueDateKey") LocalDate cursorDueDateKey,
-        @Param("cursorId") UUID cursorId,
-        @Param("sortBy") String sortBy,
-        @Param("direction") String direction,
         Pageable pageable
     );
 
     @Query("""
-            SELECT t
-            FROM Task t
+            SELECT t FROM Task t
+            WHERE t.project = :project
+              AND t.status = :status
+              AND (:cursorCreatedAtKey IS NULL OR t.createdAt < :cursorCreatedAtKey)
+            ORDER BY t.createdAt DESC, t.id DESC
+        """)
+    List<Task> findByStatusOrderByCreatedAtDesc(
+        @Param("project") Project project,
+        @Param("status") TaskStatus status,
+        @Param("cursorCreatedAtKey") LocalDateTime cursorCreatedAtKey,
+        Pageable pageable
+    );
+
+    @Query("""
+            SELECT t FROM Task t
+            WHERE t.project = :project
+              AND t.status = :status
+              AND (:cursorDueDateKey IS NULL OR t.dueDate > :cursorDueDateKey)
+            ORDER BY t.dueDate ASC, t.id ASC
+        """)
+    List<Task> findByStatusOrderByDueDateAsc(
+        @Param("project") Project project,
+        @Param("status") TaskStatus status,
+        @Param("cursorDueDateKey") LocalDate cursorDueDateKey,
+        Pageable pageable
+    );
+
+    @Query("""
+            SELECT t FROM Task t
+            WHERE t.project = :project
+              AND t.status = :status
+              AND (:cursorDueDateKey IS NULL OR t.dueDate < :cursorDueDateKey)
+            ORDER BY t.dueDate DESC, t.id DESC
+        """)
+    List<Task> findByStatusOrderByDueDateDesc(
+        @Param("project") Project project,
+        @Param("status") TaskStatus status,
+        @Param("cursorDueDateKey") LocalDate cursorDueDateKey,
+        Pageable pageable
+    );
+
+    @Query("""
+            SELECT t FROM Task t
             WHERE t.project IN :projects
               AND :member MEMBER OF t.assignees
               AND t.status = :status
-              AND (
-                  (:cursorCreatedAtKey IS NULL AND :cursorDueDateKey IS NULL)
-                  OR (
-                      (:sortBy = 'CREATED_AT' AND :direction = 'ASC' AND (
-                          t.createdAt > :cursorCreatedAtKey
-                          OR (t.createdAt = :cursorCreatedAtKey AND t.id > :cursorId)
-                      ))
-                      OR (:sortBy = 'CREATED_AT' AND :direction = 'DESC' AND (
-                          t.createdAt < :cursorCreatedAtKey
-                          OR (t.createdAt = :cursorCreatedAtKey AND t.id < :cursorId)
-                      ))
-                      OR (:sortBy = 'DUE_DATE' AND :direction = 'ASC' AND (
-                          t.dueDate > :cursorDueDateKey
-                          OR (t.dueDate = :cursorDueDateKey AND t.id > :cursorId)
-                      ))
-                      OR (:sortBy = 'DUE_DATE' AND :direction = 'DESC' AND (
-                          t.dueDate < :cursorDueDateKey
-                          OR (t.dueDate = :cursorDueDateKey AND t.id < :cursorId)
-                      ))
-                  )
-              )
-            ORDER BY
-                CASE WHEN :sortBy = 'CREATED_AT' AND :direction = 'ASC' THEN t.createdAt END ASC,
-                CASE WHEN :sortBy = 'CREATED_AT' AND :direction = 'DESC' THEN t.createdAt END DESC,
-                CASE WHEN :sortBy = 'DUE_DATE' AND :direction = 'ASC' THEN t.dueDate END ASC,
-                CASE WHEN :sortBy = 'DUE_DATE' AND :direction = 'DESC' THEN t.dueDate END DESC,
-                t.id ASC
+              AND (:cursorCreatedAtKey IS NULL OR t.createdAt > :cursorCreatedAtKey)
+            ORDER BY t.createdAt ASC, t.id ASC
         """)
-    List<Task> findMyTasksByStatusWithCursor(
+    List<Task> findMyTasksOrderByCreatedAtAsc(
         @Param("projects") List<Project> projects,
         @Param("member") Member member,
         @Param("status") TaskStatus status,
         @Param("cursorCreatedAtKey") LocalDateTime cursorCreatedAtKey,
+        Pageable pageable
+    );
+
+    @Query("""
+            SELECT t FROM Task t
+            WHERE t.project IN :projects
+              AND :member MEMBER OF t.assignees
+              AND t.status = :status
+              AND (:cursorCreatedAtKey IS NULL OR t.createdAt < :cursorCreatedAtKey)
+            ORDER BY t.createdAt DESC, t.id DESC
+        """)
+    List<Task> findMyTasksOrderByCreatedAtDesc(
+        @Param("projects") List<Project> projects,
+        @Param("member") Member member,
+        @Param("status") TaskStatus status,
+        @Param("cursorCreatedAtKey") LocalDateTime cursorCreatedAtKey,
+        Pageable pageable
+    );
+
+    @Query("""
+            SELECT t FROM Task t
+            WHERE t.project IN :projects
+              AND :member MEMBER OF t.assignees
+              AND t.status = :status
+              AND (:cursorDueDateKey IS NULL OR t.dueDate > :cursorDueDateKey)
+            ORDER BY t.dueDate ASC, t.id ASC
+        """)
+    List<Task> findMyTasksOrderByDueDateAsc(
+        @Param("projects") List<Project> projects,
+        @Param("member") Member member,
+        @Param("status") TaskStatus status,
         @Param("cursorDueDateKey") LocalDate cursorDueDateKey,
-        @Param("cursorId") UUID cursorId,
-        @Param("sortBy") String sortBy,
-        @Param("direction") String direction,
+        Pageable pageable
+    );
+
+    @Query("""
+            SELECT t FROM Task t
+            WHERE t.project IN :projects
+              AND :member MEMBER OF t.assignees
+              AND t.status = :status
+              AND (:cursorDueDateKey IS NULL OR t.dueDate < :cursorDueDateKey)
+            ORDER BY t.dueDate DESC, t.id DESC
+        """)
+    List<Task> findMyTasksOrderByDueDateDesc(
+        @Param("projects") List<Project> projects,
+        @Param("member") Member member,
+        @Param("status") TaskStatus status,
+        @Param("cursorDueDateKey") LocalDate cursorDueDateKey,
         Pageable pageable
     );
 
