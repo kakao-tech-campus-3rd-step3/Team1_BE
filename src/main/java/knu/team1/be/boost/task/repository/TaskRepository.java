@@ -3,7 +3,6 @@ package knu.team1.be.boost.task.repository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.project.entity.Project;
@@ -17,8 +16,6 @@ import org.springframework.data.repository.query.Param;
 public interface TaskRepository extends JpaRepository<Task, UUID> {
 
     boolean existsByIdAndAssigneesId(UUID taskId, UUID memberId);
-
-    Optional<Task> findByIdAndProjectId(UUID taskId, UUID projectId);
 
     @Query("""
             SELECT t FROM Task t
