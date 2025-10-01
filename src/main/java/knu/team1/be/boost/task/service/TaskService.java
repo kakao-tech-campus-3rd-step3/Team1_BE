@@ -19,6 +19,7 @@ import knu.team1.be.boost.project.entity.Project;
 import knu.team1.be.boost.project.repository.ProjectRepository;
 import knu.team1.be.boost.projectMember.entity.ProjectMember;
 import knu.team1.be.boost.projectMember.repository.ProjectMemberRepository;
+import knu.team1.be.boost.task.dto.CursorInfo;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
 import knu.team1.be.boost.task.dto.TaskMemberSectionResponseDto;
 import knu.team1.be.boost.task.dto.TaskResponseDto;
@@ -203,20 +204,9 @@ public class TaskService {
 
         accessPolicy.ensureProjectMember(projectId, user.id());
 
-        LocalDateTime cursorCreatedAtKey = null;
-        LocalDate cursorDueDateKey = null;
-
-        if (cursorId != null) {
-            Task cursorTarget =
-                taskRepository.findByIdAndProjectId(cursorId, projectId).orElse(null);
-            if (cursorTarget != null) {
-                if (sortBy == TaskSortBy.CREATED_AT) {
-                    cursorCreatedAtKey = cursorTarget.getCreatedAt();
-                } else if (sortBy == TaskSortBy.DUE_DATE) {
-                    cursorDueDateKey = cursorTarget.getDueDate();
-                }
-            }
-        }
+        CursorInfo cursorInfo = extractCursorInfo(cursorId);
+        LocalDateTime cursorCreatedAtKey = cursorInfo.createdAt();
+        LocalDate cursorDueDateKey = cursorInfo.dueDate();
 
         int safeLimit = Math.max(1, Math.min(limit, 50));
         Pageable pageable = PageRequest.of(0, safeLimit + 1);
@@ -253,19 +243,9 @@ public class TaskService {
             .map(ProjectMember::getProject)
             .toList();
 
-        LocalDateTime cursorCreatedAtKey = null;
-        LocalDate cursorDueDateKey = null;
-
-        if (cursorId != null) {
-            Task cursorTarget = taskRepository.findById(cursorId).orElse(null);
-            if (cursorTarget != null) {
-                if (sortBy == TaskSortBy.CREATED_AT) {
-                    cursorCreatedAtKey = cursorTarget.getCreatedAt();
-                } else if (sortBy == TaskSortBy.DUE_DATE) {
-                    cursorDueDateKey = cursorTarget.getDueDate();
-                }
-            }
-        }
+        CursorInfo cursorInfo = extractCursorInfo(cursorId);
+        LocalDateTime cursorCreatedAtKey = cursorInfo.createdAt();
+        LocalDate cursorDueDateKey = cursorInfo.dueDate();
 
         int safeLimit = Math.max(1, Math.min(limit, 50));
         Pageable pageable = PageRequest.of(0, safeLimit + 1);
@@ -294,8 +274,8 @@ public class TaskService {
     ) {
         Project project = projectRepository.findById(projectId)
             .orElseThrow(() -> new BusinessException(
-                ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId)
-            );
+                ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
+            ));
 
         accessPolicy.ensureProjectMember(projectId, user.id());
 
@@ -303,28 +283,18 @@ public class TaskService {
             projectMemberRepository.findByProjectIdAndMemberId(projectId, memberId)
                 .orElseThrow(() -> new BusinessException(
                     ErrorCode.MEMBER_NOT_FOUND,
-                    "projectId: " + projectId + ", memberId: " + memberId)
-                );
+                    "projectId: " + projectId + ", memberId: " + memberId
+                ));
 
         Member member = projectMember.getMember();
 
+        CursorInfo cursorInfo = extractCursorInfo(cursorId);
+
+        Integer cursorStatusOrder = cursorInfo.taskStatus().getOrder();
+        LocalDateTime cursorCreatedAt = cursorInfo.createdAt();
+        UUID cursorTaskId = cursorInfo.taskId();
+
         int safeLimit = Math.max(1, Math.min(limit, 50));
-
-        Integer cursorStatusOrder = null;
-        LocalDateTime cursorCreatedAt = null;
-        UUID cursorTaskId = null;
-
-        if (cursorId != null) {
-            Task cursorTarget = taskRepository.findById(cursorId)
-                .orElseThrow(() -> new BusinessException(
-                    ErrorCode.TASK_NOT_FOUND, "taskId: " + cursorId)
-                );
-
-            cursorStatusOrder = cursorTarget.getStatus().getOrder();
-            cursorCreatedAt = cursorTarget.getCreatedAt();
-            cursorTaskId = cursorTarget.getId();
-        }
-
         Pageable pageable = PageRequest.of(0, safeLimit + 1);
 
         List<Task> tasks = taskRepository.findTasksByAssigneeWithCursor(
@@ -370,6 +340,24 @@ public class TaskService {
 
         assignees.addAll(foundAssignees);
         return assignees;
+    }
+
+    private CursorInfo extractCursorInfo(UUID cursorId) {
+        if (cursorId == null) {
+            return new CursorInfo(null, null, null, null);
+        }
+
+        Task cursorTask = taskRepository.findById(cursorId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.TASK_NOT_FOUND, "taskId: " + cursorId)
+            );
+
+        return new CursorInfo(
+            cursorTask.getStatus(),
+            cursorTask.getCreatedAt(),
+            cursorTask.getDueDate(),
+            cursorTask.getId()
+        );
     }
 
     private List<Task> findTasksByStatusWithCursor(
