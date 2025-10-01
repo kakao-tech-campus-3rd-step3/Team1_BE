@@ -24,13 +24,16 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
             SELECT t FROM Task t
             WHERE t.project = :project
               AND t.status = :status
-              AND (:cursorCreatedAtKey IS NULL OR t.createdAt > :cursorCreatedAtKey)
+              AND (:cursorCreatedAtKey IS NULL
+                   OR t.createdAt > :cursorCreatedAtKey
+                   OR (t.createdAt = :cursorCreatedAtKey AND t.id > :cursorId))
             ORDER BY t.createdAt ASC, t.id ASC
         """)
     List<Task> findByStatusOrderByCreatedAtAsc(
         @Param("project") Project project,
         @Param("status") TaskStatus status,
         @Param("cursorCreatedAtKey") LocalDateTime cursorCreatedAtKey,
+        @Param("cursorId") UUID cursorId,
         Pageable pageable
     );
 
@@ -38,13 +41,16 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
             SELECT t FROM Task t
             WHERE t.project = :project
               AND t.status = :status
-              AND (:cursorCreatedAtKey IS NULL OR t.createdAt < :cursorCreatedAtKey)
+              AND (:cursorCreatedAtKey IS NULL
+                   OR t.createdAt < :cursorCreatedAtKey
+                   OR (t.createdAt = :cursorCreatedAtKey AND t.id < :cursorId))
             ORDER BY t.createdAt DESC, t.id DESC
         """)
     List<Task> findByStatusOrderByCreatedAtDesc(
         @Param("project") Project project,
         @Param("status") TaskStatus status,
         @Param("cursorCreatedAtKey") LocalDateTime cursorCreatedAtKey,
+        @Param("cursorId") UUID cursorId,
         Pageable pageable
     );
 
@@ -52,13 +58,16 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
             SELECT t FROM Task t
             WHERE t.project = :project
               AND t.status = :status
-              AND (:cursorDueDateKey IS NULL OR t.dueDate > :cursorDueDateKey)
+              AND (:cursorDueDateKey IS NULL
+                   OR t.dueDate > :cursorDueDateKey
+                   OR (t.dueDate = :cursorDueDateKey AND t.id > :cursorId))
             ORDER BY t.dueDate ASC, t.id ASC
         """)
     List<Task> findByStatusOrderByDueDateAsc(
         @Param("project") Project project,
         @Param("status") TaskStatus status,
         @Param("cursorDueDateKey") LocalDate cursorDueDateKey,
+        @Param("cursorId") UUID cursorId,
         Pageable pageable
     );
 
@@ -66,13 +75,16 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
             SELECT t FROM Task t
             WHERE t.project = :project
               AND t.status = :status
-              AND (:cursorDueDateKey IS NULL OR t.dueDate < :cursorDueDateKey)
+              AND (:cursorDueDateKey IS NULL
+                   OR t.dueDate < :cursorDueDateKey
+                   OR (t.dueDate = :cursorDueDateKey AND t.id < :cursorId))
             ORDER BY t.dueDate DESC, t.id DESC
         """)
     List<Task> findByStatusOrderByDueDateDesc(
         @Param("project") Project project,
         @Param("status") TaskStatus status,
         @Param("cursorDueDateKey") LocalDate cursorDueDateKey,
+        @Param("cursorId") UUID cursorId,
         Pageable pageable
     );
 
@@ -81,7 +93,9 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
             WHERE t.project IN :projects
               AND :member MEMBER OF t.assignees
               AND t.status = :status
-              AND (:cursorCreatedAtKey IS NULL OR t.createdAt > :cursorCreatedAtKey)
+              AND (:cursorCreatedAtKey IS NULL
+                   OR t.createdAt > :cursorCreatedAtKey
+                   OR (t.createdAt = :cursorCreatedAtKey AND t.id > :cursorId))
             ORDER BY t.createdAt ASC, t.id ASC
         """)
     List<Task> findMyTasksOrderByCreatedAtAsc(
@@ -89,6 +103,7 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
         @Param("member") Member member,
         @Param("status") TaskStatus status,
         @Param("cursorCreatedAtKey") LocalDateTime cursorCreatedAtKey,
+        @Param("cursorId") UUID cursorId,
         Pageable pageable
     );
 
@@ -97,7 +112,9 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
             WHERE t.project IN :projects
               AND :member MEMBER OF t.assignees
               AND t.status = :status
-              AND (:cursorCreatedAtKey IS NULL OR t.createdAt < :cursorCreatedAtKey)
+              AND (:cursorCreatedAtKey IS NULL
+                   OR t.createdAt < :cursorCreatedAtKey
+                   OR (t.createdAt = :cursorCreatedAtKey AND t.id < :cursorId))
             ORDER BY t.createdAt DESC, t.id DESC
         """)
     List<Task> findMyTasksOrderByCreatedAtDesc(
@@ -105,6 +122,7 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
         @Param("member") Member member,
         @Param("status") TaskStatus status,
         @Param("cursorCreatedAtKey") LocalDateTime cursorCreatedAtKey,
+        @Param("cursorId") UUID cursorId,
         Pageable pageable
     );
 
@@ -113,7 +131,9 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
             WHERE t.project IN :projects
               AND :member MEMBER OF t.assignees
               AND t.status = :status
-              AND (:cursorDueDateKey IS NULL OR t.dueDate > :cursorDueDateKey)
+              AND (:cursorDueDateKey IS NULL
+                   OR t.dueDate > :cursorDueDateKey
+                   OR (t.dueDate = :cursorDueDateKey AND t.id > :cursorId))
             ORDER BY t.dueDate ASC, t.id ASC
         """)
     List<Task> findMyTasksOrderByDueDateAsc(
@@ -121,6 +141,7 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
         @Param("member") Member member,
         @Param("status") TaskStatus status,
         @Param("cursorDueDateKey") LocalDate cursorDueDateKey,
+        @Param("cursorId") UUID cursorId,
         Pageable pageable
     );
 
@@ -129,7 +150,9 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
             WHERE t.project IN :projects
               AND :member MEMBER OF t.assignees
               AND t.status = :status
-              AND (:cursorDueDateKey IS NULL OR t.dueDate < :cursorDueDateKey)
+              AND (:cursorDueDateKey IS NULL
+                   OR t.dueDate < :cursorDueDateKey
+                   OR (t.dueDate = :cursorDueDateKey AND t.id < :cursorId))
             ORDER BY t.dueDate DESC, t.id DESC
         """)
     List<Task> findMyTasksOrderByDueDateDesc(
@@ -137,6 +160,7 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
         @Param("member") Member member,
         @Param("status") TaskStatus status,
         @Param("cursorDueDateKey") LocalDate cursorDueDateKey,
+        @Param("cursorId") UUID cursorId,
         Pageable pageable
     );
 
