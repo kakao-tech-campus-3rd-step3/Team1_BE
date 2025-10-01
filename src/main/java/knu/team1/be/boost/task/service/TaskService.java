@@ -100,11 +100,7 @@ public class TaskService {
                 ErrorCode.TASK_NOT_FOUND, "taskId: " + taskId
             ));
 
-        if (!task.getProject().getId().equals(project.getId())) {
-            throw new BusinessException(
-                ErrorCode.TASK_NOT_IN_PROJECT, "projectId: " + projectId + ", taskId: " + taskId
-            );
-        }
+        task.ensureTaskInProject(project.getId());
 
         accessPolicy.ensureProjectMember(projectId, user.id());
         accessPolicy.ensureTaskAssignee(taskId, user.id());
@@ -144,11 +140,7 @@ public class TaskService {
                 ErrorCode.TASK_NOT_FOUND, "taskId: " + taskId
             ));
 
-        if (!task.getProject().getId().equals(project.getId())) {
-            throw new BusinessException(
-                ErrorCode.TASK_NOT_IN_PROJECT, "projectId: " + projectId + ", taskId: " + taskId
-            );
-        }
+        task.ensureTaskInProject(project.getId());
 
         accessPolicy.ensureProjectMember(projectId, user.id());
         accessPolicy.ensureTaskAssignee(taskId, user.id());
@@ -173,11 +165,7 @@ public class TaskService {
                 ErrorCode.TASK_NOT_FOUND, "taskId: " + taskId
             ));
 
-        if (!task.getProject().getId().equals(project.getId())) {
-            throw new BusinessException(
-                ErrorCode.TASK_NOT_IN_PROJECT, "projectId: " + projectId + ", taskId: " + taskId
-            );
-        }
+        task.ensureTaskInProject(project.getId());
 
         accessPolicy.ensureProjectMember(projectId, user.id());
         accessPolicy.ensureTaskAssignee(taskId, user.id());
@@ -428,5 +416,4 @@ public class TaskService {
                 throw new IllegalArgumentException("올바르지 않은 sortBy 입니다. " + sortBy);
         }
     }
-
 }
