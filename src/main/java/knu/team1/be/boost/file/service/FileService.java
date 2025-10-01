@@ -8,8 +8,8 @@ import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.common.policy.AccessPolicy;
 import knu.team1.be.boost.file.dto.FileCompleteRequestDto;
 import knu.team1.be.boost.file.dto.FileCompleteResponseDto;
+import knu.team1.be.boost.file.dto.FilePresignedUrlResponseDto;
 import knu.team1.be.boost.file.dto.FileRequestDto;
-import knu.team1.be.boost.file.dto.FileResponseDto;
 import knu.team1.be.boost.file.entity.File;
 import knu.team1.be.boost.file.entity.FileType;
 import knu.team1.be.boost.file.entity.vo.StorageKey;
@@ -50,7 +50,7 @@ public class FileService {
     private DataSize maxUploadSize;
 
     @Transactional
-    public FileResponseDto uploadFile(
+    public FilePresignedUrlResponseDto uploadFile(
         FileRequestDto request,
         UserPrincipalDto user
     ) {
@@ -76,11 +76,11 @@ public class FileService {
 
         log.info("파일 업로드 presigned URL 발급 성공 - fileId={}, filename={}",
             saved.getId(), saved.getMetadata().originalFilename());
-        return FileResponseDto.forUpload(saved, presigned, expireSeconds);
+        return FilePresignedUrlResponseDto.forUpload(saved, presigned, expireSeconds);
     }
 
     @Transactional(readOnly = true)
-    public FileResponseDto downloadFile(
+    public FilePresignedUrlResponseDto downloadFile(
         UUID fileId,
         UserPrincipalDto user
     ) {
@@ -108,7 +108,7 @@ public class FileService {
 
         log.info("파일 다운로드 presigned URL 발급 성공 - fileId={}, filename={}",
             file.getId(), file.getMetadata().originalFilename());
-        return FileResponseDto.forDownload(file, presigned, expireSeconds);
+        return FilePresignedUrlResponseDto.forDownload(file, presigned, expireSeconds);
     }
 
     @Transactional
