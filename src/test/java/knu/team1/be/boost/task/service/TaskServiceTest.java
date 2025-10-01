@@ -18,9 +18,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
+import knu.team1.be.boost.comment.repository.CommentRepository;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.common.policy.AccessPolicy;
+import knu.team1.be.boost.file.repository.FileRepository;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
 import knu.team1.be.boost.project.entity.Project;
@@ -48,7 +50,11 @@ class TaskServiceTest {
     @Mock
     TaskRepository taskRepository;
     @Mock
+    FileRepository fileRepository;
+    @Mock
     MemberRepository memberRepository;
+    @Mock
+    CommentRepository commentRepository;
     @Mock
     ProjectRepository projectRepository;
     @Mock
@@ -73,7 +79,12 @@ class TaskServiceTest {
         baseTask = Fixtures.task(UUID.randomUUID(), project);
 
         taskService = new TaskService(
-            taskRepository, memberRepository, projectRepository, projectMemberRepository,
+            taskRepository,
+            fileRepository,
+            memberRepository,
+            commentRepository,
+            projectRepository,
+            projectMemberRepository,
             accessPolicy
         );
     }
