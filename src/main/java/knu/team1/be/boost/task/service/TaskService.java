@@ -10,9 +10,13 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
+import knu.team1.be.boost.comment.entity.Comment;
+import knu.team1.be.boost.comment.repository.CommentRepository;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.common.policy.AccessPolicy;
+import knu.team1.be.boost.file.entity.File;
+import knu.team1.be.boost.file.repository.FileRepository;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
 import knu.team1.be.boost.project.entity.Project;
@@ -21,6 +25,7 @@ import knu.team1.be.boost.projectMember.entity.ProjectMember;
 import knu.team1.be.boost.projectMember.repository.ProjectMemberRepository;
 import knu.team1.be.boost.task.dto.CursorInfo;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
+import knu.team1.be.boost.task.dto.TaskDetailResponseDto;
 import knu.team1.be.boost.task.dto.TaskMemberSectionResponseDto;
 import knu.team1.be.boost.task.dto.TaskResponseDto;
 import knu.team1.be.boost.task.dto.TaskSortBy;
@@ -42,7 +47,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class TaskService {
 
     private final TaskRepository taskRepository;
+    private final FileRepository fileRepository;
     private final MemberRepository memberRepository;
+    private final CommentRepository commentRepository;
     private final ProjectRepository projectRepository;
     private final ProjectMemberRepository projectMemberRepository;
 
@@ -173,6 +180,32 @@ public class TaskService {
         task.changeStatus(request.status());
 
         return TaskResponseDto.from(task);
+    }
+
+    @Transactional(readOnly = true)
+    public TaskDetailResponseDto getTaskDetail(
+        UUID projectId,
+        UUID taskId,
+        UserPrincipalDto user
+    ) {
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
+            ));
+
+        Task task = taskRepository.findById(taskId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.TASK_NOT_FOUND, "taskId: " + taskId
+            ));
+
+        task.ensureTaskInProject(project.getId());
+
+        accessPolicy.ensureProjectMember(projectId, user.id());
+
+        List<Comment> comments = commentRepository.findAllByTask(task);
+        List<File> files = fileRepository.findAllByTask(task);
+
+        return TaskDetailResponseDto.from(task, comments, files);
     }
 
     @Transactional(readOnly = true)
