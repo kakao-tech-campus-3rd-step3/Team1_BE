@@ -7,6 +7,7 @@ import java.net.URI;
 import java.util.UUID;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
+import knu.team1.be.boost.task.dto.TaskDetailResponseDto;
 import knu.team1.be.boost.task.dto.TaskMemberSectionResponseDto;
 import knu.team1.be.boost.task.dto.TaskResponseDto;
 import knu.team1.be.boost.task.dto.TaskSortBy;
@@ -71,6 +72,16 @@ public class TaskController implements TaskApi {
         @AuthenticationPrincipal UserPrincipalDto user
     ) {
         TaskResponseDto response = taskService.changeTaskStatus(projectId, taskId, request, user);
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<TaskDetailResponseDto> getTaskDetail(
+        @PathVariable UUID projectId,
+        @PathVariable UUID taskId,
+        @AuthenticationPrincipal UserPrincipalDto user
+    ) {
+        TaskDetailResponseDto response = taskService.getTaskDetail(projectId, taskId, user);
         return ResponseEntity.ok(response);
     }
 

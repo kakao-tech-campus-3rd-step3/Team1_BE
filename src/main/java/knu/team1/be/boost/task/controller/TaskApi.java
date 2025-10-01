@@ -13,6 +13,7 @@ import jakarta.validation.constraints.Min;
 import java.util.UUID;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
+import knu.team1.be.boost.task.dto.TaskDetailResponseDto;
 import knu.team1.be.boost.task.dto.TaskMemberSectionResponseDto;
 import knu.team1.be.boost.task.dto.TaskResponseDto;
 import knu.team1.be.boost.task.dto.TaskSortBy;
@@ -119,6 +120,26 @@ public interface TaskApi {
         @PathVariable UUID projectId,
         @PathVariable UUID taskId,
         @Valid @RequestBody TaskStatusRequestDto request,
+        @AuthenticationPrincipal UserPrincipalDto user
+    );
+
+    @Operation(
+        summary = "특정 프로젝트 할 일 상세 조회",
+        description = "특정 프로젝트에 속한 할 일의 상세 정보를 반환합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "조회 성공",
+            content = @Content(schema = @Schema(implementation = TaskDetailResponseDto.class))
+        ),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
+        @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
+        @ApiResponse(responseCode = "404", description = "존재하지 않는 프로젝트/할 일 ID 포함", content = @Content),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
+    })
+    @GetMapping("/{taskId}/detail")
+    ResponseEntity<TaskDetailResponseDto> getTaskDetail(
+        @PathVariable UUID projectId,
+        @PathVariable UUID taskId,
         @AuthenticationPrincipal UserPrincipalDto user
     );
 
