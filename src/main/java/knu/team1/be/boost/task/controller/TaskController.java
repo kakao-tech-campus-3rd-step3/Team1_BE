@@ -88,7 +88,7 @@ public class TaskController implements TaskApi {
     @Override
     public ResponseEntity<TaskStatusSectionDto> listTasksByStatus(
         @PathVariable UUID projectId,
-        @PathVariable TaskStatus status,
+        @RequestParam(required = false, defaultValue = "TODO") TaskStatus status,
         @RequestParam(required = false, defaultValue = "CREATED_AT") TaskSortBy sortBy,
         @RequestParam(required = false, defaultValue = "ASC") TaskSortDirection direction,
         @RequestParam(required = false) UUID cursor,
@@ -102,7 +102,7 @@ public class TaskController implements TaskApi {
 
     @Override
     public ResponseEntity<TaskStatusSectionDto> listMyTasksByStatus(
-        @PathVariable TaskStatus status,
+        @RequestParam(required = false, defaultValue = "TODO") TaskStatus status,
         @RequestParam(required = false, defaultValue = "CREATED_AT") TaskSortBy sortBy,
         @RequestParam(required = false, defaultValue = "ASC") TaskSortDirection direction,
         @RequestParam(required = false) UUID cursor,

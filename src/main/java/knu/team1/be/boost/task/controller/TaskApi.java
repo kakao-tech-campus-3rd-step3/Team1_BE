@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Tasks", description = "할 일 관련 API")
-@RequestMapping("/api/projects/{projectId}/tasks")
+@RequestMapping("/api")
 @SecurityRequirement(name = "bearerAuth")
 public interface TaskApi {
 
@@ -55,7 +55,7 @@ public interface TaskApi {
         @ApiResponse(responseCode = "404", description = "존재하지 않는 멤버 ID 포함", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
-    @PostMapping
+    @PostMapping("/projects/{projectId}/tasks")
     ResponseEntity<TaskResponseDto> createTask(
         @PathVariable UUID projectId,
         @Valid @RequestBody TaskCreateRequestDto request,
@@ -78,7 +78,7 @@ public interface TaskApi {
         @ApiResponse(responseCode = "404", description = "존재하지 않는 프로젝트/할 일/멤버 ID 포함", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
-    @PutMapping("/{taskId}")
+    @PutMapping("/projects/{projectId}/tasks/{taskId}")
     ResponseEntity<TaskResponseDto> updateTask(
         @PathVariable UUID projectId,
         @PathVariable UUID taskId,
@@ -97,7 +97,7 @@ public interface TaskApi {
         @ApiResponse(responseCode = "404", description = "존재하지 않는 프로젝트/할 일 ID 포함", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
-    @DeleteMapping("/{taskId}")
+    @DeleteMapping("/projects/{projectId}/tasks/{taskId}")
     ResponseEntity<Void> deleteTask(
         @PathVariable UUID projectId,
         @PathVariable UUID taskId,
@@ -115,7 +115,7 @@ public interface TaskApi {
         @ApiResponse(responseCode = "404", description = "존재하지 않는 프로젝트/할 일 ID 포함", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
-    @PatchMapping("/{taskId}")
+    @PatchMapping("/projects/{projectId}/tasks/{taskId}")
     ResponseEntity<TaskResponseDto> changeTaskStatus(
         @PathVariable UUID projectId,
         @PathVariable UUID taskId,
@@ -136,7 +136,7 @@ public interface TaskApi {
         @ApiResponse(responseCode = "404", description = "존재하지 않는 프로젝트/할 일 ID 포함", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
-    @GetMapping("/{taskId}/detail")
+    @GetMapping("/projects/{projectId}/tasks/{taskId}")
     ResponseEntity<TaskDetailResponseDto> getTaskDetail(
         @PathVariable UUID projectId,
         @PathVariable UUID taskId,
@@ -160,10 +160,10 @@ public interface TaskApi {
         @ApiResponse(responseCode = "404", description = "프로젝트/상태 없음", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
-    @GetMapping("/status/{status}")
+    @GetMapping("/projects/{projectId}/tasks")
     ResponseEntity<TaskStatusSectionDto> listTasksByStatus(
         @PathVariable UUID projectId,
-        @PathVariable TaskStatus status,
+        @RequestParam(required = false, defaultValue = "TODO") TaskStatus status,
         @RequestParam(required = false, defaultValue = "CREATED_AT") TaskSortBy sortBy,
         @RequestParam(required = false, defaultValue = "ASC") TaskSortDirection direction,
         @RequestParam(required = false) UUID cursor,
@@ -188,9 +188,9 @@ public interface TaskApi {
         @ApiResponse(responseCode = "404", description = "프로젝트/상태 없음", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
-    @GetMapping("/status/{status}/me")
+    @GetMapping("/me/tasks")
     ResponseEntity<TaskStatusSectionDto> listMyTasksByStatus(
-        @PathVariable TaskStatus status,
+        @RequestParam(required = false, defaultValue = "TODO") TaskStatus status,
         @RequestParam(required = false, defaultValue = "CREATED_AT") TaskSortBy sortBy,
         @RequestParam(required = false, defaultValue = "ASC") TaskSortDirection direction,
         @RequestParam(required = false) UUID cursor,
@@ -216,7 +216,7 @@ public interface TaskApi {
         @ApiResponse(responseCode = "404", description = "프로젝트/멤버 없음", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
-    @GetMapping("/members/{memberId}")
+    @GetMapping("/projects/{projectId}/members/{memberId}/tasks")
     ResponseEntity<TaskMemberSectionResponseDto> listTasksByMember(
         @PathVariable UUID projectId,
         @PathVariable UUID memberId,
