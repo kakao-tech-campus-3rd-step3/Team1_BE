@@ -8,10 +8,12 @@ import jakarta.persistence.OneToOne;
 import knu.team1.be.boost.file.entity.File;
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Embeddable
 @Builder
+@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class FileInfo {
 
