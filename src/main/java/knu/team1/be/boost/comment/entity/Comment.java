@@ -23,7 +23,7 @@ import org.hibernate.annotations.SQLDelete;
 @Table(name = "comments")
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@SQLDelete(sql = "UPDATE tasks SET deleted = true, deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
+@SQLDelete(sql = "UPDATE comments SET deleted = true, deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
 public class Comment extends SoftDeletableEntity {
 
     @Id
