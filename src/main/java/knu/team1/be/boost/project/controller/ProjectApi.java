@@ -48,7 +48,7 @@ public interface ProjectApi {
     );
 
     @GetMapping("/{projectId}")
-    @Operation(summary = "프로젝트 조회", description = "프로젝트 정보를 조회합니다."
+    @Operation(summary = "프로젝트 조회", description = "프로젝트 정보를 조회합니다. "
         + "프로젝트에 참여하고 있는 사람만 조회가 가능합니다.")
     @ApiResponses(value = {
         @ApiResponse(
@@ -86,8 +86,8 @@ public interface ProjectApi {
     );
 
     @PutMapping("/{projectId}")
-    @Operation(summary = "프로젝트 수정", description = "프로젝트의 정보(설정)를 수정합니다."
-        + "project owener만 수정이 가능합니다.")
+    @Operation(summary = "프로젝트 수정", description = "프로젝트의 정보(설정)를 수정합니다. "
+        + "project owner만 수정이 가능합니다.")
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
@@ -107,7 +107,7 @@ public interface ProjectApi {
     );
 
     @DeleteMapping("/{projectId}")
-    @Operation(summary = "프로젝트 삭제", description = "프로젝트를 삭제합니다."
+    @Operation(summary = "프로젝트 삭제", description = "프로젝트를 삭제합니다. "
         + "project owner만 삭제가 가능합니다.")
     @ApiResponses(value = {
         @ApiResponse(
