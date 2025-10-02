@@ -4,11 +4,17 @@ import java.util.List;
 import java.util.UUID;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
+import knu.team1.be.boost.common.policy.AccessPolicy;
+import knu.team1.be.boost.member.entity.Member;
+import knu.team1.be.boost.member.repository.MemberRepository;
 import knu.team1.be.boost.project.dto.ProjectCreateRequestDto;
 import knu.team1.be.boost.project.dto.ProjectResponseDto;
 import knu.team1.be.boost.project.dto.ProjectUpdateRequestDto;
 import knu.team1.be.boost.project.entity.Project;
 import knu.team1.be.boost.project.repository.ProjectRepository;
+import knu.team1.be.boost.projectMembership.entity.ProjectMembership;
+import knu.team1.be.boost.projectMembership.entity.ProjectRole;
+import knu.team1.be.boost.projectMembership.repository.ProjectMembershipRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,37 +27,70 @@ public class ProjectService {
     private static final int DEFAULT_REVIEWER_COUNT = 2;
 
     private final ProjectRepository projectRepository;
+    private final MemberRepository memberRepository;
+    private final ProjectMembershipRepository projectMembershipRepository;
+    private final AccessPolicy accessPolicy;
 
     @Transactional
-    public ProjectResponseDto createProject(ProjectCreateRequestDto requestDto) {
+    public ProjectResponseDto createProject(ProjectCreateRequestDto requestDto, UUID memberId) {
+        Member member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.MEMBER_NOT_FOUND,
+                "memberId: " + memberId
+            ));
+
         Project project = Project.builder()
             .name(requestDto.name())
             .defaultReviewerCount(DEFAULT_REVIEWER_COUNT).build();
+
         Project savedProject = projectRepository.save(project);
+        ProjectMembership projectMembership = ProjectMembership.createProjectMembership(
+            savedProject,
+            member,
+            ProjectRole.OWNER
+        );
+        projectMembershipRepository.save(projectMembership);
         return ProjectResponseDto.from(savedProject);
     }
 
-    public ProjectResponseDto getProject(UUID projectId) {
+    public ProjectResponseDto getProject(UUID projectId, UUID memberId) {
+
         Project project = projectRepository.findById(projectId)
             .orElseThrow(() -> new BusinessException(
                 ErrorCode.PROJECT_NOT_FOUND,
                 "projectId: " + projectId
             ));
+
+        accessPolicy.ensureProjectMember(projectId, memberId);
+
         return ProjectResponseDto.from(project);
     }
 
-    // Todo: 유저 <-> 프로젝트 연관관계 설정 후 구현
-    public List<ProjectResponseDto> getMyProjects() {
-        return null;
+    public List<ProjectResponseDto> getMyProjects(UUID memberId) {
+
+        List<ProjectMembership> projectMemberships = projectMembershipRepository.findByMemberId(
+            memberId);
+
+        return projectMemberships.stream()
+            .map(ProjectMembership::getProject)
+            .map(ProjectResponseDto::from)
+            .toList();
     }
 
     @Transactional
-    public ProjectResponseDto updateProject(UUID projectId, ProjectUpdateRequestDto requestDto) {
+    public ProjectResponseDto updateProject(
+        UUID projectId,
+        ProjectUpdateRequestDto requestDto,
+        UUID memberId
+    ) {
+
         Project oldProject = projectRepository.findById(projectId)
             .orElseThrow(() -> new BusinessException(
                 ErrorCode.PROJECT_NOT_FOUND,
                 "projectId: " + projectId
             ));
+
+        accessPolicy.ensureProjectOwner(projectId, memberId);
 
         oldProject.updateProject(requestDto.name(), requestDto.defaultReviewerCount());
 
@@ -59,12 +98,15 @@ public class ProjectService {
     }
 
     @Transactional
-    public void deleteProject(UUID projectId) {
+    public void deleteProject(UUID projectId, UUID memberId) {
+
         Project project = projectRepository.findById(projectId)
             .orElseThrow(() -> new BusinessException(
                 ErrorCode.PROJECT_NOT_FOUND,
                 "projectId: " + projectId
             ));
+
+        accessPolicy.ensureProjectOwner(projectId, memberId);
         projectRepository.delete(project);
     }
 }
