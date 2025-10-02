@@ -21,8 +21,8 @@ import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
 import knu.team1.be.boost.project.entity.Project;
 import knu.team1.be.boost.project.repository.ProjectRepository;
-import knu.team1.be.boost.projectMember.entity.ProjectMember;
-import knu.team1.be.boost.projectMember.repository.ProjectMemberRepository;
+import knu.team1.be.boost.projectMembership.entity.ProjectMembership;
+import knu.team1.be.boost.projectMembership.repository.ProjectMembershipRepository;
 import knu.team1.be.boost.task.dto.CursorInfo;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
 import knu.team1.be.boost.task.dto.TaskDetailResponseDto;
@@ -51,7 +51,7 @@ public class TaskService {
     private final MemberRepository memberRepository;
     private final CommentRepository commentRepository;
     private final ProjectRepository projectRepository;
-    private final ProjectMemberRepository projectMemberRepository;
+    private final ProjectMembershipRepository projectMembershipRepository;
 
     private final AccessPolicy accessPolicy;
 
@@ -261,9 +261,9 @@ public class TaskService {
                 ErrorCode.MEMBER_NOT_FOUND, "memberId: " + user.id()
             ));
 
-        List<Project> projects = projectMemberRepository.findAllByMember(member)
+        List<Project> projects = projectMembershipRepository.findAllByMember(member)
             .stream()
-            .map(ProjectMember::getProject)
+            .map(ProjectMembership::getProject)
             .toList();
 
         CursorInfo cursorInfo = extractCursorInfo(cursorId);
@@ -304,8 +304,8 @@ public class TaskService {
 
         accessPolicy.ensureProjectMember(project.getId(), user.id());
 
-        ProjectMember projectMember =
-            projectMemberRepository.findByProjectIdAndMemberId(projectId, memberId)
+        ProjectMembership projectMember =
+            projectMembershipRepository.findByProjectIdAndMemberId(projectId, memberId)
                 .orElseThrow(() -> new BusinessException(
                     ErrorCode.MEMBER_NOT_FOUND,
                     "projectId: " + projectId + ", memberId: " + memberId

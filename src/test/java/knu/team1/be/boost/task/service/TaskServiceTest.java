@@ -27,7 +27,7 @@ import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
 import knu.team1.be.boost.project.entity.Project;
 import knu.team1.be.boost.project.repository.ProjectRepository;
-import knu.team1.be.boost.projectMember.repository.ProjectMemberRepository;
+import knu.team1.be.boost.projectMembership.repository.ProjectMembershipRepository;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
 import knu.team1.be.boost.task.dto.TaskResponseDto;
 import knu.team1.be.boost.task.dto.TaskStatusRequestDto;
@@ -58,7 +58,7 @@ class TaskServiceTest {
     @Mock
     ProjectRepository projectRepository;
     @Mock
-    ProjectMemberRepository projectMemberRepository;
+    ProjectMembershipRepository projectMembershipRepository;
     @Mock
     AccessPolicy accessPolicy;
 
@@ -84,7 +84,7 @@ class TaskServiceTest {
             memberRepository,
             commentRepository,
             projectRepository,
-            projectMemberRepository,
+            projectMembershipRepository,
             accessPolicy
         );
     }
