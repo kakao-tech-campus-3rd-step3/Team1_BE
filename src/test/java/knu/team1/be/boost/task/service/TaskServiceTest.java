@@ -18,13 +18,16 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
+import knu.team1.be.boost.comment.repository.CommentRepository;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.common.policy.AccessPolicy;
+import knu.team1.be.boost.file.repository.FileRepository;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
 import knu.team1.be.boost.project.entity.Project;
 import knu.team1.be.boost.project.repository.ProjectRepository;
+import knu.team1.be.boost.projectMembership.repository.ProjectMembershipRepository;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
 import knu.team1.be.boost.task.dto.TaskResponseDto;
 import knu.team1.be.boost.task.dto.TaskStatusRequestDto;
@@ -47,11 +50,17 @@ class TaskServiceTest {
     @Mock
     TaskRepository taskRepository;
     @Mock
+    FileRepository fileRepository;
+    @Mock
     MemberRepository memberRepository;
     @Mock
-    AccessPolicy accessPolicy;
+    CommentRepository commentRepository;
     @Mock
     ProjectRepository projectRepository;
+    @Mock
+    ProjectMembershipRepository projectMembershipRepository;
+    @Mock
+    AccessPolicy accessPolicy;
 
     TaskService taskService;
 
@@ -68,9 +77,15 @@ class TaskServiceTest {
         projectId = UUID.randomUUID();
         project = Fixtures.project(projectId);
         baseTask = Fixtures.task(UUID.randomUUID(), project);
-        
+
         taskService = new TaskService(
-            taskRepository, memberRepository, projectRepository, accessPolicy
+            taskRepository,
+            fileRepository,
+            memberRepository,
+            commentRepository,
+            projectRepository,
+            projectMembershipRepository,
+            accessPolicy
         );
     }
 

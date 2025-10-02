@@ -20,8 +20,8 @@ import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.file.dto.FileCompleteRequestDto;
 import knu.team1.be.boost.file.dto.FileCompleteResponseDto;
+import knu.team1.be.boost.file.dto.FilePresignedUrlResponseDto;
 import knu.team1.be.boost.file.dto.FileRequestDto;
-import knu.team1.be.boost.file.dto.FileResponseDto;
 import knu.team1.be.boost.file.service.FileService;
 import knu.team1.be.boost.security.filter.JwtAuthFilter;
 import org.junit.jupiter.api.DisplayName;
@@ -74,7 +74,7 @@ class FileControllerTest {
             );
 
             UUID fileId = UUID.randomUUID();
-            FileResponseDto response = new FileResponseDto(
+            FilePresignedUrlResponseDto response = new FilePresignedUrlResponseDto(
                 fileId,
                 "file/2025/09/09/" + fileId + ".pdf",
                 "https://boost-s3-bucket-storage.s3.ap-northeast-2.amazonaws.com/...",
@@ -155,7 +155,7 @@ class FileControllerTest {
         void test1() throws Exception {
             // given
             UUID fileId = UUID.randomUUID();
-            FileResponseDto response = new FileResponseDto(
+            FilePresignedUrlResponseDto response = new FilePresignedUrlResponseDto(
                 fileId,
                 "file/2025/09/09/" + fileId + ".pdf",
                 "https://boost-s3-bucket-storage.s3.ap-northeast-2.amazonaws.com/...",
