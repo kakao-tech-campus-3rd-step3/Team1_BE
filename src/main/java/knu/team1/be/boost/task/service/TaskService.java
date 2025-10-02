@@ -410,7 +410,7 @@ public class TaskService {
                         cursorDueDateKey, cursorId, pageable);
                 }
             default:
-                throw new IllegalArgumentException("올바르지 않은 sortBy 입니다. " + sortBy);
+                throw new BusinessException(ErrorCode.INVALID_SORT_OPTION, "sortBy: " + sortBy);
         }
     }
 
@@ -443,7 +443,7 @@ public class TaskService {
                         cursorDueDateKey, cursorId, pageable);
                 }
             default:
-                throw new IllegalArgumentException("올바르지 않은 sortBy 입니다. " + sortBy);
+                throw new BusinessException(ErrorCode.INVALID_SORT_OPTION, "sortBy: " + sortBy);
         }
     }
 }
