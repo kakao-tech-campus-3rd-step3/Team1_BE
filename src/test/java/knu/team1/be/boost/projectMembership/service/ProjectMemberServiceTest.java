@@ -1,4 +1,4 @@
-package knu.team1.be.boost.projectMember.service;
+package knu.team1.be.boost.projectMembership.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -16,9 +16,9 @@ import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
 import knu.team1.be.boost.project.entity.Project;
 import knu.team1.be.boost.project.repository.ProjectRepository;
-import knu.team1.be.boost.projectMember.entity.ProjectMember;
-import knu.team1.be.boost.projectMember.entity.ProjectRole;
-import knu.team1.be.boost.projectMember.repository.ProjectMemberRepository;
+import knu.team1.be.boost.projectMembership.entity.ProjectMembership;
+import knu.team1.be.boost.projectMembership.entity.ProjectRole;
+import knu.team1.be.boost.projectMembership.repository.ProjectMembershipRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -30,20 +30,20 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class ProjectMemberServiceTest {
+class ProjectParticipantServiceTest {
 
     @Captor
-    ArgumentCaptor<ProjectMember> projectMemberCaptor;
+    ArgumentCaptor<ProjectMembership> projectMembershipCaptor;
 
     @Mock
-    ProjectMemberRepository projectMemberRepository;
+    ProjectMembershipRepository projectMembershipRepository;
     @Mock
     ProjectRepository projectRepository;
     @Mock
     MemberRepository memberRepository;
 
     @InjectMocks
-    ProjectMemberService projectMemberService;
+    ProjectParticipantService projectParticipantService;
 
     @Nested
     @DisplayName("joinProject")
@@ -61,16 +61,16 @@ class ProjectMemberServiceTest {
 
             given(projectRepository.findById(projectId)).willReturn(Optional.of(project));
             given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
-            given(projectMemberRepository.findByProjectIdAndMemberIdIncludingDeleted(projectId,
+            given(projectMembershipRepository.findByProjectIdAndMemberIdIncludingDeleted(projectId,
                 memberId))
                 .willReturn(Optional.empty());
 
             // when
-            projectMemberService.joinProject(projectId, memberId, role);
+            projectParticipantService.joinProject(projectId, memberId, role);
 
             // then
-            verify(projectMemberRepository).save(projectMemberCaptor.capture());
-            ProjectMember saved = projectMemberCaptor.getValue();
+            verify(projectMembershipRepository).save(projectMembershipCaptor.capture());
+            ProjectMembership saved = projectMembershipCaptor.getValue();
 
             assertThat(saved.getProject()).isSameAs(project);
             assertThat(saved.getMember()).isSameAs(member);
@@ -86,21 +86,21 @@ class ProjectMemberServiceTest {
             Project project = createTestProject();
             Member member = createTestMember();
             ProjectRole role = ProjectRole.MEMBER;
-            ProjectMember projectMember = createDeletedProjectMember(project, member, role);
+            ProjectMembership projectMembership = createDeletedProjectMember(project, member, role);
 
             given(projectRepository.findById(projectId)).willReturn(Optional.of(project));
             given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
-            given(projectMemberRepository.findByProjectIdAndMemberIdIncludingDeleted(
+            given(projectMembershipRepository.findByProjectIdAndMemberIdIncludingDeleted(
                 projectId,
                 memberId
-            )).willReturn(Optional.of(projectMember));
+            )).willReturn(Optional.of(projectMembership));
 
             // when
-            projectMemberService.joinProject(projectId, memberId, role);
+            projectParticipantService.joinProject(projectId, memberId, role);
 
             // then
-            verify(projectMemberRepository).save(projectMemberCaptor.capture());
-            ProjectMember saved = projectMemberCaptor.getValue();
+            verify(projectMembershipRepository).save(projectMembershipCaptor.capture());
+            ProjectMembership saved = projectMembershipCaptor.getValue();
 
             assertThat(saved.getProject()).isSameAs(project);
             assertThat(saved.getMember()).isSameAs(member);
@@ -121,24 +121,25 @@ class ProjectMemberServiceTest {
             Member member = createTestMember();
             ProjectRole role = ProjectRole.MEMBER;
 
-            ProjectMember projectMember = ProjectMember.createProjectMember(project, member, role);
+            ProjectMembership projectMembership = ProjectMembership.createProjectMembership(project,
+                member, role);
             // activeProjectMember는 기본적으로 deleted=false 상태
 
             given(projectRepository.findById(projectId)).willReturn(Optional.of(project));
             given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
-            given(projectMemberRepository.findByProjectIdAndMemberIdIncludingDeleted(
+            given(projectMembershipRepository.findByProjectIdAndMemberIdIncludingDeleted(
                 projectId,
                 memberId
-            )).willReturn(Optional.of(projectMember));
+            )).willReturn(Optional.of(projectMembership));
 
             // when & then
             BusinessException exception = assertThrows(BusinessException.class, () -> {
-                projectMemberService.joinProject(projectId, memberId, role);
+                projectParticipantService.joinProject(projectId, memberId, role);
             });
 
             assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.MEMBER_ALREADY_JOINED);
 
-            verify(projectMemberRepository, never()).save(any());
+            verify(projectMembershipRepository, never()).save(any());
         }
 
         @Test
@@ -153,13 +154,13 @@ class ProjectMemberServiceTest {
 
             // when & then
             BusinessException exception = assertThrows(BusinessException.class, () -> {
-                projectMemberService.joinProject(projectId, memberId, role);
+                projectParticipantService.joinProject(projectId, memberId, role);
             });
 
             assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.PROJECT_NOT_FOUND);
 
             verify(memberRepository, never()).findById(any());
-            verify(projectMemberRepository, never()).save(any());
+            verify(projectMembershipRepository, never()).save(any());
         }
 
         @Test
@@ -176,12 +177,12 @@ class ProjectMemberServiceTest {
 
             // when & then
             BusinessException exception = assertThrows(BusinessException.class, () -> {
-                projectMemberService.joinProject(projectId, memberId, role);
+                projectParticipantService.joinProject(projectId, memberId, role);
             });
 
             assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.MEMBER_NOT_FOUND);
 
-            verify(projectMemberRepository, never()).save(any());
+            verify(projectMembershipRepository, never()).save(any());
         }
     }
 
@@ -199,16 +200,16 @@ class ProjectMemberServiceTest {
             Member member = createTestMember();
             ProjectRole role = ProjectRole.MEMBER;
 
-            ProjectMember projectMember = createActiveProjectMember(project, member, role);
+            ProjectMembership projectMembership = createActiveProjectMember(project, member, role);
 
-            given(projectMemberRepository.findByProjectIdAndMemberId(projectId, memberId))
-                .willReturn(Optional.of(projectMember));
+            given(projectMembershipRepository.findByProjectIdAndMemberId(projectId, memberId))
+                .willReturn(Optional.of(projectMembership));
 
             // when
-            projectMemberService.leaveProject(projectId, memberId);
+            projectParticipantService.leaveProject(projectId, memberId);
 
             // then
-            verify(projectMemberRepository).delete(projectMember);
+            verify(projectMembershipRepository).delete(projectMembership);
         }
 
         @Test
@@ -218,17 +219,17 @@ class ProjectMemberServiceTest {
             UUID projectId = randomProjectId();
             UUID memberId = randomMemberId();
 
-            given(projectMemberRepository.findByProjectIdAndMemberId(projectId, memberId))
+            given(projectMembershipRepository.findByProjectIdAndMemberId(projectId, memberId))
                 .willReturn(Optional.empty());
 
             // when & then
             BusinessException exception = assertThrows(BusinessException.class, () -> {
-                projectMemberService.leaveProject(projectId, memberId);
+                projectParticipantService.leaveProject(projectId, memberId);
             });
 
             assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.PROJECT_MEMBER_NOT_FOUND);
 
-            verify(projectMemberRepository, never()).delete(any());
+            verify(projectMembershipRepository, never()).delete(any());
         }
     }
 
@@ -249,20 +250,20 @@ class ProjectMemberServiceTest {
         return Member.builder().build();
     }
 
-    private ProjectMember createActiveProjectMember(
+    private ProjectMembership createActiveProjectMember(
         Project project,
         Member member,
         ProjectRole role
     ) {
-        return ProjectMember.createProjectMember(project, member, role);
+        return ProjectMembership.createProjectMembership(project, member, role);
     }
 
-    private ProjectMember createDeletedProjectMember(
+    private ProjectMembership createDeletedProjectMember(
         Project project,
         Member member,
         ProjectRole role
     ) {
-        return ProjectMember.builder()
+        return ProjectMembership.builder()
             .project(project)
             .member(member)
             .role(role)

@@ -75,13 +75,4 @@ jobs:
           task-definition: ${{ steps.render.outputs.task-definition }}
           service: ${{ env.ECS_SERVICE }}
           cluster: ${{ env.ECS_CLUSTER }}
-          wait-for-service-stability: false
-
-      - name: Wait for ECS service to stabilize
-        run: |
-          echo "Waiting for ECS service $ECS_SERVICE in cluster $ECS_CLUSTER..."
-          aws ecs wait services-stable \
-            --cluster "$ECS_CLUSTER" \
-            --services "$ECS_SERVICE" \
-            --region "$AWS_REGION"
-          echo "ECS service is stable"
+          wait-for-service-stability: true

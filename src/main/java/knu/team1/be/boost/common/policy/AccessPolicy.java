@@ -6,8 +6,8 @@ import java.util.stream.Collectors;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.member.entity.Member;
-import knu.team1.be.boost.projectMember.entity.ProjectRole;
-import knu.team1.be.boost.projectMember.repository.ProjectMemberRepository;
+import knu.team1.be.boost.projectMembership.entity.ProjectRole;
+import knu.team1.be.boost.projectMembership.repository.ProjectMembershipRepository;
 import knu.team1.be.boost.task.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class AccessPolicy {
 
-    private final ProjectMemberRepository projectMemberRepository;
+    private final ProjectMembershipRepository projectMembershipRepository;
     private final TaskRepository taskRepository;
 
     public void ensureProjectMember(UUID projectId, UUID memberId) {
@@ -39,7 +39,7 @@ public class AccessPolicy {
             .map(Member::getId)
             .collect(Collectors.toSet());
 
-        int count = projectMemberRepository.countByProjectIdAndMemberIdIn(projectId, assigneeIds);
+        int count = projectMembershipRepository.countByProjectIdAndMemberIdIn(projectId, assigneeIds);
         if (count != assigneeIds.size()) {
             throw new BusinessException(
                 ErrorCode.PROJECT_MEMBER_ONLY,
@@ -67,7 +67,7 @@ public class AccessPolicy {
     }
 
     private boolean isProjectMember(UUID projectId, UUID memberId) {
-        return projectMemberRepository.existsByProjectIdAndMemberId(projectId, memberId);
+        return projectMembershipRepository.existsByProjectIdAndMemberId(projectId, memberId);
     }
 
     private boolean isTaskAssignee(UUID taskId, UUID memberId) {
@@ -75,7 +75,7 @@ public class AccessPolicy {
     }
 
     private boolean isProjectOwner(UUID projectId, UUID memberId) {
-        return projectMemberRepository.existsByProjectIdAndMemberIdAndRole(
+        return projectMembershipRepository.existsByProjectIdAndMemberIdAndRole(
             projectId, memberId, ProjectRole.OWNER
         );
     }
