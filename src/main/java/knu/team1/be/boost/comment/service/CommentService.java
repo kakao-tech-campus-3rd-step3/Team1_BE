@@ -19,11 +19,9 @@ import knu.team1.be.boost.member.repository.MemberRepository;
 import knu.team1.be.boost.task.entity.Task;
 import knu.team1.be.boost.task.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -68,11 +66,14 @@ public class CommentService {
                 ErrorCode.MEMBER_NOT_FOUND,
                 "memberId: " + memberId
             ));
-        File file = fileRepository.findById(requestDto.fileInfo().fileId())
-            .orElseThrow(() -> new BusinessException(
-                ErrorCode.FILE_NOT_FOUND,
-                "fileId: " + requestDto.fileInfo().fileId()
-            ));
+        File file = null;
+        if (requestDto.fileInfo().fileId() != null) {
+            file = fileRepository.findById(requestDto.fileInfo().fileId())
+                .orElseThrow(() -> new BusinessException(
+                    ErrorCode.FILE_NOT_FOUND,
+                    "fileId: " + requestDto.fileInfo().fileId()
+                ));
+        }
 
         Comment comment = Comment.builder()
             .task(task)
@@ -80,7 +81,7 @@ public class CommentService {
             .content(requestDto.content())
             .persona(requestDto.persona())
             .isAnonymous(requestDto.isAnonymous())
-            .fileInfo(new FileInfo(
+            .fileInfo(file == null ? null : new FileInfo(
                 file,
                 requestDto.fileInfo().filePage(),
                 requestDto.fileInfo().fileX(),
