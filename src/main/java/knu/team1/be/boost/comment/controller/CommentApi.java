@@ -1,7 +1,6 @@
 package knu.team1.be.boost.comment.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -30,7 +29,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @SecurityRequirement(name = "bearerAuth")
 public interface CommentApi {
 
-    @Operation(summary = "과제 댓글 목록 조회", description = "할 일에 달린 모든 댓글을 조회합니다.")
+    @Operation(summary = "할 일 댓글 목록 조회", description = "할 일에 달린 모든 댓글을 조회합니다.")
     @ApiResponses({
         @ApiResponse(
             responseCode = "200",
@@ -43,12 +42,12 @@ public interface CommentApi {
     })
     @GetMapping("/projects/{projectId}/tasks/{taskId}/comments")
     ResponseEntity<List<CommentResponseDto>> getComments(
-        @Parameter(description = "프로젝트 ID") @PathVariable UUID projectId,
-        @Parameter(description = "과제 ID") @PathVariable UUID taskId,
+        @PathVariable UUID projectId,
+        @PathVariable UUID taskId,
         @AuthenticationPrincipal UserPrincipalDto user
     );
 
-    @Operation(summary = "댓글 생성", description = "특정 과제(Task)에 새로운 댓글을 작성합니다.")
+    @Operation(summary = "댓글 생성", description = "특정 할 일에 새로운 댓글을 작성합니다.")
     @ApiResponses({
         @ApiResponse(
             responseCode = "201",
@@ -62,8 +61,8 @@ public interface CommentApi {
     })
     @PostMapping("/projects/{projectId}/tasks/{taskId}/comments")
     ResponseEntity<CommentResponseDto> createComment(
-        @Parameter(description = "프로젝트 ID") @PathVariable UUID projectId,
-        @Parameter(description = "과제 ID") @PathVariable UUID taskId,
+        @PathVariable UUID projectId,
+        @PathVariable UUID taskId,
         @AuthenticationPrincipal UserPrincipalDto user,
         @Valid @RequestBody CommentCreateRequestDto request
     );
@@ -82,7 +81,7 @@ public interface CommentApi {
     })
     @PutMapping("/comments/{commentId}")
     ResponseEntity<CommentResponseDto> updateComment(
-        @Parameter(description = "수정할 댓글 ID") @PathVariable UUID commentId,
+        @PathVariable UUID commentId,
         @AuthenticationPrincipal UserPrincipalDto user,
         @Valid @RequestBody CommentUpdateRequestDto request
     );
@@ -96,7 +95,7 @@ public interface CommentApi {
     })
     @DeleteMapping("/comments/{commentId}")
     ResponseEntity<Void> deleteComment(
-        @Parameter(description = "삭제할 댓글 ID") @PathVariable UUID commentId,
+        @PathVariable UUID commentId,
         @AuthenticationPrincipal UserPrincipalDto user
     );
 }
