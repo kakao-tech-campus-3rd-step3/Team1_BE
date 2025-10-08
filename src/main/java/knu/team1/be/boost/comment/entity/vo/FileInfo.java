@@ -30,7 +30,12 @@ public class FileInfo {
     @Column(name = "file_y")
     private Float fileY;
 
-    public FileInfo(File file, Integer filePage, Float fileX, Float fileY) {
+    public FileInfo(
+        File file,
+        Integer filePage,
+        Float fileX,
+        Float fileY
+    ) {
         this.file = file;
         this.filePage = filePage;
         this.fileX = fileX;

@@ -29,7 +29,7 @@ public class Comment extends BaseEntity {
     private Task task;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "author_id", nullable = false)
+    @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
     @Column(name = "content", nullable = false)
@@ -45,4 +45,8 @@ public class Comment extends BaseEntity {
 
     @Embedded
     private FileInfo fileInfo;
+
+    public void updateContent(String content) {
+        this.content = content;
+    }
 }

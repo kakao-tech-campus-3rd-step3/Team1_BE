@@ -3,6 +3,7 @@ package knu.team1.be.boost.common.policy;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import knu.team1.be.boost.comment.repository.CommentRepository;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.member.entity.Member;
@@ -20,6 +21,7 @@ public class AccessPolicy {
 
     private final ProjectMembershipRepository projectMembershipRepository;
     private final TaskRepository taskRepository;
+    private final CommentRepository commentRepository;
 
     public void ensureProjectMember(UUID projectId, UUID memberId) {
         if (!isProjectMember(projectId, memberId)) {
@@ -39,7 +41,8 @@ public class AccessPolicy {
             .map(Member::getId)
             .collect(Collectors.toSet());
 
-        int count = projectMembershipRepository.countByProjectIdAndMemberIdIn(projectId, assigneeIds);
+        int count = projectMembershipRepository.countByProjectIdAndMemberIdIn(projectId,
+            assigneeIds);
         if (count != assigneeIds.size()) {
             throw new BusinessException(
                 ErrorCode.PROJECT_MEMBER_ONLY,
@@ -62,6 +65,15 @@ public class AccessPolicy {
             throw new BusinessException(
                 ErrorCode.PROJECT_OWNER_ONLY,
                 "projectId=" + projectId + ", memberId=" + memberId
+            );
+        }
+    }
+
+    public void ensureCommentAuthor(UUID commentAuthorId, UUID memberId) {
+        if (!commentAuthorId.equals(memberId)) {
+            throw new BusinessException(
+                ErrorCode.COMMENT_AUTHOR_ONLY,
+                "commentAuthorId=" + commentAuthorId + ", memberId=" + memberId
             );
         }
     }
