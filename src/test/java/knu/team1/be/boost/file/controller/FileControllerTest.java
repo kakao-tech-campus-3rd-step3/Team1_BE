@@ -15,27 +15,38 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
+import knu.team1.be.boost.auth.dto.UserPrincipalDto;
+import knu.team1.be.boost.common.exception.BusinessException;
+import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.file.dto.FileCompleteRequestDto;
 import knu.team1.be.boost.file.dto.FileCompleteResponseDto;
 import knu.team1.be.boost.file.dto.FileRequestDto;
 import knu.team1.be.boost.file.dto.FileResponseDto;
-import knu.team1.be.boost.file.exception.FileAlreadyUploadCompletedException;
-import knu.team1.be.boost.file.exception.FileNotFoundException;
-import knu.team1.be.boost.file.exception.FileTooLargeException;
 import knu.team1.be.boost.file.service.FileService;
+import knu.team1.be.boost.security.filter.JwtAuthFilter;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(
     controllers = FileController.class,
-    excludeAutoConfiguration = SecurityAutoConfiguration.class
+    excludeAutoConfiguration = {
+        SecurityAutoConfiguration.class,
+        OAuth2ClientAutoConfiguration.class
+    },
+    excludeFilters = @ComponentScan.Filter(
+        type = FilterType.ASSIGNABLE_TYPE,
+        classes = JwtAuthFilter.class
+    )
 )
 class FileControllerTest {
 
@@ -73,7 +84,7 @@ class FileControllerTest {
                 900
             );
 
-            given(fileService.uploadFile(any(FileRequestDto.class)))
+            given(fileService.uploadFile(any(FileRequestDto.class), any(UserPrincipalDto.class)))
                 .willReturn(response);
 
             // when & then
@@ -121,8 +132,8 @@ class FileControllerTest {
                 "application/pdf",
                 1048576
             );
-            given(fileService.uploadFile(any(FileRequestDto.class)))
-                .willThrow(new FileTooLargeException(1048576, 1000000));
+            given(fileService.uploadFile(any(FileRequestDto.class), any(UserPrincipalDto.class)))
+                .willThrow(new BusinessException(ErrorCode.FILE_TOO_LARGE));
 
             // when & then
             mockMvc.perform(
@@ -153,7 +164,7 @@ class FileControllerTest {
                 900
             );
 
-            given(fileService.downloadFile(eq(fileId)))
+            given(fileService.downloadFile(eq(fileId), any(UserPrincipalDto.class)))
                 .willReturn(response);
 
             // when & then
@@ -172,8 +183,8 @@ class FileControllerTest {
         void test2() throws Exception {
             // given
             UUID fileId = UUID.randomUUID();
-            given(fileService.downloadFile(eq(fileId)))
-                .willThrow(new FileNotFoundException(fileId));
+            given(fileService.downloadFile(eq(fileId), any(UserPrincipalDto.class)))
+                .willThrow(new BusinessException(ErrorCode.FILE_NOT_FOUND));
 
             // when & then
             mockMvc.perform(get("/api/files/{fileId}/download-url", fileId))
@@ -209,8 +220,11 @@ class FileControllerTest {
                     LocalDateTime.of(2025, 9, 10, 12, 34, 56)
                 );
 
-            given(fileService.completeUpload(eq(fileId), any(FileCompleteRequestDto.class)))
-                .willReturn(response);
+            given(
+                fileService.completeUpload(
+                    eq(fileId), any(FileCompleteRequestDto.class), any(UserPrincipalDto.class)
+                )
+            ).willReturn(response);
 
             // when & then
             mockMvc.perform(patch("/api/files/{fileId}/complete", fileId)
@@ -261,8 +275,11 @@ class FileControllerTest {
                     1048576
                 );
 
-            given(fileService.completeUpload(eq(fileId), any(FileCompleteRequestDto.class)))
-                .willThrow(new FileAlreadyUploadCompletedException(fileId));
+            given(
+                fileService.completeUpload(
+                    eq(fileId), any(FileCompleteRequestDto.class), any(UserPrincipalDto.class)
+                )
+            ).willThrow(new BusinessException(ErrorCode.FILE_ALREADY_UPLOAD_COMPLETED));
 
             // when & then
             mockMvc.perform(

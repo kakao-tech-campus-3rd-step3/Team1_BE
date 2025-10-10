@@ -6,39 +6,45 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import knu.team1.be.boost.auth.exception.InvalidRefreshTokenException;
-import knu.team1.be.boost.auth.exception.KakaoInvalidAuthCodeException;
-import knu.team1.be.boost.auth.exception.RefreshTokenNotEqualsException;
-import knu.team1.be.boost.auth.exception.RefreshTokenNotFoundException;
-import knu.team1.be.boost.file.exception.FileAlreadyUploadCompletedException;
-import knu.team1.be.boost.file.exception.FileNotFoundException;
-import knu.team1.be.boost.file.exception.FileNotReadyException;
-import knu.team1.be.boost.file.exception.FileTooLargeException;
-import knu.team1.be.boost.file.exception.StorageServiceException;
-import knu.team1.be.boost.member.exception.MemberNotFoundException;
-import knu.team1.be.boost.project.exception.ProjectNotFoundException;
-import knu.team1.be.boost.projectMember.exception.MemberAlreadyJoinedException;
-import knu.team1.be.boost.task.exception.TaskNotFoundException;
-import knu.team1.be.boost.task.exception.TaskNotInProjectException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestCookieException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     private URI instance(HttpServletRequest req) {
         return URI.create(req.getRequestURI());
     }
 
-    // 같은 유형의 예외는 일괄 처리
+    @ExceptionHandler(BusinessException.class)
+    public ProblemDetail handleBusinessException(BusinessException e, HttpServletRequest req) {
+
+        ErrorCode errorCode = e.getErrorCode();
+        String errorMessage = errorCode.getErrorMessage();
+        HttpStatus httpStatus = errorCode.getHttpStatus();
+
+        if (httpStatus.is5xxServerError()) {
+            log.error("[{} {}] {} | {}", httpStatus.value(), errorCode, errorMessage,
+                e.getAdditionalInfo(), e);
+        } else {
+            log.warn("[{} {}] {} | {}", httpStatus.value(), errorCode, errorMessage,
+                e.getAdditionalInfo(), e);
+        }
+
+        return ErrorResponses.forBusiness(errorCode, instance(req));
+    }
 
     // 400: Bean Validation
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -55,6 +61,8 @@ public class GlobalExceptionHandler {
             ))
             .toList();
 
+        log.warn("[400 BAD_REQUEST] Validation failed: {}", e.toString(), e);
+
         return ErrorResponses.of(
             HttpStatus.BAD_REQUEST,
             "입력값이 올바르지 않습니다.",
@@ -66,6 +74,8 @@ public class GlobalExceptionHandler {
     // 400: 잘못된 요청
     @ExceptionHandler(IllegalArgumentException.class)
     public ProblemDetail handleIllegalArgument(IllegalArgumentException e, HttpServletRequest req) {
+        log.warn("[400 BAD_REQUEST] Illegal argument: {}", e.toString(), e);
+
         return ErrorResponses.of(
             HttpStatus.BAD_REQUEST,
             e.getMessage(),
@@ -75,8 +85,12 @@ public class GlobalExceptionHandler {
 
     // 400: 타입 불일치
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ProblemDetail handleTypeMismatch(MethodArgumentTypeMismatchException e,
-        HttpServletRequest req) {
+    public ProblemDetail handleTypeMismatch(
+        MethodArgumentTypeMismatchException e,
+        HttpServletRequest req
+    ) {
+        log.warn("[400 BAD_REQUEST] Type mismatch: {}", e.toString(), e);
+
         return ErrorResponses.of(
             HttpStatus.BAD_REQUEST,
             "파라미터 타입이 올바르지 않습니다: " + e.getName(),
@@ -86,7 +100,12 @@ public class GlobalExceptionHandler {
 
     // 400: JSON 파싱 불가
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ProblemDetail handleNotReadable(HttpServletRequest req) {
+    public ProblemDetail handleNotReadable(
+        HttpMessageNotReadableException e,
+        HttpServletRequest req
+    ) {
+        log.warn("[400 BAD_REQUEST] Not readable: {}", e.toString(), e);
+
         return ErrorResponses.of(
             HttpStatus.BAD_REQUEST,
             "요청 본문을 해석할 수 없습니다.",
@@ -102,6 +121,8 @@ public class GlobalExceptionHandler {
     ) {
         String message = String.format("필수 파라미터 '%s'가 누락되었습니다.", e.getParameterName());
 
+        log.warn("[400 BAD_REQUEST] Missing parameter: {}", e.toString(), e);
+
         return ErrorResponses.of(
             HttpStatus.BAD_REQUEST,
             message,
@@ -109,13 +130,36 @@ public class GlobalExceptionHandler {
         );
     }
 
-    // 400: 인가 코드로 카카오 토큰을 받아오지 못한 경우
-    @ExceptionHandler(KakaoInvalidAuthCodeException.class)
-    public ProblemDetail handleInvalidAuthCode(KakaoInvalidAuthCodeException e,
-        HttpServletRequest req) {
+    // 400: 필수 요청 쿠키가 누락된 경우
+    @ExceptionHandler(MissingRequestCookieException.class)
+    public ProblemDetail handleMissingRequestCookie(
+        MissingRequestCookieException e,
+        HttpServletRequest req
+    ) {
+        String message = String.format("필수 쿠키 '%s'가 누락되었습니다.", e.getCookieName());
+
+        log.warn("[400 BAD_REQUEST] Missing cookie: {}", e.toString(), e);
+
         return ErrorResponses.of(
             HttpStatus.BAD_REQUEST,
-            e.getMessage(),
+            message,
+            instance(req)
+        );
+    }
+
+    // 400: 필수 요청 헤더가 누락된 경우
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    public ProblemDetail handleMissingRequestHeader(
+        MissingRequestHeaderException e,
+        HttpServletRequest req
+    ) {
+        String message = String.format("필수 헤더 '%s'가 누락되었습니다.", e.getHeaderName());
+
+        log.warn("[400 BAD_REQUEST] Missing header: {}", e.toString(), e);
+
+        return ErrorResponses.of(
+            HttpStatus.BAD_REQUEST,
+            message,
             instance(req)
         );
     }
@@ -124,72 +168,11 @@ public class GlobalExceptionHandler {
     // (주로 토큰 재발급 시 만료된 토큰을 파싱하려 할 때 발생)
     @ExceptionHandler(JwtException.class)
     public ProblemDetail handleJwtExceptionInController(JwtException e, HttpServletRequest req) {
+        log.warn("[401 UNAUTHORIZED] JWT exception: {}", e.toString(), e);
+
         return ErrorResponses.of(
             HttpStatus.UNAUTHORIZED,
             "유효하지 않은 형식의 토큰입니다.",
-            instance(req)
-        );
-    }
-
-    // 401: 리프레시 토큰이 유효하지 않은 경우
-    @ExceptionHandler(InvalidRefreshTokenException.class)
-    public ProblemDetail handleInvalidRefreshToken(InvalidRefreshTokenException e,
-        HttpServletRequest req) {
-        return ErrorResponses.of(
-            HttpStatus.UNAUTHORIZED,
-            e.getMessage(),
-            instance(req)
-        );
-    }
-
-    // 401: 요청된 리프레시 토큰과 서버의 리프레시 토큰이 다른 경우
-    @ExceptionHandler(RefreshTokenNotEqualsException.class)
-    public ProblemDetail handleRefreshTokenNotEquals(RefreshTokenNotEqualsException e,
-        HttpServletRequest req) {
-        return ErrorResponses.of(
-            HttpStatus.UNAUTHORIZED,
-            e.getMessage(),
-            instance(req)
-        );
-    }
-
-    // 404: 도메인 NotFound
-    @ExceptionHandler({
-        FileNotFoundException.class,
-        TaskNotFoundException.class,
-        MemberNotFoundException.class,
-        ProjectNotFoundException.class,
-        RefreshTokenNotFoundException.class
-    })
-    public ProblemDetail handleNotFound(RuntimeException e, HttpServletRequest req) {
-        return ErrorResponses.of(
-            HttpStatus.NOT_FOUND,
-            e.getMessage(),
-            instance(req)
-        );
-    }
-
-    // 409: 리소스 상태 충돌
-    @ExceptionHandler({
-        FileAlreadyUploadCompletedException.class,
-        FileNotReadyException.class,
-        MemberAlreadyJoinedException.class,
-        TaskNotInProjectException.class
-    })
-    public ProblemDetail handleAlreadyCompleted(RuntimeException e, HttpServletRequest req) {
-        return ErrorResponses.of(
-            HttpStatus.CONFLICT,
-            e.getMessage(),
-            instance(req)
-        );
-    }
-
-    // 413: 요청 본문이 서버가 허용하는 한도 초과한 경우
-    @ExceptionHandler(FileTooLargeException.class)
-    public ProblemDetail handleFileTooLarge(FileTooLargeException e, HttpServletRequest req) {
-        return ErrorResponses.of(
-            HttpStatus.PAYLOAD_TOO_LARGE,
-            e.getMessage(),
             instance(req)
         );
     }
@@ -203,23 +186,16 @@ public class GlobalExceptionHandler {
         HttpStatus status = (e instanceof HttpRequestMethodNotSupportedException)
             ? HttpStatus.METHOD_NOT_ALLOWED
             : HttpStatus.UNSUPPORTED_MEDIA_TYPE;
+        log.warn("[{} {}] {}", status.value(), status.getReasonPhrase(), e.toString(), e);
 
         return ErrorResponses.of(status, e.getMessage(), instance(req));
-    }
-
-    // 500: 그외 외부 서버와의 오류
-    @ExceptionHandler(StorageServiceException.class)
-    public ProblemDetail handleStorage(StorageServiceException e, HttpServletRequest req) {
-        return ErrorResponses.of(
-            HttpStatus.INTERNAL_SERVER_ERROR,
-            e.getMessage(),
-            instance(req)
-        );
     }
 
     // 500: 그외 모든 예외
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleFallback(Exception e, HttpServletRequest req) {
+        log.error("[500 UNEXPECTED] {}", e.toString(), e);
+
         return ErrorResponses.of(
             HttpStatus.INTERNAL_SERVER_ERROR,
             "일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",

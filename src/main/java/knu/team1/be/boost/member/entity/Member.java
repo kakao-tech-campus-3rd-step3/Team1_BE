@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import knu.team1.be.boost.common.entity.SoftDeletableEntity;
 import knu.team1.be.boost.member.entity.vo.OauthInfo;
-import knu.team1.be.boost.projectMember.entity.ProjectMember;
+import knu.team1.be.boost.projectMembership.entity.ProjectMembership;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -45,7 +45,7 @@ public class Member extends SoftDeletableEntity {
 
     @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
     @Builder.Default
-    private List<ProjectMember> projectMembers = new ArrayList<>();
+    private List<ProjectMembership> projectMemberships = new ArrayList<>();
 
     public void updateMember(String name, String avatar) {
         this.name = name;
