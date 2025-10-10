@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Min;
 import java.net.URI;
 import java.util.UUID;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
+import knu.team1.be.boost.task.dto.TaskApproveResponse;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
 import knu.team1.be.boost.task.dto.TaskDetailResponseDto;
 import knu.team1.be.boost.task.dto.TaskMemberSectionResponseDto;
@@ -133,6 +134,16 @@ public class TaskController implements TaskApi {
         TaskMemberSectionResponseDto response =
             taskService.listByMember(projectId, memberId, cursor, limit, user);
 
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<TaskApproveResponse> approveTask(
+        @PathVariable UUID projectId,
+        @PathVariable UUID taskId,
+        @AuthenticationPrincipal UserPrincipalDto user
+    ) {
+        TaskApproveResponse response = taskService.approveTask(projectId, taskId, user);
         return ResponseEntity.ok(response);
     }
 }

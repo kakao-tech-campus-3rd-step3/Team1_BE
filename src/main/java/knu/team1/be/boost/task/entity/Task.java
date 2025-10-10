@@ -14,6 +14,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -73,6 +74,15 @@ public class Task extends SoftDeletableEntity {
     @Builder.Default
     private Set<Member> assignees = new LinkedHashSet<>();
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "task_approvers",
+        joinColumns = @JoinColumn(name = "task_id"),
+        inverseJoinColumns = @JoinColumn(name = "member_id")
+    )
+    @Builder.Default
+    private Set<Member> approvers = new LinkedHashSet<>();
+
     public void update(String title, String description, TaskStatus status,
         LocalDate dueDate, Boolean urgent, Integer requiredReviewerCount,
         List<String> tags, Set<Member> assignees) {
@@ -88,6 +98,34 @@ public class Task extends SoftDeletableEntity {
 
     public void changeStatus(TaskStatus taskStatus) {
         this.status = taskStatus;
+    }
+
+    public void approve(Member member, List<Member> projectMembers) {
+        if (assignees.contains(member)) {
+            throw new BusinessException(
+                ErrorCode.INVALID_APPROVER, "memberId: " + member.getId()
+            );
+        }
+
+        if (approvers.contains(member)) {
+            throw new BusinessException(
+                ErrorCode.ALREADY_APPROVED, "memberId: " + member.getId()
+            );
+        }
+
+        approvers.add(member);
+
+        int requiredApprovals = getRequiredApprovalsCount(projectMembers);
+
+        if (approvers.size() >= requiredApprovals) {
+            this.status = TaskStatus.DONE;
+        }
+    }
+
+    public int getRequiredApprovalsCount(List<Member> projectMembers) {
+        Set<Member> availableReviewers = new HashSet<>(projectMembers);
+        availableReviewers.removeAll(assignees);
+        return Math.min(requiredReviewerCount, availableReviewers.size());
     }
 
     public void ensureTaskInProject(UUID projectId) {

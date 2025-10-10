@@ -12,6 +12,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import java.util.UUID;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
+import knu.team1.be.boost.task.dto.TaskApproveResponse;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
 import knu.team1.be.boost.task.dto.TaskDetailResponseDto;
 import knu.team1.be.boost.task.dto.TaskMemberSectionResponseDto;
@@ -222,6 +223,26 @@ public interface TaskApi {
         @PathVariable UUID memberId,
         @RequestParam(required = false) UUID cursor,
         @RequestParam(defaultValue = "20") @Min(1) @Max(50) int limit,
+        @AuthenticationPrincipal UserPrincipalDto user
+    );
+
+    @Operation(
+        summary = "할 일 승인",
+        description = "특정 프로젝트의 할 일을 승인합니다. 담당자는 승인할 수 없습니다."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "승인 성공",
+            content = @Content(schema = @Schema(implementation = TaskApproveResponse.class))
+        ),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
+        @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
+        @ApiResponse(responseCode = "404", description = "존재하지 않는 프로젝트/할 일/멤버 ID 포함", content = @Content),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
+    })
+    @PatchMapping("/projects/{projectId}/tasks/{taskId}/approve")
+    ResponseEntity<TaskApproveResponse> approveTask(
+        @PathVariable UUID projectId,
+        @PathVariable UUID taskId,
         @AuthenticationPrincipal UserPrincipalDto user
     );
 

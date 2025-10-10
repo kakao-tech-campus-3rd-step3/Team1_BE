@@ -11,6 +11,7 @@ import knu.team1.be.boost.comment.entity.Comment;
 import knu.team1.be.boost.file.dto.FileResponseDto;
 import knu.team1.be.boost.file.entity.File;
 import knu.team1.be.boost.member.dto.MemberResponseDto;
+import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.task.entity.Task;
 
 @Schema(description = "할 일(Task) 상세 응답 DTO")
@@ -34,6 +35,9 @@ public record TaskDetailResponseDto(
     @Schema(description = "긴급 여부", example = "true")
     Boolean urgent,
 
+    @Schema(description = "현재 승인된 리뷰어 수", example = "1")
+    Integer approvedCount,
+
     @Schema(description = "필요 리뷰어 수", example = "2")
     Integer requiredReviewerCount,
 
@@ -56,7 +60,12 @@ public record TaskDetailResponseDto(
     LocalDateTime updatedAt
 ) {
 
-    public static TaskDetailResponseDto from(Task task, List<Comment> comments, List<File> files) {
+    public static TaskDetailResponseDto from(
+        Task task,
+        List<Comment> comments,
+        List<File> files,
+        List<Member> projectMembers
+    ) {
         return new TaskDetailResponseDto(
             task.getId(),
             task.getTitle(),
@@ -64,7 +73,8 @@ public record TaskDetailResponseDto(
             task.getStatus().name(),
             task.getDueDate(),
             task.getUrgent(),
-            task.getRequiredReviewerCount(),
+            task.getApprovers().size(),
+            task.getRequiredApprovalsCount(projectMembers),
             task.getTags(),
             task.getAssignees().stream()
                 .map(MemberResponseDto::from)
