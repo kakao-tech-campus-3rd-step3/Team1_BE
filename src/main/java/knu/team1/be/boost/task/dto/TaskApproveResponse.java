@@ -19,7 +19,7 @@ public record TaskApproveResponse(
     Integer approvedCount,
 
     @Schema(description = "필요 승인 리뷰어 수", example = "2")
-    Integer requiredApprovalCount
+    Integer requiredReviewerCount
 
 ) {
 
