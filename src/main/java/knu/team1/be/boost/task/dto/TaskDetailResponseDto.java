@@ -86,7 +86,7 @@ public record TaskDetailResponseDto(
                 .map(FileResponseDto::from)
                 .collect(Collectors.toList()),
             task.getCreatedAt(),
-            task.getUpdatedAt()
+            LocalDateTime.now()
         );
     }
 }

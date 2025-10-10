@@ -83,6 +83,30 @@ public class Task extends SoftDeletableEntity {
     @Builder.Default
     private Set<Member> approvers = new LinkedHashSet<>();
 
+    public static Task create(
+        Project project,
+        String title,
+        String description,
+        TaskStatus status,
+        LocalDate dueDate,
+        Boolean urgent,
+        Integer requiredReviewerCount,
+        List<String> tags,
+        Set<Member> assignees
+    ) {
+        return Task.builder()
+            .project(project)
+            .title(title)
+            .description(description)
+            .status(status)
+            .dueDate(dueDate)
+            .urgent(urgent)
+            .requiredReviewerCount(requiredReviewerCount)
+            .tags(tags)
+            .assignees(assignees)
+            .build();
+    }
+
     public void update(String title, String description, TaskStatus status,
         LocalDate dueDate, Boolean urgent, Integer requiredReviewerCount,
         List<String> tags, Set<Member> assignees) {

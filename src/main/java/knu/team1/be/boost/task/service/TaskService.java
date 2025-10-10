@@ -74,17 +74,17 @@ public class TaskService {
 
         accessPolicy.ensureAssigneesAreProjectMembers(project.getId(), assignees);
 
-        Task task = Task.builder()
-            .project(project)
-            .title(request.title())
-            .description(request.description())
-            .status(request.status())
-            .dueDate(request.dueDate())
-            .urgent(request.urgent())
-            .requiredReviewerCount(request.requiredReviewerCount())
-            .tags(tags)
-            .assignees(assignees)
-            .build();
+        Task task = Task.create(
+            project,
+            request.title(),
+            request.description(),
+            request.status(),
+            request.dueDate(),
+            request.urgent(),
+            request.requiredReviewerCount(),
+            tags,
+            assignees
+        );
 
         Task saved = taskRepository.save(task);
 
