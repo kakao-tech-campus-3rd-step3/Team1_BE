@@ -205,8 +205,13 @@ public class TaskService {
 
         List<Comment> comments = commentRepository.findAllByTask(task);
         List<File> files = fileRepository.findAllByTask(task);
+        List<Member> projectMembers = projectMembershipRepository.findAllByProjectId(
+                project.getId())
+            .stream()
+            .map(ProjectMembership::getMember)
+            .toList();
 
-        return TaskDetailResponseDto.from(task, comments, files);
+        return TaskDetailResponseDto.from(task, comments, files, projectMembers);
     }
 
     @Transactional(readOnly = true)
