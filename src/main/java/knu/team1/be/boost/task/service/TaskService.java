@@ -24,6 +24,7 @@ import knu.team1.be.boost.project.repository.ProjectRepository;
 import knu.team1.be.boost.projectMembership.entity.ProjectMembership;
 import knu.team1.be.boost.projectMembership.repository.ProjectMembershipRepository;
 import knu.team1.be.boost.task.dto.CursorInfo;
+import knu.team1.be.boost.task.dto.TaskApproveResponse;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
 import knu.team1.be.boost.task.dto.TaskDetailResponseDto;
 import knu.team1.be.boost.task.dto.TaskMemberSectionResponseDto;
@@ -334,6 +335,46 @@ public class TaskService {
         return TaskMemberSectionResponseDto.from(member, tasks, safeLimit);
     }
 
+    @Transactional
+    public TaskApproveResponse approveTask(
+        UUID projectId,
+        UUID taskId,
+        UserPrincipalDto user
+    ) {
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
+            ));
+
+        Task task = taskRepository.findById(taskId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.TASK_NOT_FOUND, "taskId: " + taskId
+            ));
+
+        task.ensureTaskInProject(project.getId());
+
+        accessPolicy.ensureProjectMember(projectId, user.id());
+
+        List<Member> projectMembers = projectMembershipRepository.findAllByProjectId(
+                project.getId())
+            .stream()
+            .map(ProjectMembership::getMember)
+            .toList();
+
+        Member member = memberRepository.findById(user.id())
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.MEMBER_NOT_FOUND, "memberId: " + user.id()
+            ));
+
+        task.approve(member, projectMembers);
+
+        return new TaskApproveResponse(
+            task.getId(),
+            task.getStatus().name(),
+            task.getApprovers().size(),
+            task.getRequiredApprovalsCount(projectMembers)
+        );
+    }
 
     private List<String> extractTags(List<String> tags) {
         return Optional.ofNullable(tags)
