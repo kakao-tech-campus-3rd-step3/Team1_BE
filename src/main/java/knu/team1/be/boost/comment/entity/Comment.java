@@ -8,27 +8,32 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import knu.team1.be.boost.comment.entity.vo.FileInfo;
-import knu.team1.be.boost.common.entity.BaseEntity;
+import knu.team1.be.boost.common.entity.SoftDeletableEntity;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.task.entity.Task;
-import lombok.Builder;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @SuperBuilder
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLDelete(sql = "UPDATE tasks SET deleted = true, deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
+@SQLRestriction("deleted = false")
 @Table(name = "comments")
-public class Comment extends BaseEntity {
+public class Comment extends SoftDeletableEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "task_id", nullable = false)
     private Task task;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
@@ -39,9 +44,8 @@ public class Comment extends BaseEntity {
     @Column(name = "persona")
     private Persona persona;
 
-    @Builder.Default
     @Column(name = "is_anonymous", nullable = false)
-    private Boolean isAnonymous = false;
+    private Boolean isAnonymous;
 
     @Embedded
     private FileInfo fileInfo;

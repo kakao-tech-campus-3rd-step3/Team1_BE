@@ -7,6 +7,7 @@ import java.util.UUID;
 import knu.team1.be.boost.comment.entity.Comment;
 import knu.team1.be.boost.comment.entity.Persona;
 import knu.team1.be.boost.comment.entity.vo.FileInfo;
+import knu.team1.be.boost.member.entity.Member;
 
 @Schema(description = "댓글 응답 DTO")
 public record CommentResponseDto(
@@ -23,7 +24,7 @@ public record CommentResponseDto(
     Persona persona,
 
     @Schema(description = "익명 여부")
-    boolean isAnonymous,
+    Boolean isAnonymous,
 
     @Schema(description = "첨부 파일 정보")
     FileInfoResponseDto fileInfo,
@@ -38,8 +39,10 @@ public record CommentResponseDto(
     public static CommentResponseDto from(Comment comment) {
         return new CommentResponseDto(
             comment.getId(),
-            AuthorInfoResponseDto.from(comment.getMember()),
-            comment.getIsAnonymous() ? "익명" : comment.getContent(),
+            comment.getIsAnonymous()
+                ? AuthorInfoResponseDto.from(comment.getMember())
+                : AuthorInfoResponseDto.anonymous(comment.getMember()),
+            comment.getContent(),
             comment.getPersona(),
             comment.getIsAnonymous(),
             Optional.ofNullable(comment.getFileInfo())
@@ -62,11 +65,19 @@ public record CommentResponseDto(
         String avatar
     ) {
 
-        public static AuthorInfoResponseDto from(knu.team1.be.boost.member.entity.Member member) {
+        public static AuthorInfoResponseDto from(Member member) {
             return new AuthorInfoResponseDto(
                 member.getId(),
                 member.getName(),
                 member.getAvatar()
+            );
+        }
+
+        public static AuthorInfoResponseDto anonymous(Member member) {
+            return new AuthorInfoResponseDto(
+                member.getId(),
+                "익명",
+                "0000"
             );
         }
     }

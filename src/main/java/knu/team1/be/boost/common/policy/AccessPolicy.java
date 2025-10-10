@@ -3,7 +3,6 @@ package knu.team1.be.boost.common.policy;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import knu.team1.be.boost.comment.repository.CommentRepository;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.member.entity.Member;
@@ -21,7 +20,6 @@ public class AccessPolicy {
 
     private final ProjectMembershipRepository projectMembershipRepository;
     private final TaskRepository taskRepository;
-    private final CommentRepository commentRepository;
 
     public void ensureProjectMember(UUID projectId, UUID memberId) {
         if (!isProjectMember(projectId, memberId)) {
