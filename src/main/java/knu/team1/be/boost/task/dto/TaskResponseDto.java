@@ -64,7 +64,7 @@ public record TaskResponseDto(
                 .map(MemberResponseDto::from)
                 .toList(),
             task.getCreatedAt(),
-            task.getUpdatedAt()
+            LocalDateTime.now()
         );
     }
 }
