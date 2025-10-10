@@ -373,12 +373,7 @@ public class TaskService {
 
         task.approve(member, projectMembers);
 
-        return new TaskApproveResponse(
-            task.getId(),
-            task.getStatus().name(),
-            task.getApprovers().size(),
-            task.getRequiredApprovalsCount(projectMembers)
-        );
+        return TaskApproveResponse.from(task, projectMembers);
     }
 
     private List<String> extractTags(List<String> tags) {
