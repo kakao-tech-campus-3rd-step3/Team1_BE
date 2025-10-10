@@ -68,7 +68,7 @@ public class ProjectService {
 
     public List<ProjectResponseDto> getMyProjects(UUID memberId) {
 
-        List<ProjectMembership> projectMemberships = projectMembershipRepository.findByMemberId(
+        List<ProjectMembership> projectMemberships = projectMembershipRepository.findAllByMemberId(
             memberId);
 
         return projectMemberships.stream()

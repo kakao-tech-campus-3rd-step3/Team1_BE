@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CommentRepository extends JpaRepository<Comment, UUID> {
 
-    List<Comment> findByTaskId(UUID taskId);
+    List<Comment> findAllByTaskId(UUID taskId);
 }

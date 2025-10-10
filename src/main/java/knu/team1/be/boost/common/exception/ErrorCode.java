@@ -26,6 +26,7 @@ public enum ErrorCode {
     TASK_NOT_FOUND(HttpStatus.NOT_FOUND, "Task not found", "할 일을 찾을 수 없습니다."),
     TASK_NOT_IN_PROJECT(HttpStatus.CONFLICT, "Task not in project", "해당 할 일이 프로젝트에 속하지 않습니다."),
     TASK_ASSIGNEE_ONLY(HttpStatus.FORBIDDEN, "Task assignee only", "해당 할 일의 담당자만 수행할 수 있습니다."),
+    INVALID_SORT_OPTION(HttpStatus.BAD_REQUEST, "Invalid sort option", "올바르지 않은 정렬 옵션입니다."),
 
     // File 관련
     FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "File not found", "파일을 찾을 수 없습니다."),

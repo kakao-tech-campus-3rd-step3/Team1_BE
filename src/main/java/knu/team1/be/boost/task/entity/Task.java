@@ -17,7 +17,10 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import knu.team1.be.boost.common.entity.SoftDeletableEntity;
+import knu.team1.be.boost.common.exception.BusinessException;
+import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.project.entity.Project;
 import lombok.AccessLevel;
@@ -85,5 +88,14 @@ public class Task extends SoftDeletableEntity {
 
     public void changeStatus(TaskStatus taskStatus) {
         this.status = taskStatus;
+    }
+
+    public void ensureTaskInProject(UUID projectId) {
+        if (!this.getProject().getId().equals(projectId)) {
+            throw new BusinessException(
+                ErrorCode.TASK_NOT_IN_PROJECT,
+                "projectId: " + projectId + ", taskId: " + this.getId()
+            );
+        }
     }
 }

@@ -22,8 +22,8 @@ import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.common.policy.AccessPolicy;
 import knu.team1.be.boost.file.dto.FileCompleteRequestDto;
 import knu.team1.be.boost.file.dto.FileCompleteResponseDto;
+import knu.team1.be.boost.file.dto.FilePresignedUrlResponseDto;
 import knu.team1.be.boost.file.dto.FileRequestDto;
-import knu.team1.be.boost.file.dto.FileResponseDto;
 import knu.team1.be.boost.file.entity.File;
 import knu.team1.be.boost.file.entity.FileStatus;
 import knu.team1.be.boost.file.entity.FileType;
@@ -80,7 +80,7 @@ class FileServiceTest {
         member = Fixtures.member(userId);
         project = Fixtures.project(projectId);
         task = Fixtures.task(UUID.randomUUID(), project);
-        
+
         fileService = new FileService(
             fileRepository, taskRepository, memberRepository, accessPolicy, presignedUrlFactory
         );
@@ -108,7 +108,7 @@ class FileServiceTest {
                 .willReturn(putReq);
 
             // when
-            FileResponseDto res = fileService.uploadFile(req, user);
+            FilePresignedUrlResponseDto res = fileService.uploadFile(req, user);
 
             // then
             assertThat(res.method()).isEqualTo("PUT");
@@ -162,7 +162,7 @@ class FileServiceTest {
                 .willReturn(getReq);
 
             // when
-            FileResponseDto res = fileService.downloadFile(fileId, user);
+            FilePresignedUrlResponseDto res = fileService.downloadFile(fileId, user);
 
             // then
             assertThat(res.method()).isEqualTo("GET");
