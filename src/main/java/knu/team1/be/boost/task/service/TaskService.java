@@ -202,7 +202,7 @@ public class TaskService {
 
         accessPolicy.ensureProjectMember(project.getId(), user.id());
 
-        List<Comment> comments = commentRepository.findAllByTask(task);
+        List<Comment> comments = commentRepository.findAllByTaskId(task.getId());
         List<File> files = fileRepository.findAllByTask(task);
 
         return TaskDetailResponseDto.from(task, comments, files);
