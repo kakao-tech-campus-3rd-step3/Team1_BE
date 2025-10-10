@@ -261,7 +261,7 @@ public class TaskService {
                 ErrorCode.MEMBER_NOT_FOUND, "memberId: " + user.id()
             ));
 
-        List<Project> projects = projectMembershipRepository.findAllByMember(member)
+        List<Project> projects = projectMembershipRepository.findAllByMemberId(member.getId())
             .stream()
             .map(ProjectMembership::getProject)
             .toList();
