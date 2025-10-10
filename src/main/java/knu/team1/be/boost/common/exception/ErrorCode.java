@@ -27,6 +27,7 @@ public enum ErrorCode {
     TASK_ASSIGNEE_ONLY(HttpStatus.FORBIDDEN, "Task assignee only", "해당 할 일의 담당자만 수행할 수 있습니다."),
     INVALID_SORT_OPTION(HttpStatus.BAD_REQUEST, "Invalid sort option", "올바르지 않은 정렬 옵션입니다."),
     INVALID_APPROVER(HttpStatus.FORBIDDEN, "Invalid approver", "담당자는 승인할 수 없습니다."),
+    ALREADY_APPROVED(HttpStatus.CONFLICT, "Already approved", "이미 승인한 사용자입니다."),
 
     // File 관련
     FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "File not found", "파일을 찾을 수 없습니다."),

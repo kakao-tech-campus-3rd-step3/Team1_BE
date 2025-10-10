@@ -107,6 +107,12 @@ public class Task extends SoftDeletableEntity {
             );
         }
 
+        if (approvers.contains(member)) {
+            throw new BusinessException(
+                ErrorCode.ALREADY_APPROVED, "memberId: " + member.getId()
+            );
+        }
+
         approvers.add(member);
 
         int requiredApprovals = getRequiredApprovalsCount(projectMembers);
