@@ -31,6 +31,4 @@ public interface ProjectMembershipRepository extends JpaRepository<ProjectMember
     boolean existsByProjectIdAndMemberIdAndRole(UUID projectId, UUID memberId, ProjectRole role);
 
     List<ProjectMembership> findAllByMemberId(UUID memberId);
-
-    List<ProjectMembership> findByMemberId(UUID memberId);
 }
