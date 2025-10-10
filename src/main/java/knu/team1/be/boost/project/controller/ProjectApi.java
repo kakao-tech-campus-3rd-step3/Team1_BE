@@ -6,14 +6,17 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
+import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.project.dto.ProjectCreateRequestDto;
 import knu.team1.be.boost.project.dto.ProjectResponseDto;
 import knu.team1.be.boost.project.dto.ProjectUpdateRequestDto;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,9 +25,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-// Todo: 로그인 된 사용자 권한 검증 추가 필요
 @Tag(name = "Project", description = "Project 관련 API")
 @RequestMapping("/api/projects")
+@SecurityRequirement(name = "bearerAuth")
 public interface ProjectApi {
 
     @PostMapping()
@@ -40,11 +43,13 @@ public interface ProjectApi {
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
     ResponseEntity<ProjectResponseDto> createProject(
-        @RequestBody @Valid ProjectCreateRequestDto requestDto
+        @RequestBody @Valid ProjectCreateRequestDto requestDto,
+        @AuthenticationPrincipal UserPrincipalDto user
     );
 
     @GetMapping("/{projectId}")
-    @Operation(summary = "프로젝트 조회", description = "프로젝트 정보를 조회합니다.")
+    @Operation(summary = "프로젝트 조회", description = "프로젝트 정보를 조회합니다. "
+        + "프로젝트에 참여하고 있는 사람만 조회가 가능합니다.")
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
@@ -57,7 +62,10 @@ public interface ProjectApi {
         @ApiResponse(responseCode = "404", description = "프로젝트 없음", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
-    ResponseEntity<ProjectResponseDto> getProject(@PathVariable UUID projectId);
+    ResponseEntity<ProjectResponseDto> getProject(
+        @PathVariable UUID projectId,
+        @AuthenticationPrincipal UserPrincipalDto user
+    );
 
     @GetMapping("/me")
     @Operation(
@@ -73,10 +81,13 @@ public interface ProjectApi {
         @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
-    ResponseEntity<List<ProjectResponseDto>> getMyProjects();
+    ResponseEntity<List<ProjectResponseDto>> getMyProjects(
+        @AuthenticationPrincipal UserPrincipalDto user
+    );
 
     @PutMapping("/{projectId}")
-    @Operation(summary = "프로젝트 수정", description = "프로젝트의 정보(설정)를 수정합니다.")
+    @Operation(summary = "프로젝트 수정", description = "프로젝트의 정보(설정)를 수정합니다. "
+        + "project owner만 수정이 가능합니다.")
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
@@ -91,11 +102,13 @@ public interface ProjectApi {
     })
     ResponseEntity<ProjectResponseDto> updateProject(
         @PathVariable UUID projectId,
-        @RequestBody @Valid ProjectUpdateRequestDto requestDto
+        @RequestBody @Valid ProjectUpdateRequestDto requestDto,
+        @AuthenticationPrincipal UserPrincipalDto user
     );
 
     @DeleteMapping("/{projectId}")
-    @Operation(summary = "프로젝트 삭제", description = "프로젝트를 삭제합니다.")
+    @Operation(summary = "프로젝트 삭제", description = "프로젝트를 삭제합니다. "
+        + "project owner만 삭제가 가능합니다.")
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "204",
@@ -108,6 +121,9 @@ public interface ProjectApi {
         @ApiResponse(responseCode = "404", description = "프로젝트 없음", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
-    ResponseEntity<Void> deleteProject(@PathVariable UUID projectId);
+    ResponseEntity<Void> deleteProject(
+        @PathVariable UUID projectId,
+        @AuthenticationPrincipal UserPrincipalDto user
+    );
 
 }

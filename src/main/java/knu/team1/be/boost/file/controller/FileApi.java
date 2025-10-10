@@ -12,8 +12,8 @@ import java.util.UUID;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.file.dto.FileCompleteRequestDto;
 import knu.team1.be.boost.file.dto.FileCompleteResponseDto;
+import knu.team1.be.boost.file.dto.FilePresignedUrlResponseDto;
 import knu.team1.be.boost.file.dto.FileRequestDto;
-import knu.team1.be.boost.file.dto.FileResponseDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,7 +36,7 @@ public interface FileApi {
         @ApiResponse(
             responseCode = "201",
             description = "파일 메타 생성 및 업로드 URL 발급 성공",
-            content = @Content(schema = @Schema(implementation = FileResponseDto.class))
+            content = @Content(schema = @Schema(implementation = FilePresignedUrlResponseDto.class))
         ),
         @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
         @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
@@ -45,7 +45,7 @@ public interface FileApi {
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
     @PostMapping("/upload-url")
-    ResponseEntity<FileResponseDto> uploadFile(
+    ResponseEntity<FilePresignedUrlResponseDto> uploadFile(
         @Valid @RequestBody FileRequestDto request,
         @AuthenticationPrincipal UserPrincipalDto user
     );
@@ -58,7 +58,7 @@ public interface FileApi {
         @ApiResponse(
             responseCode = "200",
             description = "다운로드 URL 발급 성공",
-            content = @Content(schema = @Schema(implementation = FileResponseDto.class))
+            content = @Content(schema = @Schema(implementation = FilePresignedUrlResponseDto.class))
         ),
         @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
         @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
@@ -69,7 +69,7 @@ public interface FileApi {
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
     @GetMapping("/{fileId}/download-url")
-    ResponseEntity<FileResponseDto> downloadFile(
+    ResponseEntity<FilePresignedUrlResponseDto> downloadFile(
         @PathVariable UUID fileId,
         @AuthenticationPrincipal UserPrincipalDto user
     );

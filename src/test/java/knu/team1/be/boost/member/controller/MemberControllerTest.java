@@ -67,7 +67,7 @@ public class MemberControllerTest {
             LocalDateTime.now(),
             LocalDateTime.now()
         );
-        given(memberService.getMember(any(UUID.class))).willReturn(responseDto);
+        given(memberService.getMember(any())).willReturn(responseDto);
 
         // when & then
         mockMvc.perform(get("/api/members/me"))
@@ -81,7 +81,7 @@ public class MemberControllerTest {
     @DisplayName("내 정보 조회 API 실패 - 존재하지 않는 회원")
     void getMyInfo_Fail_MemberNotFound() throws Exception {
         // given
-        given(memberService.getMember(any(UUID.class)))
+        given(memberService.getMember(any()))
             .willThrow(new BusinessException(
                 ErrorCode.MEMBER_NOT_FOUND,
                 "memberId: " + testMemberId
@@ -105,7 +105,7 @@ public class MemberControllerTest {
             LocalDateTime.now(),
             LocalDateTime.now()
         );
-        given(memberService.updateMember(any(UUID.class),
+        given(memberService.updateMember(any(),
             any(MemberUpdateRequestDto.class))).willReturn(responseDto);
 
         // when & then
@@ -123,7 +123,8 @@ public class MemberControllerTest {
     void updateMyInfo_Fail_MemberNotFound() throws Exception {
         // given
         MemberUpdateRequestDto requestDto = new MemberUpdateRequestDto("수정된 이름", "1112");
-        given(memberService.updateMember(any(UUID.class), any(MemberUpdateRequestDto.class)))
+        given(memberService.updateMember(any(),
+            any(MemberUpdateRequestDto.class)))
             .willThrow(new BusinessException(
                 ErrorCode.MEMBER_NOT_FOUND,
                 "memberId: " + testMemberId
@@ -153,7 +154,7 @@ public class MemberControllerTest {
         doThrow(new BusinessException(
             ErrorCode.MEMBER_NOT_FOUND,
             "memberId: " + testMemberId
-        )).when(memberService).deleteMember(any(UUID.class));
+        )).when(memberService).deleteMember(any());
 
         // when & then
         mockMvc.perform(delete("/api/members/me"))
