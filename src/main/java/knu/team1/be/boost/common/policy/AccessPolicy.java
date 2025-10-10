@@ -39,7 +39,8 @@ public class AccessPolicy {
             .map(Member::getId)
             .collect(Collectors.toSet());
 
-        int count = projectMembershipRepository.countByProjectIdAndMemberIdIn(projectId, assigneeIds);
+        int count = projectMembershipRepository.countByProjectIdAndMemberIdIn(projectId,
+            assigneeIds);
         if (count != assigneeIds.size()) {
             throw new BusinessException(
                 ErrorCode.PROJECT_MEMBER_ONLY,
@@ -62,6 +63,15 @@ public class AccessPolicy {
             throw new BusinessException(
                 ErrorCode.PROJECT_OWNER_ONLY,
                 "projectId=" + projectId + ", memberId=" + memberId
+            );
+        }
+    }
+
+    public void ensureCommentAuthor(UUID commentAuthorId, UUID memberId) {
+        if (!commentAuthorId.equals(memberId)) {
+            throw new BusinessException(
+                ErrorCode.COMMENT_AUTHOR_ONLY,
+                "commentAuthorId=" + commentAuthorId + ", memberId=" + memberId
             );
         }
     }
