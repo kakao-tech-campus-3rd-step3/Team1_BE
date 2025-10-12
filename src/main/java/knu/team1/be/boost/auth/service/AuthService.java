@@ -3,6 +3,7 @@ package knu.team1.be.boost.auth.service;
 import io.jsonwebtoken.JwtException;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 import knu.team1.be.boost.auth.dto.KakaoDto;
 import knu.team1.be.boost.auth.dto.TokenDto;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
@@ -56,7 +57,7 @@ public class AuthService {
     }
 
     @Transactional
-    public TokenDto reissue(String expiredAccessToken, String refreshToken) {
+    public TokenDto reissue(String refreshToken) {
         // Refresh Token 자체의 유효성 검증
         try {
             jwtUtil.validateToken(refreshToken);
@@ -64,25 +65,29 @@ public class AuthService {
             throw new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
 
-        // 만료된 Access Token에서 memberId 추출
-        Authentication userAuthentication = jwtUtil.getAuthentication(expiredAccessToken);
-        UserPrincipalDto userPrincipalDto = (UserPrincipalDto) userAuthentication.getPrincipal();
+        // Refresh Token에서 memberId 추출
+        UUID userId = jwtUtil.getUserId(refreshToken);
 
-        RefreshToken storedRefreshToken = refreshTokenRepository.findByMemberId(
-                userPrincipalDto.id())
+        RefreshToken storedRefreshToken = refreshTokenRepository.findByMemberId(userId)
             .orElseThrow(() -> new BusinessException(
                 ErrorCode.REFRESH_TOKEN_NOT_FOUND,
-                "memberId: " + userPrincipalDto.id()
+                "memberId: " + userId
             ));
 
         if (!storedRefreshToken.getRefreshToken().equals(refreshToken)) {
             throw new BusinessException(
                 ErrorCode.REFRESH_TOKEN_NOT_EQUALS,
-                "refreshToken mismatch for memberId: " + userPrincipalDto.id()
+                "refreshToken mismatch for memberId: " + userId
             );
         }
 
         // 모든 검증을 통과하면 새로운 토큰을 생성
+        Member member = memberRepository.findById(userId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.MEMBER_NOT_FOUND,
+                "memberId: " + userId
+            ));
+        Authentication userAuthentication = createUserAuthentication(member);
         TokenDto newTokenDto = jwtUtil.generateToken(userAuthentication);
 
         storedRefreshToken.updateToken(newTokenDto.refreshToken());

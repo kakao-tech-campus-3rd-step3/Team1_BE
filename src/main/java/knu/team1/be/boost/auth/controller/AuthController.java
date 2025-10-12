@@ -15,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -55,11 +54,9 @@ public class AuthController implements AuthApi {
 
     @Override
     public ResponseEntity<AccessTokenResponseDto> reissue(
-        @CookieValue("refreshToken") String refreshToken,
-        @RequestHeader("Authorization") String accessTokenHeader
+        @CookieValue("refreshToken") String refreshToken
     ) {
-        String expiredAccessToken = jwtUtil.resolveToken(accessTokenHeader);
-        TokenDto tokenDto = authService.reissue(expiredAccessToken, refreshToken);
+        TokenDto tokenDto = authService.reissue(refreshToken);
 
         HttpHeaders headers = createCookieHeaders(tokenDto.refreshToken());
 

@@ -15,7 +15,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Tag(name = "Auth", description = "로그인 관련 API")
@@ -68,7 +67,6 @@ public interface AuthApi {
     })
     @PostMapping("/reissue")
     ResponseEntity<AccessTokenResponseDto> reissue(
-        @CookieValue("refreshToken") String refreshToken,
-        @RequestHeader("Authorization") String accessTokenHeader
+        @CookieValue("refreshToken") String refreshToken
     );
 }

@@ -151,7 +151,6 @@ class AuthServiceTest {
     @DisplayName("토큰 재발급")
     class Reissue {
 
-        private final String expiredAccessToken = "expired_access";
         private Authentication authentication;
         private UserPrincipalDto principal;
 
@@ -181,20 +180,24 @@ class AuthServiceTest {
                 12345L,
                 "testUser"
             );
-            RefreshToken storedToken = RefreshToken.builder().member(member)
+            RefreshToken storedToken = RefreshToken.builder()
+                .member(member)
                 .refreshToken(validRefreshToken)
                 .build();
             TokenDto newTokenDto = new TokenDto("new_access", "new_refresh");
 
             doNothing().when(jwtUtil)
                 .validateToken(validRefreshToken);
-            given(jwtUtil.getAuthentication(expiredAccessToken)).willReturn(authentication);
+            given(jwtUtil.getUserId(validRefreshToken))
+                .willReturn(principal.id());
             given(refreshTokenRepository.findByMemberId(principal.id()))
                 .willReturn(Optional.of(storedToken));
             given(jwtUtil.generateToken(authentication)).willReturn(newTokenDto);
+            given(memberRepository.findById(principal.id()))
+                .willReturn(Optional.of(member));
 
             // when
-            TokenDto resultTokenDto = authService.reissue(expiredAccessToken, validRefreshToken);
+            TokenDto resultTokenDto = authService.reissue(validRefreshToken);
 
             // then
             assertThat(resultTokenDto).isEqualTo(newTokenDto);
@@ -210,7 +213,7 @@ class AuthServiceTest {
                 .validateToken(invalidRefreshToken);
 
             // when & then
-            assertThatThrownBy(() -> authService.reissue(expiredAccessToken, invalidRefreshToken))
+            assertThatThrownBy(() -> authService.reissue(invalidRefreshToken))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_REFRESH_TOKEN);
         }
@@ -222,12 +225,13 @@ class AuthServiceTest {
             String unknownRefreshToken = "unknown_refresh";
             doNothing().when(jwtUtil)
                 .validateToken(unknownRefreshToken);
-            given(jwtUtil.getAuthentication(expiredAccessToken)).willReturn(authentication);
+            given(jwtUtil.getUserId(unknownRefreshToken))
+                .willReturn(principal.id());
             given(refreshTokenRepository.findByMemberId(principal.id()))
                 .willReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(() -> authService.reissue(expiredAccessToken, unknownRefreshToken))
+            assertThatThrownBy(() -> authService.reissue(unknownRefreshToken))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.REFRESH_TOKEN_NOT_FOUND);
         }
@@ -248,12 +252,13 @@ class AuthServiceTest {
 
             doNothing().when(jwtUtil)
                 .validateToken(clientRefreshToken);
-            given(jwtUtil.getAuthentication(expiredAccessToken)).willReturn(authentication);
+            given(jwtUtil.getUserId(clientRefreshToken))
+                .willReturn(principal.id());
             given(refreshTokenRepository.findByMemberId(principal.id()))
                 .willReturn(Optional.of(storedToken));
 
             // when & then
-            assertThatThrownBy(() -> authService.reissue(expiredAccessToken, clientRefreshToken))
+            assertThatThrownBy(() -> authService.reissue(clientRefreshToken))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.REFRESH_TOKEN_NOT_EQUALS);
         }
