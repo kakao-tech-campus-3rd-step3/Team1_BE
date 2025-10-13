@@ -89,6 +89,7 @@ public class TaskController implements TaskApi {
     @Override
     public ResponseEntity<TaskStatusSectionDto> listTasksByStatus(
         @PathVariable UUID projectId,
+        @RequestParam(required = false) UUID tagId,
         @RequestParam(required = false, defaultValue = "TODO") TaskStatus status,
         @RequestParam(required = false, defaultValue = "CREATED_AT") TaskSortBy sortBy,
         @RequestParam(required = false, defaultValue = "ASC") TaskSortDirection direction,
@@ -97,7 +98,16 @@ public class TaskController implements TaskApi {
         @AuthenticationPrincipal UserPrincipalDto user
     ) {
         TaskStatusSectionDto response =
-            taskService.listByStatus(projectId, status, sortBy, direction, cursor, limit, user);
+            taskService.listByStatus(
+                projectId,
+                tagId,
+                status,
+                sortBy,
+                direction,
+                cursor,
+                limit,
+                user
+            );
         return ResponseEntity.ok(response);
     }
 

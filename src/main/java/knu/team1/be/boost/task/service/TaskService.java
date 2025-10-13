@@ -222,6 +222,7 @@ public class TaskService {
     @Transactional(readOnly = true)
     public TaskStatusSectionDto listByStatus(
         UUID projectId,
+        UUID tagId,
         TaskStatus status,
         TaskSortBy sortBy,
         TaskSortDirection direction,
@@ -246,6 +247,7 @@ public class TaskService {
 
         List<Task> tasks = findTasksByStatusWithCursor(
             project,
+            tagId,
             status,
             sortBy,
             direction,
@@ -447,6 +449,7 @@ public class TaskService {
 
     private List<Task> findTasksByStatusWithCursor(
         Project project,
+        UUID tagId,
         TaskStatus status,
         TaskSortBy sortBy,
         TaskSortDirection direction,
@@ -458,18 +461,18 @@ public class TaskService {
         switch (sortBy) {
             case CREATED_AT:
                 if (direction == TaskSortDirection.ASC) {
-                    return taskRepository.findByStatusOrderByCreatedAtAsc(project, status,
+                    return taskRepository.findByStatusOrderByCreatedAtAsc(project, tagId, status,
                         cursorCreatedAtKey, cursorId, pageable);
                 } else {
-                    return taskRepository.findByStatusOrderByCreatedAtDesc(project, status,
+                    return taskRepository.findByStatusOrderByCreatedAtDesc(project, tagId, status,
                         cursorCreatedAtKey, cursorId, pageable);
                 }
             case DUE_DATE:
                 if (direction == TaskSortDirection.ASC) {
-                    return taskRepository.findByStatusOrderByDueDateAsc(project, status,
+                    return taskRepository.findByStatusOrderByDueDateAsc(project, tagId, status,
                         cursorDueDateKey, cursorId, pageable);
                 } else {
-                    return taskRepository.findByStatusOrderByDueDateDesc(project, status,
+                    return taskRepository.findByStatusOrderByDueDateDesc(project, tagId, status,
                         cursorDueDateKey, cursorId, pageable);
                 }
             default:
