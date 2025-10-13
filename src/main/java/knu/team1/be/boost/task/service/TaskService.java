@@ -2,10 +2,8 @@ package knu.team1.be.boost.task.service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -23,6 +21,8 @@ import knu.team1.be.boost.project.entity.Project;
 import knu.team1.be.boost.project.repository.ProjectRepository;
 import knu.team1.be.boost.projectMembership.entity.ProjectMembership;
 import knu.team1.be.boost.projectMembership.repository.ProjectMembershipRepository;
+import knu.team1.be.boost.tag.entity.Tag;
+import knu.team1.be.boost.tag.repository.TagRepository;
 import knu.team1.be.boost.task.dto.CursorInfo;
 import knu.team1.be.boost.task.dto.TaskApproveResponse;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
@@ -47,6 +47,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class TaskService {
 
+    private final TagRepository tagRepository;
     private final TaskRepository taskRepository;
     private final FileRepository fileRepository;
     private final MemberRepository memberRepository;
@@ -69,7 +70,9 @@ public class TaskService {
 
         accessPolicy.ensureProjectMember(project.getId(), user.id());
 
-        List<String> tags = extractTags(request.tags());
+        List<Tag> tags = findTagsByIds(request.tags());
+        tags.forEach(tag -> tag.ensureTagInProject(project.getId()));
+
         Set<Member> assignees = findAssignees(request.assignees());
 
         accessPolicy.ensureAssigneesAreProjectMembers(project.getId(), assignees);
@@ -113,7 +116,9 @@ public class TaskService {
         accessPolicy.ensureProjectMember(project.getId(), user.id());
         accessPolicy.ensureTaskAssignee(task.getId(), user.id());
 
-        List<String> tags = extractTags(request.tags());
+        List<Tag> tags = findTagsByIds(request.tags());
+        tags.forEach(tag -> tag.ensureTagInProject(project.getId()));
+
         Set<Member> assignees = findAssignees(request.assignees());
 
         accessPolicy.ensureAssigneesAreProjectMembers(project.getId(), assignees);
@@ -376,10 +381,27 @@ public class TaskService {
         return TaskApproveResponse.from(task, projectMembers);
     }
 
-    private List<String> extractTags(List<String> tags) {
-        return Optional.ofNullable(tags)
-            .map(ArrayList::new)
-            .orElseGet(ArrayList::new);
+    private List<Tag> findTagsByIds(List<UUID> tagIds) {
+        if (tagIds == null || tagIds.isEmpty()) {
+            return List.of();
+        }
+
+        List<Tag> foundTags = tagRepository.findAllById(tagIds);
+
+        Set<UUID> foundIds = foundTags.stream()
+            .map(Tag::getId)
+            .collect(Collectors.toSet());
+
+        Set<UUID> missingIds = new HashSet<>(tagIds);
+        missingIds.removeAll(foundIds);
+
+        if (!missingIds.isEmpty()) {
+            throw new BusinessException(
+                ErrorCode.TAG_NOT_FOUND, "TagIds: " + missingIds
+            );
+        }
+
+        return foundTags;
     }
 
     private Set<Member> findAssignees(List<UUID> assigneeIds) {

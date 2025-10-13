@@ -7,7 +7,10 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import java.util.UUID;
 import knu.team1.be.boost.common.entity.SoftDeletableEntity;
+import knu.team1.be.boost.common.exception.BusinessException;
+import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.project.entity.Project;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -32,4 +35,12 @@ public class Tag extends SoftDeletableEntity {
     @Column(nullable = false, length = 50)
     private String name;
 
+    public void ensureTagInProject(UUID projectId) {
+        if (!this.project.getId().equals(projectId)) {
+            throw new BusinessException(
+                ErrorCode.TAG_NOT_IN_PROJECT,
+                "tagId=" + this.getId() + ", projectId=" + projectId
+            );
+        }
+    }
 }
