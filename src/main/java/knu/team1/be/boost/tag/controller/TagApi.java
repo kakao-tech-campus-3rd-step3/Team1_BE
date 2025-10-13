@@ -37,11 +37,11 @@ public interface TagApi {
             description = "태그 생성 성공",
             content = @Content(schema = @Schema(implementation = TagResponseDto.class))
         ),
-        @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터"),
-        @ApiResponse(responseCode = "401", description = "인증 실패"),
-        @ApiResponse(responseCode = "403", description = "권한 없음"),
-        @ApiResponse(responseCode = "404", description = "존재하지 않는 프로젝트"),
-        @ApiResponse(responseCode = "409", description = "중복 태그 이름")
+        @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
+        @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
+        @ApiResponse(responseCode = "404", description = "존재하지 않는 프로젝트", content = @Content),
+        @ApiResponse(responseCode = "409", description = "중복 태그 이름", content = @Content)
     })
     @PostMapping("/projects/{projectId}/tags")
     ResponseEntity<TagResponseDto> createTag(
@@ -60,11 +60,11 @@ public interface TagApi {
             description = "태그 수정 성공",
             content = @Content(schema = @Schema(implementation = TagResponseDto.class))
         ),
-        @ApiResponse(responseCode = "400", description = "잘못된 요청"),
-        @ApiResponse(responseCode = "401", description = "인증 실패"),
-        @ApiResponse(responseCode = "403", description = "권한 없음"),
-        @ApiResponse(responseCode = "404", description = "프로젝트/태그 없음"),
-        @ApiResponse(responseCode = "409", description = "중복된 태그 이름")
+        @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
+        @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
+        @ApiResponse(responseCode = "404", description = "프로젝트/태그 없음", content = @Content),
+        @ApiResponse(responseCode = "409", description = "중복된 태그 이름", content = @Content)
     })
     @PatchMapping("/projects/{projectId}/tags/{tagId}")
     ResponseEntity<TagResponseDto> updateTag(
@@ -79,10 +79,10 @@ public interface TagApi {
         description = "프로젝트의 태그를 삭제합니다."
     )
     @ApiResponses({
-        @ApiResponse(responseCode = "204", description = "태그 삭제 성공"),
-        @ApiResponse(responseCode = "401", description = "인증 실패"),
-        @ApiResponse(responseCode = "403", description = "권한 없음"),
-        @ApiResponse(responseCode = "404", description = "프로젝트/태그 없음")
+        @ApiResponse(responseCode = "204", description = "태그 삭제 성공", content = @Content),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
+        @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
+        @ApiResponse(responseCode = "404", description = "프로젝트/태그 없음", content = @Content)
     })
     @DeleteMapping("/projects/{projectId}/tags/{tagId}")
     ResponseEntity<Void> deleteTag(
