@@ -85,4 +85,21 @@ public class TagService {
         return TagResponseDto.from(tag);
     }
 
+    @Transactional
+    public void deleteTag(
+        UUID projectId,
+        UUID tagId,
+        UserPrincipalDto user
+    ) {
+        Tag tag = tagRepository.findById(tagId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.TAG_NOT_FOUND, "tagId=" + tagId
+            ));
+
+        tag.ensureTagInProject(projectId);
+
+        accessPolicy.ensureProjectMember(projectId, user.id());
+
+        tagRepository.delete(tag);
+    }
 }
