@@ -10,6 +10,7 @@ import knu.team1.be.boost.project.entity.Project;
 import knu.team1.be.boost.project.repository.ProjectRepository;
 import knu.team1.be.boost.tag.dto.TagCreateRequestDto;
 import knu.team1.be.boost.tag.dto.TagResponseDto;
+import knu.team1.be.boost.tag.dto.TagUpdateRequestDto;
 import knu.team1.be.boost.tag.entity.Tag;
 import knu.team1.be.boost.tag.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
@@ -47,4 +48,41 @@ public class TagService {
 
         return TagResponseDto.from(saved);
     }
+
+    @Transactional
+    public TagResponseDto updateTag(
+        UUID projectId,
+        UUID tagId,
+        TagUpdateRequestDto request,
+        UserPrincipalDto user
+    ) {
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND, "projectId=" + projectId
+            ));
+
+        accessPolicy.ensureProjectMember(project.getId(), user.id());
+
+        Tag tag = tagRepository.findById(tagId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.TAG_NOT_FOUND, "tagId=" + tagId
+            ));
+
+        tag.ensureTagInProject(projectId);
+
+        tagRepository.findByProjectIdAndName(projectId, request.name())
+            .ifPresent(t -> {
+                if (!t.getId().equals(tagId)) {
+                    throw new BusinessException(
+                        ErrorCode.DUPLICATED_TAG_NAME,
+                        "projectId=" + projectId + ", name=" + request.name()
+                    );
+                }
+            });
+
+        tag.update(request.name());
+
+        return TagResponseDto.from(tag);
+    }
+
 }

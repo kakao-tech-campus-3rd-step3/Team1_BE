@@ -42,6 +42,10 @@ public class Tag extends SoftDeletableEntity {
             .build();
     }
 
+    public void update(String name) {
+        this.name = name;
+    }
+
     public void ensureTagInProject(UUID projectId) {
         if (!this.project.getId().equals(projectId)) {
             throw new BusinessException(
