@@ -35,6 +35,13 @@ public class Tag extends SoftDeletableEntity {
     @Column(nullable = false, length = 50)
     private String name;
 
+    public static Tag create(Project project, String name) {
+        return Tag.builder()
+            .project(project)
+            .name(name)
+            .build();
+    }
+
     public void ensureTagInProject(UUID projectId) {
         if (!this.project.getId().equals(projectId)) {
             throw new BusinessException(
