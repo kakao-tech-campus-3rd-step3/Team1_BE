@@ -12,8 +12,10 @@ import java.util.UUID;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.tag.dto.TagCreateRequestDto;
 import knu.team1.be.boost.tag.dto.TagResponseDto;
+import knu.team1.be.boost.tag.dto.TagUpdateRequestDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -44,6 +46,30 @@ public interface TagApi {
     ResponseEntity<TagResponseDto> createTag(
         @PathVariable UUID projectId,
         @Valid @RequestBody TagCreateRequestDto request,
+        @AuthenticationPrincipal UserPrincipalDto user
+    );
+
+    @Operation(
+        summary = "태그 수정",
+        description = "프로젝트 태그 이름을 수정합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200",
+            description = "태그 수정 성공",
+            content = @Content(schema = @Schema(implementation = TagResponseDto.class))
+        ),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+        @ApiResponse(responseCode = "401", description = "인증 실패"),
+        @ApiResponse(responseCode = "403", description = "권한 없음"),
+        @ApiResponse(responseCode = "404", description = "프로젝트/태그 없음"),
+        @ApiResponse(responseCode = "409", description = "중복된 태그 이름")
+    })
+    @PatchMapping("/projects/{projectId}/tags/{tagId}")
+    ResponseEntity<TagResponseDto> updateTag(
+        @PathVariable UUID projectId,
+        @PathVariable UUID tagId,
+        @Valid @RequestBody TagUpdateRequestDto request,
         @AuthenticationPrincipal UserPrincipalDto user
     );
 }

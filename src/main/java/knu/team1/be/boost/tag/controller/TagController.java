@@ -6,6 +6,7 @@ import java.util.UUID;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.tag.dto.TagCreateRequestDto;
 import knu.team1.be.boost.tag.dto.TagResponseDto;
+import knu.team1.be.boost.tag.dto.TagUpdateRequestDto;
 import knu.team1.be.boost.tag.service.TagService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -29,5 +30,16 @@ public class TagController implements TagApi {
         TagResponseDto response = tagService.createTag(projectId, request, user);
         URI location = URI.create("/api/projects/" + projectId + "/tags/" + response.tagId());
         return ResponseEntity.created(location).body(response);
+    }
+
+    @Override
+    public ResponseEntity<TagResponseDto> updateTag(
+        @PathVariable UUID projectId,
+        @PathVariable UUID tagId,
+        @Valid @RequestBody TagUpdateRequestDto request,
+        @AuthenticationPrincipal UserPrincipalDto user
+    ) {
+        TagResponseDto response = tagService.updateTag(projectId, tagId, request, user);
+        return ResponseEntity.ok(response);
     }
 }
