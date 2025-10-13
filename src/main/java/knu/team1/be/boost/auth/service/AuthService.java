@@ -4,6 +4,7 @@ import io.jsonwebtoken.JwtException;
 import java.util.Collection;
 import java.util.List;
 import knu.team1.be.boost.auth.dto.KakaoDto;
+import knu.team1.be.boost.auth.dto.LoginRequestDto;
 import knu.team1.be.boost.auth.dto.TokenDto;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.auth.entity.RefreshToken;
@@ -37,9 +38,20 @@ public class AuthService {
 
     private final String DEFAULT_AVATAR = "1111";
 
+    private static final List<String> ALLOWED_REDIRECT_URIS = List.of(
+        "https://boost.ai.kr",
+        "http://localhost:5173"
+    );
+
     @Transactional
-    public TokenDto login(String code) {
-        KakaoDto.UserInfo kakaoUserInfo = kakaoClientService.getUserInfo(code);
+    public TokenDto login(LoginRequestDto requestDto) {
+        if (!ALLOWED_REDIRECT_URIS.contains(requestDto.redirectUri())) {
+            throw new BusinessException(
+                ErrorCode.INVALID_REDIRECT_URI, "redirectUri: " + requestDto.redirectUri()
+            );
+        }
+
+        KakaoDto.UserInfo kakaoUserInfo = kakaoClientService.getUserInfo(requestDto);
         Member member = registerOrLogin(kakaoUserInfo);
 
         Authentication userAuthentication = createUserAuthentication(member);
