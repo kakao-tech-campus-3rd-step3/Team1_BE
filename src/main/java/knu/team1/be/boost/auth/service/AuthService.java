@@ -58,15 +58,13 @@ public class AuthService {
 
     @Transactional
     public TokenDto reissue(String refreshToken) {
-        // Refresh Token 자체의 유효성 검증
+        // Refresh Token에서 memberId 추출 및 자체의 유효성 검증
+        UUID userId;
         try {
-            jwtUtil.validateToken(refreshToken);
+            userId = jwtUtil.getUserId(refreshToken);
         } catch (JwtException e) {
             throw new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
-
-        // Refresh Token에서 memberId 추출
-        UUID userId = jwtUtil.getUserId(refreshToken);
 
         RefreshToken storedRefreshToken = refreshTokenRepository.findByMemberId(userId)
             .orElseThrow(() -> new BusinessException(

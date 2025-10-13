@@ -6,7 +6,6 @@ import knu.team1.be.boost.auth.dto.LoginRequestDto;
 import knu.team1.be.boost.auth.dto.TokenDto;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.auth.service.AuthService;
-import knu.team1.be.boost.security.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -22,8 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController implements AuthApi {
 
     private final AuthService authService;
-
-    private final JwtUtil jwtUtil;
 
     @Value("${jwt.refresh-token-expire-time}")
     private Duration refreshTokenExpireTime;

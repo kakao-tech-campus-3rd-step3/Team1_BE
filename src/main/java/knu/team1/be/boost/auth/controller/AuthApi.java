@@ -52,7 +52,7 @@ public interface AuthApi {
 
     @Operation(
         summary = "토큰 재발급",
-        description = "만료된 Access Token과 Refresh Token을 재발급합니다."
+        description = "Access Token과 Refresh Token을 재발급합니다."
     )
     @ApiResponses(value = {
         @ApiResponse(
