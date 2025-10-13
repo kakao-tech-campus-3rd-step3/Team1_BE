@@ -19,6 +19,7 @@ import java.util.UUID;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.member.dto.MemberResponseDto;
 import knu.team1.be.boost.security.filter.JwtAuthFilter;
+import knu.team1.be.boost.tag.dto.TagResponseDto;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
 import knu.team1.be.boost.task.dto.TaskResponseDto;
 import knu.team1.be.boost.task.dto.TaskStatusRequestDto;
@@ -63,6 +64,9 @@ class TaskControllerTest {
     private static final UUID PROJECT_ID = UUID.fromString("a1b2c3d4-e5f6-7890-1234-567890abcdef");
     private static final UUID TASK_ID = UUID.fromString("550e8400-e5f6-7890-1234-567890abcdef");
 
+    private static final UUID TAG1_ID = UUID.fromString("770e8400-e29b-41d4-a716-446655440000");
+    private static final UUID TAG2_ID = UUID.fromString("770e8400-e29b-41d4-a716-446655440111");
+
     @Nested
     @DisplayName("할 일 생성")
     class CreateTask {
@@ -78,7 +82,7 @@ class TaskControllerTest {
                 LocalDate.of(2025, 9, 18),
                 true,
                 2,
-                List.of("피드백", "멘토링"),
+                List.of(TAG1_ID, TAG2_ID),
                 List.of(
                     UUID.fromString("550e8400-e29b-41d4-a716-446655440000"),
                     UUID.fromString("550e8400-e29b-41d4-a716-446655440111")
@@ -94,7 +98,10 @@ class TaskControllerTest {
                 LocalDate.of(2025, 9, 18),
                 true,
                 2,
-                List.of("피드백", "멘토링"),
+                List.of(
+                    new TagResponseDto(TAG1_ID, "피드백"),
+                    new TagResponseDto(TAG2_ID, "멘토링")
+                ),
                 List.of(
                     new MemberResponseDto(
                         UUID.fromString("550e8400-e29b-41d4-a716-446655440000"),
@@ -131,7 +138,9 @@ class TaskControllerTest {
                 .andExpect(header().string("Location",
                     "/api/projects/" + PROJECT_ID + "/tasks/" + TASK_ID))
                 .andExpect(jsonPath("$.projectId").value(PROJECT_ID.toString()))
-                .andExpect(jsonPath("$.taskId").value(TASK_ID.toString()));
+                .andExpect(jsonPath("$.taskId").value(TASK_ID.toString()))
+                .andExpect(jsonPath("$.tags[0].tagId").value(TAG1_ID.toString()))
+                .andExpect(jsonPath("$.tags[1].tagId").value(TAG2_ID.toString()));
         }
 
         @Test
@@ -145,7 +154,7 @@ class TaskControllerTest {
                 LocalDate.of(2025, 9, 18),
                 false,
                 1,
-                List.of("태그"),
+                List.of(TAG1_ID),
                 List.of()
             );
 
@@ -169,7 +178,7 @@ class TaskControllerTest {
                 null,
                 false,
                 1,
-                List.of("태그"),
+                List.of(TAG1_ID),
                 List.of()
             );
 
@@ -193,7 +202,7 @@ class TaskControllerTest {
                 LocalDate.of(2025, 9, 18),
                 false,
                 -1,
-                List.of("태그"),
+                List.of(TAG1_ID),
                 List.of()
             );
 
@@ -217,7 +226,7 @@ class TaskControllerTest {
                 LocalDate.of(2025, 9, 18),
                 false,
                 1,
-                List.of("태그"),
+                List.of(TAG1_ID),
                 List.of()
             );
 
@@ -246,7 +255,7 @@ class TaskControllerTest {
                 LocalDate.of(2025, 9, 18),
                 false,
                 1,
-                List.of("리팩터링"),
+                List.of(TAG2_ID),
                 List.of()
             );
 
@@ -259,7 +268,7 @@ class TaskControllerTest {
                 LocalDate.of(2025, 9, 18),
                 false,
                 1,
-                List.of("리팩터링"),
+                List.of(new TagResponseDto(TAG2_ID, "멘토링")),
                 List.of(),
                 LocalDateTime.of(2025, 9, 17, 12, 0, 0),
                 LocalDateTime.of(2025, 9, 17, 13, 0, 0)
@@ -280,7 +289,8 @@ class TaskControllerTest {
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.projectId").value(PROJECT_ID.toString()))
-                .andExpect(jsonPath("$.taskId").value(TASK_ID.toString()));
+                .andExpect(jsonPath("$.taskId").value(TASK_ID.toString()))
+                .andExpect(jsonPath("$.tags[0].tagId").value(TAG2_ID.toString()));
         }
 
         @Test
@@ -363,11 +373,12 @@ class TaskControllerTest {
                 TaskStatus.REVIEW,
                 LocalDate.of(2025, 9, 18),
                 true, 2,
-                List.of("피드백", "멘토링"),
+                List.of(new TagResponseDto(TAG1_ID, "피드백"), new TagResponseDto(TAG2_ID, "멘토링")),
                 List.of(),
                 LocalDateTime.of(2025, 9, 17, 12, 0, 0),
                 LocalDateTime.of(2025, 9, 17, 13, 0, 0)
             );
+
             given(
                 taskService.changeTaskStatus(
                     eq(PROJECT_ID), eq(TASK_ID), any(TaskStatusRequestDto.class),
@@ -384,7 +395,9 @@ class TaskControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.projectId").value(PROJECT_ID.toString()))
                 .andExpect(jsonPath("$.taskId").value(TASK_ID.toString()))
-                .andExpect(jsonPath("$.status").value("REVIEW"));
+                .andExpect(jsonPath("$.status").value("REVIEW"))
+                .andExpect(jsonPath("$.tags[0].tagId").value(TAG1_ID.toString()))
+                .andExpect(jsonPath("$.tags[1].tagId").value(TAG2_ID.toString()));
         }
 
         @Test
