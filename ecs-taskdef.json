@@ -58,10 +58,6 @@
           "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:876253814177:secret:boost-secrets-Zbelb3:KAKAO_CLIENT_SECRET::"
         },
         {
-          "name": "KAKAO_REDIRECT_URI",
-          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:876253814177:secret:boost-secrets-Zbelb3:KAKAO_REDIRECT_URI::"
-        },
-        {
           "name": "AWS_REGION",
           "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:876253814177:secret:boost-secrets-Zbelb3:AWS_REGION::"
         },
