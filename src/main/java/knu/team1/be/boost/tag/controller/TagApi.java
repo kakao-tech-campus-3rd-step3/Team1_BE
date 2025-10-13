@@ -15,6 +15,7 @@ import knu.team1.be.boost.tag.dto.TagResponseDto;
 import knu.team1.be.boost.tag.dto.TagUpdateRequestDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -70,6 +71,23 @@ public interface TagApi {
         @PathVariable UUID projectId,
         @PathVariable UUID tagId,
         @Valid @RequestBody TagUpdateRequestDto request,
+        @AuthenticationPrincipal UserPrincipalDto user
+    );
+
+    @Operation(
+        summary = "태그 삭제",
+        description = "프로젝트의 태그를 삭제합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "태그 삭제 성공"),
+        @ApiResponse(responseCode = "401", description = "인증 실패"),
+        @ApiResponse(responseCode = "403", description = "권한 없음"),
+        @ApiResponse(responseCode = "404", description = "프로젝트/태그 없음")
+    })
+    @DeleteMapping("/projects/{projectId}/tags/{tagId}")
+    ResponseEntity<Void> deleteTag(
+        @PathVariable UUID projectId,
+        @PathVariable UUID tagId,
         @AuthenticationPrincipal UserPrincipalDto user
     );
 }

@@ -42,4 +42,14 @@ public class TagController implements TagApi {
         TagResponseDto response = tagService.updateTag(projectId, tagId, request, user);
         return ResponseEntity.ok(response);
     }
+
+    @Override
+    public ResponseEntity<Void> deleteTag(
+        @PathVariable UUID projectId,
+        @PathVariable UUID tagId,
+        @AuthenticationPrincipal UserPrincipalDto user
+    ) {
+        tagService.deleteTag(projectId, tagId, user);
+        return ResponseEntity.noContent().build();
+    }
 }
