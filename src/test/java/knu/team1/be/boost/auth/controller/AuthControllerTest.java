@@ -63,9 +63,10 @@ class AuthControllerTest {
         @DisplayName("성공")
         void kakaoLogin_Success() throws Exception {
             // given
-            LoginRequestDto requestDto = new LoginRequestDto("test_kakao_auth_code");
+            LoginRequestDto requestDto = new LoginRequestDto("test_kakao_auth_code",
+                "test_redirect_uri");
             TokenDto tokenDto = new TokenDto("mock_access_token", "mock_refresh_token");
-            given(authService.login(requestDto.code())).willReturn(tokenDto);
+            given(authService.login(requestDto)).willReturn(tokenDto);
 
             // when
             ResultActions resultActions = mockMvc.perform(post("/api/auth/login/kakao")
@@ -92,8 +93,9 @@ class AuthControllerTest {
         @DisplayName("실패: 유효하지 않은 인가 코드일 경우 KAKAO_INVALID_AUTH_CODE")
         void kakaoLogin_Fail_WhenServiceThrowsBusinessException() throws Exception {
             // given
-            LoginRequestDto requestDto = new LoginRequestDto("invalid_kakao_code");
-            given(authService.login(requestDto.code()))
+            LoginRequestDto requestDto = new LoginRequestDto("invalid_kakao_code",
+                "test_redirect_uri");
+            given(authService.login(requestDto))
                 .willThrow(new BusinessException(ErrorCode.KAKAO_INVALID_AUTH_CODE));
 
             // when

@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import knu.team1.be.boost.auth.dto.KakaoDto;
+import knu.team1.be.boost.auth.dto.LoginRequestDto;
 import knu.team1.be.boost.auth.dto.TokenDto;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.auth.entity.RefreshToken;
@@ -66,7 +67,7 @@ class AuthServiceTest {
         @DisplayName("성공: 신규 사용자일 경우 회원가입 후 토큰 발급")
         void login_Success_WhenNewUser() {
             // given
-            String code = "test_code";
+            LoginRequestDto requestDto = new LoginRequestDto("test_code", "test_redirect_uri");
             KakaoDto.UserInfo mockKakaoUser = createMockKakaoUser(12345L, "라이언");
             Member newMember = createMockMember(
                 UUID.randomUUID(),
@@ -77,14 +78,14 @@ class AuthServiceTest {
             );
             TokenDto mockTokenDto = new TokenDto("access", "refresh");
 
-            given(kakaoClientService.getUserInfo(code)).willReturn(mockKakaoUser);
+            given(kakaoClientService.getUserInfo(requestDto)).willReturn(mockKakaoUser);
             given(memberRepository.findByOauthInfoProviderAndOauthInfoProviderId("kakao",
                 mockKakaoUser.id())).willReturn(Optional.empty());
             given(memberRepository.save(any(Member.class))).willReturn(newMember);
             given(jwtUtil.generateToken(any(Authentication.class))).willReturn(mockTokenDto);
 
             // when
-            TokenDto resultTokenDto = authService.login(code);
+            TokenDto resultTokenDto = authService.login(requestDto);
 
             // then
             assertThat(resultTokenDto).isEqualTo(mockTokenDto);
@@ -96,7 +97,7 @@ class AuthServiceTest {
         @DisplayName("성공: 기존 사용자일 경우 로그인 후 토큰 발급")
         void login_Success_WhenExistingUser() {
             // given
-            String code = "test_code";
+            LoginRequestDto requestDto = new LoginRequestDto("test_code", "test_redirect_uri");
             KakaoDto.UserInfo mockKakaoUser = createMockKakaoUser(12345L, "라이언");
             Member existingMember = createMockMember(
                 UUID.randomUUID(),
@@ -107,13 +108,13 @@ class AuthServiceTest {
             );
             TokenDto mockTokenDto = new TokenDto("access", "refresh");
 
-            given(kakaoClientService.getUserInfo(code)).willReturn(mockKakaoUser);
+            given(kakaoClientService.getUserInfo(requestDto)).willReturn(mockKakaoUser);
             given(memberRepository.findByOauthInfoProviderAndOauthInfoProviderId("kakao",
                 mockKakaoUser.id())).willReturn(Optional.of(existingMember));
             given(jwtUtil.generateToken(any(Authentication.class))).willReturn(mockTokenDto);
 
             // when
-            TokenDto resultTokenDto = authService.login(code);
+            TokenDto resultTokenDto = authService.login(requestDto);
 
             // then
             assertThat(resultTokenDto).isEqualTo(mockTokenDto);
