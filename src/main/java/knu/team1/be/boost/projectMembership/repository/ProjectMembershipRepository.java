@@ -33,4 +33,6 @@ public interface ProjectMembershipRepository extends JpaRepository<ProjectMember
     List<ProjectMembership> findAllByMemberId(UUID memberId);
 
     List<ProjectMembership> findAllByProjectId(UUID projectId);
+
+    void deleteAllByProjectId(UUID projectId);
 }
