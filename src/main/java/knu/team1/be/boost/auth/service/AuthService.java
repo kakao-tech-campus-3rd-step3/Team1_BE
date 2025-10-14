@@ -57,7 +57,7 @@ public class AuthService {
 
         saveOrUpdateRefreshToken(member, tokenDto.refreshToken());
 
-        return LoginDto.of(
+        return new LoginDto(
             MemberResponseDto.from(member),
             tokenDto,
             isNewUser

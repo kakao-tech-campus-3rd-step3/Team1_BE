@@ -8,15 +8,4 @@ public record LoginDto(
     Boolean isNewUser
 ) {
 
-    public static LoginDto of(
-        MemberResponseDto memberResponseDto,
-        TokenDto tokenDto,
-        Boolean isNewUser
-    ) {
-        return new LoginDto(
-            memberResponseDto,
-            tokenDto,
-            isNewUser
-        );
-    }
 }
