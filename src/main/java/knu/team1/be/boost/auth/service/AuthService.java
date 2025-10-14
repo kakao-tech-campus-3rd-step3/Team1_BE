@@ -5,12 +5,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import knu.team1.be.boost.auth.dto.KakaoDto;
+import knu.team1.be.boost.auth.dto.LoginDto;
 import knu.team1.be.boost.auth.dto.TokenDto;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.auth.entity.RefreshToken;
 import knu.team1.be.boost.auth.repository.RefreshTokenRepository;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
+import knu.team1.be.boost.member.dto.MemberResponseDto;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.entity.vo.OauthInfo;
 import knu.team1.be.boost.member.repository.MemberRepository;
@@ -39,7 +41,7 @@ public class AuthService {
     private final String DEFAULT_AVATAR = "1111";
 
     @Transactional
-    public TokenDto login(String code) {
+    public LoginDto login(String code) {
         KakaoDto.UserInfo kakaoUserInfo = kakaoClientService.getUserInfo(code);
         Member member = registerOrLogin(kakaoUserInfo);
 
@@ -48,7 +50,10 @@ public class AuthService {
 
         saveOrUpdateRefreshToken(member, tokenDto.refreshToken());
 
-        return tokenDto;
+        return LoginDto.of(
+            MemberResponseDto.from(member),
+            tokenDto
+        );
     }
 
     @Transactional
