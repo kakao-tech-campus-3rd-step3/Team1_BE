@@ -41,7 +41,11 @@ public class AuthController implements AuthApi {
 
         return ResponseEntity.ok()
             .headers(headers)
-            .body(LoginResponseDto.of(loginDto.memberResponseDto(), accessTokenResponseDto));
+            .body(LoginResponseDto.of(
+                loginDto.memberResponseDto(),
+                accessTokenResponseDto,
+                loginDto.isNewUser()
+            ));
     }
 
     @Override

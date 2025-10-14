@@ -4,16 +4,19 @@ import knu.team1.be.boost.member.dto.MemberResponseDto;
 
 public record LoginDto(
     MemberResponseDto memberResponseDto,
-    TokenDto tokenDto
+    TokenDto tokenDto,
+    Boolean isNewUser
 ) {
 
     public static LoginDto of(
         MemberResponseDto memberResponseDto,
-        TokenDto tokenDto
+        TokenDto tokenDto,
+        Boolean isNewUser
     ) {
         return new LoginDto(
             memberResponseDto,
-            tokenDto
+            tokenDto,
+            isNewUser
         );
     }
 }

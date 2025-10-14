@@ -75,7 +75,7 @@ class AuthControllerTest {
                 LocalDateTime.now(),
                 LocalDateTime.now()
             );
-            LoginDto loginDto = LoginDto.of(memberResponseDto, tokenDto);
+            LoginDto loginDto = LoginDto.of(memberResponseDto, tokenDto, true);
             given(authService.login(requestDto.code())).willReturn(loginDto);
 
             // when

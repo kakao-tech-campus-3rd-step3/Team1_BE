@@ -3,6 +3,7 @@ package knu.team1.be.boost.auth.service;
 import io.jsonwebtoken.JwtException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import knu.team1.be.boost.auth.dto.KakaoDto;
 import knu.team1.be.boost.auth.dto.LoginDto;
@@ -31,7 +32,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthService {
 
     private final MemberRepository memberRepository;
-
     private final RefreshTokenRepository refreshTokenRepository;
 
     private final JwtUtil jwtUtil;
@@ -40,10 +40,17 @@ public class AuthService {
 
     private final String DEFAULT_AVATAR = "1111";
 
+    private record RegisterResult(Member member, boolean isNewUser) {
+
+    }
+
     @Transactional
     public LoginDto login(String code) {
         KakaoDto.UserInfo kakaoUserInfo = kakaoClientService.getUserInfo(code);
-        Member member = registerOrLogin(kakaoUserInfo);
+
+        RegisterResult registerResult = registerOrLogin(kakaoUserInfo);
+        Member member = registerResult.member();
+        boolean isNewUser = registerResult.isNewUser();
 
         Authentication userAuthentication = createUserAuthentication(member);
         TokenDto tokenDto = jwtUtil.generateToken(userAuthentication);
@@ -52,7 +59,8 @@ public class AuthService {
 
         return LoginDto.of(
             MemberResponseDto.from(member),
-            tokenDto
+            tokenDto,
+            isNewUser
         );
     }
 
@@ -100,24 +108,28 @@ public class AuthService {
         return newTokenDto;
     }
 
-    private Member registerOrLogin(KakaoDto.UserInfo userInfo) {
-        return memberRepository.findByOauthInfoProviderAndOauthInfoProviderId(
+    private RegisterResult registerOrLogin(KakaoDto.UserInfo userInfo) {
+        Optional<Member> foundMember = memberRepository.findByOauthInfoProviderAndOauthInfoProviderId(
             "kakao", userInfo.id()
-        ).orElseGet(() -> {
+        );
+
+        if (foundMember.isPresent()) {
+            // 기존 회원일 경우
+            return new RegisterResult(foundMember.get(), false);
+        } else {
+            // 신규 회원일 경우
             OauthInfo oauthInfo = OauthInfo.builder()
                 .provider("kakao")
                 .providerId(userInfo.id())
                 .build();
             Member newMember = Member.builder()
-                .name(userInfo.kakaoAccount()
-                    .profile()
-                    .nickname()
-                )
+                .name(userInfo.kakaoAccount().profile().nickname())
                 .avatar(DEFAULT_AVATAR)
                 .oauthInfo(oauthInfo)
                 .build();
-            return memberRepository.save(newMember);
-        });
+            Member savedMember = memberRepository.save(newMember);
+            return new RegisterResult(savedMember, true);
+        }
     }
 
     private Authentication createUserAuthentication(Member member) {
