@@ -17,6 +17,7 @@ import knu.team1.be.boost.tag.dto.TagUpdateRequestDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -66,7 +67,7 @@ public interface TagApi {
         @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
         @ApiResponse(responseCode = "404", description = "존재하지 않는 프로젝트", content = @Content)
     })
-    @PostMapping("/projects/{projectId}/tags")
+    @GetMapping("/projects/{projectId}/tags")
     ResponseEntity<List<TagResponseDto>> getAllTags(
         @PathVariable UUID projectId,
         @AuthenticationPrincipal UserPrincipalDto user
