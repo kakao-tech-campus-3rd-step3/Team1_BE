@@ -1,5 +1,6 @@
 package knu.team1.be.boost.auth.controller;
 
+import jakarta.validation.Valid;
 import java.time.Duration;
 import knu.team1.be.boost.auth.dto.AccessTokenResponseDto;
 import knu.team1.be.boost.auth.dto.LoginRequestDto;
@@ -27,7 +28,7 @@ public class AuthController implements AuthApi {
 
     @Override
     public ResponseEntity<AccessTokenResponseDto> kakaoLogin(
-        @RequestBody LoginRequestDto requestDto
+        @Valid @RequestBody LoginRequestDto requestDto
     ) {
         TokenDto tokenDto = authService.login(requestDto);
 
