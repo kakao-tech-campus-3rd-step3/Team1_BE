@@ -107,7 +107,7 @@ public class ProjectService {
             ));
 
         accessPolicy.ensureProjectOwner(projectId, memberId);
-        projectMembershipRepository.deleteAllByProjectId(projectId);
+        projectMembershipRepository.softDeleteAllByProjectId(projectId);
         projectRepository.delete(project);
     }
 }
