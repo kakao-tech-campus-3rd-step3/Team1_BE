@@ -36,14 +36,11 @@ public class AuthController implements AuthApi {
         // 헤더에 Refresh Token 쿠키 추가
         HttpHeaders headers = createCookieHeaders(loginDto.tokenDto().refreshToken());
 
-        AccessTokenResponseDto accessTokenResponseDto
-            = AccessTokenResponseDto.from(loginDto.tokenDto().accessToken());
-
         return ResponseEntity.ok()
             .headers(headers)
-            .body(LoginResponseDto.of(
+            .body(new LoginResponseDto(
                 loginDto.memberResponseDto(),
-                accessTokenResponseDto,
+                loginDto.tokenDto().accessToken(),
                 loginDto.isNewUser()
             ));
     }
