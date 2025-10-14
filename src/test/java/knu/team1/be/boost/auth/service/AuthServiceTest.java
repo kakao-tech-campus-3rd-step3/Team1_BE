@@ -187,7 +187,7 @@ class AuthServiceTest {
             given(jwtUtil.getUserId(validRefreshToken)).willReturn(member.getId());
             given(refreshTokenRepository.findByMemberId(principal.id()))
                 .willReturn(Optional.of(storedToken));
-            given(jwtUtil.generateToken(authentication)).willReturn(newTokenDto);
+            given(jwtUtil.generateToken(any(Authentication.class))).willReturn(newTokenDto);
 
             // when
             TokenDto resultTokenDto = authService.reissue(validRefreshToken);
