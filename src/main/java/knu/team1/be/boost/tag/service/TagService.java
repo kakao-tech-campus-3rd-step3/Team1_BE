@@ -1,6 +1,7 @@
 package knu.team1.be.boost.tag.service;
 
 import jakarta.transaction.Transactional;
+import java.util.List;
 import java.util.UUID;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.common.exception.BusinessException;
@@ -47,6 +48,25 @@ public class TagService {
         Tag saved = tagRepository.save(tag);
 
         return TagResponseDto.from(saved);
+    }
+
+    public List<TagResponseDto> getAllTags(
+        UUID projectId,
+        UserPrincipalDto user
+    ) {
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND, "projectId=" + projectId
+            ));
+
+        accessPolicy.ensureProjectMember(project.getId(), user.id());
+
+        List<Tag> tags = tagRepository.findAllByProjectId(project.getId());
+        tags.forEach(tag -> tag.ensureTagInProject(project.getId()));
+
+        return tags.stream()
+            .map(TagResponseDto::from)
+            .toList();
     }
 
     @Transactional
