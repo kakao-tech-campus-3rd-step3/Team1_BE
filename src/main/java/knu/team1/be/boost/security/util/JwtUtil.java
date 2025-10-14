@@ -1,7 +1,6 @@
 package knu.team1.be.boost.security.util;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -104,6 +103,10 @@ public class JwtUtil {
         return new UsernamePasswordAuthenticationToken(userPrincipalDto, "", authorities);
     }
 
+    public UUID getUserId(String refreshToken) {
+        return UUID.fromString(parseClaims(refreshToken).getSubject());
+    }
+
     public void validateToken(String token) {
         Jwts.parserBuilder()
             .setSigningKey(key)
@@ -112,16 +115,11 @@ public class JwtUtil {
     }
 
     private Claims parseClaims(String token) {
-        try {
-            return Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-        } catch (ExpiredJwtException e) {
-            // 토큰 재발급에 필요
-            return e.getClaims();
-        }
+        return Jwts.parserBuilder()
+            .setSigningKey(key)
+            .build()
+            .parseClaimsJws(token)
+            .getBody();
     }
 
     public String resolveToken(HttpServletRequest request) {
