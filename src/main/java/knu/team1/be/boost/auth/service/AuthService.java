@@ -80,11 +80,13 @@ public class AuthService {
         }
 
         // 모든 검증을 통과하면 새로운 토큰을 생성
-        Member member = memberRepository.findById(userId)
-            .orElseThrow(() -> new BusinessException(
+        Member member = storedRefreshToken.getMember();
+        if (member == null) {
+            throw new BusinessException(
                 ErrorCode.MEMBER_NOT_FOUND,
                 "memberId: " + userId
-            ));
+            );
+        }
         Authentication userAuthentication = createUserAuthentication(member);
         TokenDto newTokenDto = jwtUtil.generateToken(userAuthentication);
 

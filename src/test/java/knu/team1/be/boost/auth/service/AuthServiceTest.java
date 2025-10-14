@@ -5,11 +5,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-import io.jsonwebtoken.JwtException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -186,15 +184,10 @@ class AuthServiceTest {
                 .build();
             TokenDto newTokenDto = new TokenDto("new_access", "new_refresh");
 
-            doNothing().when(jwtUtil)
-                .validateToken(validRefreshToken);
-            given(jwtUtil.getUserId(validRefreshToken))
-                .willReturn(principal.id());
+            given(jwtUtil.getUserId(validRefreshToken)).willReturn(member.getId());
             given(refreshTokenRepository.findByMemberId(principal.id()))
                 .willReturn(Optional.of(storedToken));
             given(jwtUtil.generateToken(authentication)).willReturn(newTokenDto);
-            given(memberRepository.findById(principal.id()))
-                .willReturn(Optional.of(member));
 
             // when
             TokenDto resultTokenDto = authService.reissue(validRefreshToken);
@@ -209,8 +202,8 @@ class AuthServiceTest {
         void reissue_Fail_WhenRefreshTokenIsInvalid() {
             // given
             String invalidRefreshToken = "invalid_refresh";
-            doThrow(new JwtException("Invalid Token")).when(jwtUtil)
-                .validateToken(invalidRefreshToken);
+            given(jwtUtil.getUserId(invalidRefreshToken))
+                .willThrow(new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN));
 
             // when & then
             assertThatThrownBy(() -> authService.reissue(invalidRefreshToken))
@@ -223,8 +216,7 @@ class AuthServiceTest {
         void reissue_Fail_WhenRefreshTokenNotFound() {
             // given
             String unknownRefreshToken = "unknown_refresh";
-            doNothing().when(jwtUtil)
-                .validateToken(unknownRefreshToken);
+
             given(jwtUtil.getUserId(unknownRefreshToken))
                 .willReturn(principal.id());
             given(refreshTokenRepository.findByMemberId(principal.id()))
@@ -250,8 +242,6 @@ class AuthServiceTest {
             RefreshToken storedToken = RefreshToken.builder().member(member)
                 .refreshToken(storedRefreshTokenValue).build();
 
-            doNothing().when(jwtUtil)
-                .validateToken(clientRefreshToken);
             given(jwtUtil.getUserId(clientRefreshToken))
                 .willReturn(principal.id());
             given(refreshTokenRepository.findByMemberId(principal.id()))
