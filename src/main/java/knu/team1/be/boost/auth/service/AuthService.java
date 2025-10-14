@@ -1,10 +1,15 @@
 package knu.team1.be.boost.auth.service;
 
 import io.jsonwebtoken.JwtException;
+import jakarta.annotation.PostConstruct;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.UUID;
 import knu.team1.be.boost.auth.dto.KakaoDto;
+import knu.team1.be.boost.auth.dto.LoginRequestDto;
 import knu.team1.be.boost.auth.dto.TokenDto;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.auth.entity.RefreshToken;
@@ -16,6 +21,7 @@ import knu.team1.be.boost.member.entity.vo.OauthInfo;
 import knu.team1.be.boost.member.repository.MemberRepository;
 import knu.team1.be.boost.security.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -38,9 +44,28 @@ public class AuthService {
 
     private final String DEFAULT_AVATAR = "1111";
 
+    @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
+    private String allowedRedirectUrisRaw;
+
+    private Set<String> allowedRedirectUris;
+
+    @PostConstruct
+    private void init() {
+        allowedRedirectUris = Arrays.stream(allowedRedirectUrisRaw.split(","))
+            .map(String::trim)
+            .filter(s -> !s.isEmpty())
+            .collect(Collectors.toUnmodifiableSet());
+    }
+
     @Transactional
-    public TokenDto login(String code) {
-        KakaoDto.UserInfo kakaoUserInfo = kakaoClientService.getUserInfo(code);
+    public TokenDto login(LoginRequestDto requestDto) {
+        if (!allowedRedirectUris.contains(requestDto.redirectUri())) {
+            throw new BusinessException(
+                ErrorCode.INVALID_REDIRECT_URI, "redirectUri: " + requestDto.redirectUri()
+            );
+        }
+
+        KakaoDto.UserInfo kakaoUserInfo = kakaoClientService.getUserInfo(requestDto);
         Member member = registerOrLogin(kakaoUserInfo);
 
         Authentication userAuthentication = createUserAuthentication(member);
