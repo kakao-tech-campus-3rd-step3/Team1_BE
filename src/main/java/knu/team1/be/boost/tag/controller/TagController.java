@@ -2,6 +2,7 @@ package knu.team1.be.boost.tag.controller;
 
 import jakarta.validation.Valid;
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.tag.dto.TagCreateRequestDto;
@@ -30,6 +31,15 @@ public class TagController implements TagApi {
         TagResponseDto response = tagService.createTag(projectId, request, user);
         URI location = URI.create("/api/projects/" + projectId + "/tags/" + response.tagId());
         return ResponseEntity.created(location).body(response);
+    }
+
+    @Override
+    public ResponseEntity<List<TagResponseDto>> getAllTags(
+        @PathVariable UUID projectId,
+        @AuthenticationPrincipal UserPrincipalDto user
+    ) {
+        List<TagResponseDto> responses = tagService.getAllTags(projectId, user);
+        return ResponseEntity.ok(responses);
     }
 
     @Override

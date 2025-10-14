@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.List;
 import java.util.UUID;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.tag.dto.TagCreateRequestDto;
@@ -47,6 +48,27 @@ public interface TagApi {
     ResponseEntity<TagResponseDto> createTag(
         @PathVariable UUID projectId,
         @Valid @RequestBody TagCreateRequestDto request,
+        @AuthenticationPrincipal UserPrincipalDto user
+    );
+
+    @Operation(
+        summary = "태그 목록 조회",
+        description = "프로젝트에 속한 태그들의 목록을 조회합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200",
+            description = "프로젝트 모든 태그 목록 조회 성공",
+            content = @Content(schema = @Schema(implementation = TagResponseDto.class))
+        ),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
+        @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
+        @ApiResponse(responseCode = "404", description = "존재하지 않는 프로젝트", content = @Content)
+    })
+    @PostMapping("/projects/{projectId}/tags")
+    ResponseEntity<List<TagResponseDto>> getAllTags(
+        @PathVariable UUID projectId,
         @AuthenticationPrincipal UserPrincipalDto user
     );
 
