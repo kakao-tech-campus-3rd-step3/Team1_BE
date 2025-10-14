@@ -12,14 +12,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import knu.team1.be.boost.auth.dto.LoginDto;
 import knu.team1.be.boost.auth.dto.LoginRequestDto;
 import knu.team1.be.boost.auth.dto.TokenDto;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.auth.service.AuthService;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
+import knu.team1.be.boost.member.dto.MemberResponseDto;
 import knu.team1.be.boost.security.util.JwtUtil;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -65,7 +68,15 @@ class AuthControllerTest {
             // given
             LoginRequestDto requestDto = new LoginRequestDto("test_kakao_auth_code");
             TokenDto tokenDto = new TokenDto("mock_access_token", "mock_refresh_token");
-            given(authService.login(requestDto.code())).willReturn(tokenDto);
+            MemberResponseDto memberResponseDto = new MemberResponseDto(
+                UUID.randomUUID(),
+                "수정된 이름",
+                "1112",
+                LocalDateTime.now(),
+                LocalDateTime.now()
+            );
+            LoginDto loginDto = LoginDto.of(memberResponseDto, tokenDto);
+            given(authService.login(requestDto.code())).willReturn(loginDto);
 
             // when
             ResultActions resultActions = mockMvc.perform(post("/api/auth/login/kakao")
@@ -75,7 +86,8 @@ class AuthControllerTest {
             // then
             resultActions
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accessToken").value(tokenDto.accessToken()))
+                .andExpect(jsonPath("$.accessTokenResponseDto.accessToken").value(
+                    loginDto.tokenDto().accessToken()))
                 .andExpect(cookie().exists("refreshToken"));
         }
 

@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import knu.team1.be.boost.auth.dto.KakaoDto;
+import knu.team1.be.boost.auth.dto.LoginDto;
 import knu.team1.be.boost.auth.dto.TokenDto;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.auth.entity.RefreshToken;
@@ -82,10 +83,10 @@ class AuthServiceTest {
             given(jwtUtil.generateToken(any(Authentication.class))).willReturn(mockTokenDto);
 
             // when
-            TokenDto resultTokenDto = authService.login(code);
+            LoginDto resultLoginDto = authService.login(code);
 
             // then
-            assertThat(resultTokenDto).isEqualTo(mockTokenDto);
+            assertThat(resultLoginDto.tokenDto()).isEqualTo(mockTokenDto);
             verify(memberRepository).save(any(Member.class));
             verify(refreshTokenRepository).save(any(RefreshToken.class));
         }
@@ -111,10 +112,10 @@ class AuthServiceTest {
             given(jwtUtil.generateToken(any(Authentication.class))).willReturn(mockTokenDto);
 
             // when
-            TokenDto resultTokenDto = authService.login(code);
+            LoginDto resultLoginDto = authService.login(code);
 
             // then
-            assertThat(resultTokenDto).isEqualTo(mockTokenDto);
+            assertThat(resultLoginDto.tokenDto()).isEqualTo(mockTokenDto);
             verify(memberRepository, never()).save(any(Member.class));
             verify(refreshTokenRepository).save(any(RefreshToken.class));
         }
