@@ -54,14 +54,15 @@ public class TagService {
         UUID projectId,
         UserPrincipalDto user
     ) {
-        Project project = projectRepository.findById(projectId)
-            .orElseThrow(() -> new BusinessException(
+        if (!projectRepository.existsById(projectId)) {
+            throw new BusinessException(
                 ErrorCode.PROJECT_NOT_FOUND, "projectId=" + projectId
-            ));
+            );
+        }
 
-        accessPolicy.ensureProjectMember(project.getId(), user.id());
+        accessPolicy.ensureProjectMember(projectId, user.id());
 
-        List<Tag> tags = tagRepository.findAllByProjectId(project.getId());
+        List<Tag> tags = tagRepository.findAllByProjectId(projectId);
 
         return tags.stream()
             .map(TagResponseDto::from)
@@ -75,26 +76,27 @@ public class TagService {
         TagUpdateRequestDto request,
         UserPrincipalDto user
     ) {
-        Project project = projectRepository.findById(projectId)
-            .orElseThrow(() -> new BusinessException(
+        if (!projectRepository.existsById(projectId)) {
+            throw new BusinessException(
                 ErrorCode.PROJECT_NOT_FOUND, "projectId=" + projectId
-            ));
+            );
+        }
 
-        accessPolicy.ensureProjectMember(project.getId(), user.id());
+        accessPolicy.ensureProjectMember(projectId, user.id());
 
         Tag tag = tagRepository.findById(tagId)
             .orElseThrow(() -> new BusinessException(
                 ErrorCode.TAG_NOT_FOUND, "tagId=" + tagId
             ));
 
-        tag.ensureTagInProject(project.getId());
+        tag.ensureTagInProject(projectId);
 
-        tagRepository.findByProjectIdAndName(project.getId(), request.name())
+        tagRepository.findByProjectIdAndName(projectId, request.name())
             .ifPresent(t -> {
                 if (!t.getId().equals(tagId)) {
                     throw new BusinessException(
                         ErrorCode.DUPLICATED_TAG_NAME,
-                        "projectId=" + project.getId() + ", name=" + request.name()
+                        "projectId=" + projectId + ", name=" + request.name()
                     );
                 }
             });
@@ -110,21 +112,22 @@ public class TagService {
         UUID tagId,
         UserPrincipalDto user
     ) {
-        Project project = projectRepository.findById(projectId)
-            .orElseThrow(() -> new BusinessException(
+        if (!projectRepository.existsById(projectId)) {
+            throw new BusinessException(
                 ErrorCode.PROJECT_NOT_FOUND, "projectId=" + projectId
-            ));
+            );
+        }
 
-        accessPolicy.ensureProjectMember(project.getId(), user.id());
+        accessPolicy.ensureProjectMember(projectId, user.id());
 
         Tag tag = tagRepository.findById(tagId)
             .orElseThrow(() -> new BusinessException(
                 ErrorCode.TAG_NOT_FOUND, "tagId=" + tagId
             ));
 
-        tag.ensureTagInProject(project.getId());
+        tag.ensureTagInProject(projectId);
 
-        accessPolicy.ensureProjectMember(project.getId(), user.id());
+        accessPolicy.ensureProjectMember(projectId, user.id());
 
         tagRepository.delete(tag);
     }
