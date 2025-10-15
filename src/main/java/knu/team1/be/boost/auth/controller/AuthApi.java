@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import knu.team1.be.boost.auth.dto.AccessTokenResponseDto;
 import knu.team1.be.boost.auth.dto.LoginRequestDto;
 import knu.team1.be.boost.auth.dto.LoginResponseDto;
@@ -36,7 +37,7 @@ public interface AuthApi {
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
     @PostMapping("/login/kakao")
-    ResponseEntity<LoginResponseDto> kakaoLogin(@RequestBody LoginRequestDto requestDto);
+    ResponseEntity<LoginResponseDto> kakaoLogin(@Valid @RequestBody LoginRequestDto requestDto);
 
     @Operation(
         summary = "로그아웃",
