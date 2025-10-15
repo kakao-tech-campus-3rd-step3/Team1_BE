@@ -1,5 +1,6 @@
 package knu.team1.be.boost.security;
 
+import java.util.List;
 import knu.team1.be.boost.security.filter.JwtAuthFilter;
 import knu.team1.be.boost.security.filter.JwtExceptionFilter;
 import knu.team1.be.boost.security.handler.CustomAuthenticationEntryPoint;
@@ -11,8 +12,9 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
@@ -48,13 +50,14 @@ public class SecurityConfig {
                 ).permitAll()
                 .anyRequest().authenticated()
             )
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             // todo: production 환경에서 enable 전환 필요
             .csrf(csrf -> csrf.disable())
             .sessionManagement(
                 session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            // todo: production 환경에서 enable 전환 필요
             .headers(headers -> headers
-                // swagger를 위해 disable
-                .frameOptions(frame -> frame.disable())
+                .frameOptions(frame -> frame.disable()) // swagger를 위해 disable
             )
             .exceptionHandling(e -> e
                 .authenticationEntryPoint(customAuthenticationEntryPoint)
@@ -65,18 +68,20 @@ public class SecurityConfig {
         return http.build();
     }
 
-    @Configuration
-    public static class WebConfig implements WebMvcConfigurer {
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOriginPatterns(
+            List.of("https://boost.ai.kr", "https://api.boost.ai.kr", "http://localhost:5173"));
+        configuration.setAllowedMethods(
+            List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        configuration.setExposedHeaders(List.of("Authorization"));
+        configuration.setAllowCredentials(true);
 
-        @Override
-        public void addCorsMappings(CorsRegistry registry) {
-            registry
-                .addMapping("/**")
-                .allowedOriginPatterns("*")
-                .allowedMethods("*")
-                .allowedHeaders("*")
-                .allowCredentials(true);
-        }
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
 }

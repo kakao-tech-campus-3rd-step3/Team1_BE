@@ -2,6 +2,7 @@ package knu.team1.be.boost.auth.service;
 
 import knu.team1.be.boost.auth.dto.KakaoDto;
 import knu.team1.be.boost.auth.dto.KakaoDto.Token;
+import knu.team1.be.boost.auth.dto.LoginRequestDto;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -23,18 +24,15 @@ public class KakaoClientService {
     @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
     private String kakaoClientId;
 
-    @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
-    private String kakaoRedirectUri;
-
     @Value("${spring.security.oauth2.client.provider.kakao.token-uri}")
     private String kakaoTokenUri;
 
     @Value("${spring.security.oauth2.client.provider.kakao.user-info-uri}")
     private String kakaoUserInfoUri;
 
-    public KakaoDto.UserInfo getUserInfo(String code) {
+    public KakaoDto.UserInfo getUserInfo(LoginRequestDto requestDto) {
         // 인가 코드로 액세스 토큰 요청
-        Token tokenResponse = getToken(code);
+        Token tokenResponse = getToken(requestDto.code(), requestDto.redirectUri());
 
         // 액세스 토큰으로 사용자 정보 요청
         return webClient.get()
@@ -45,11 +43,11 @@ public class KakaoClientService {
             .block();
     }
 
-    private Token getToken(String code) {
+    private Token getToken(String code, String redirectUri) {
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("grant_type", "authorization_code");
         formData.add("client_id", kakaoClientId);
-        formData.add("redirect_uri", kakaoRedirectUri);
+        formData.add("redirect_uri", redirectUri);
         formData.add("code", code);
 
         return webClient.post()
