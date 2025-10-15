@@ -87,7 +87,7 @@ class AuthControllerTest {
             // then
             resultActions
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accessTokenResponseDto.accessToken").value(
+                .andExpect(jsonPath("$.accessToken").value(
                     loginDto.tokenDto().accessToken()))
                 .andExpect(cookie().exists("refreshToken"));
         }
