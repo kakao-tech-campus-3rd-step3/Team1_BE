@@ -111,14 +111,21 @@ public class TagService {
         UUID tagId,
         UserPrincipalDto user
     ) {
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND, "projectId=" + projectId
+            ));
+
+        accessPolicy.ensureProjectMember(project.getId(), user.id());
+
         Tag tag = tagRepository.findById(tagId)
             .orElseThrow(() -> new BusinessException(
                 ErrorCode.TAG_NOT_FOUND, "tagId=" + tagId
             ));
 
-        tag.ensureTagInProject(projectId);
+        tag.ensureTagInProject(project.getId());
 
-        accessPolicy.ensureProjectMember(projectId, user.id());
+        accessPolicy.ensureProjectMember(project.getId(), user.id());
 
         tagRepository.delete(tag);
     }
