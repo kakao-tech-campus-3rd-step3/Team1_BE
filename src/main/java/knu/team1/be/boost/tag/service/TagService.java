@@ -88,14 +88,14 @@ public class TagService {
                 ErrorCode.TAG_NOT_FOUND, "tagId=" + tagId
             ));
 
-        tag.ensureTagInProject(projectId);
+        tag.ensureTagInProject(project.getId());
 
-        tagRepository.findByProjectIdAndName(projectId, request.name())
+        tagRepository.findByProjectIdAndName(project.getId(), request.name())
             .ifPresent(t -> {
                 if (!t.getId().equals(tagId)) {
                     throw new BusinessException(
                         ErrorCode.DUPLICATED_TAG_NAME,
-                        "projectId=" + projectId + ", name=" + request.name()
+                        "projectId=" + project.getId() + ", name=" + request.name()
                     );
                 }
             });
