@@ -127,8 +127,6 @@ public class TagService {
 
         tag.ensureTagInProject(projectId);
 
-        accessPolicy.ensureProjectMember(projectId, user.id());
-
         tagRepository.delete(tag);
     }
 }
