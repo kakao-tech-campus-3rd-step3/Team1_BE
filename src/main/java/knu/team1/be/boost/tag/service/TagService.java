@@ -44,7 +44,7 @@ public class TagService {
                 "projectId=" + project.getId() + ", name=" + request.name());
         });
 
-        Tag tag = Tag.create(project, request.name());
+        Tag tag = Tag.create(project, trimmedName);
         Tag saved = tagRepository.save(tag);
 
         return TagResponseDto.from(saved);
@@ -102,7 +102,7 @@ public class TagService {
                 }
             });
 
-        tag.update(request.name());
+        tag.update(trimmedName);
 
         return TagResponseDto.from(tag);
     }
