@@ -38,13 +38,13 @@ public class TagService {
 
         accessPolicy.ensureProjectMember(project.getId(), user.id());
 
-        tagRepository.findByProjectIdAndName(project.getId(), request.name()).ifPresent(t -> {
+        String trimmedName = request.name().trim();
+        tagRepository.findByProjectIdAndName(project.getId(), trimmedName).ifPresent(t -> {
             throw new BusinessException(ErrorCode.DUPLICATED_TAG_NAME,
                 "projectId=" + project.getId() + ", name=" + request.name());
         });
 
         Tag tag = Tag.create(project, request.name());
-
         Tag saved = tagRepository.save(tag);
 
         return TagResponseDto.from(saved);
@@ -91,7 +91,8 @@ public class TagService {
 
         tag.ensureTagInProject(projectId);
 
-        tagRepository.findByProjectIdAndName(projectId, request.name())
+        String trimmedName = request.name().trim();
+        tagRepository.findByProjectIdAndName(projectId, trimmedName)
             .ifPresent(t -> {
                 if (!t.getId().equals(tagId)) {
                     throw new BusinessException(
