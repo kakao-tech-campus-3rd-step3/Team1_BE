@@ -7,6 +7,7 @@ import java.util.UUID;
 import knu.team1.be.boost.projectMembership.entity.ProjectMembership;
 import knu.team1.be.boost.projectMembership.entity.ProjectRole;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -33,4 +34,8 @@ public interface ProjectMembershipRepository extends JpaRepository<ProjectMember
     List<ProjectMembership> findAllByMemberId(UUID memberId);
 
     List<ProjectMembership> findAllByProjectId(UUID projectId);
+
+    @Modifying
+    @Query("UPDATE ProjectMembership pm SET pm.deleted = true, pm.deletedAt = CURRENT_TIMESTAMP WHERE pm.project.id = :projectId")
+    void softDeleteAllByProjectId(@Param("projectId") UUID projectId);
 }

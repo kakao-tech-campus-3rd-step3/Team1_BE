@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import knu.team1.be.boost.auth.dto.AccessTokenResponseDto;
 import knu.team1.be.boost.auth.dto.LoginRequestDto;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
@@ -15,7 +16,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Tag(name = "Auth", description = "로그인 관련 API")
@@ -36,7 +36,9 @@ public interface AuthApi {
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
     @PostMapping("/login/kakao")
-    ResponseEntity<AccessTokenResponseDto> kakaoLogin(@RequestBody LoginRequestDto requestDto);
+    ResponseEntity<AccessTokenResponseDto> kakaoLogin(
+        @Valid @RequestBody LoginRequestDto requestDto
+    );
 
     @Operation(
         summary = "로그아웃",
@@ -53,7 +55,7 @@ public interface AuthApi {
 
     @Operation(
         summary = "토큰 재발급",
-        description = "만료된 Access Token과 Refresh Token을 재발급합니다."
+        description = "Access Token과 Refresh Token을 재발급합니다."
     )
     @ApiResponses(value = {
         @ApiResponse(
@@ -68,7 +70,6 @@ public interface AuthApi {
     })
     @PostMapping("/reissue")
     ResponseEntity<AccessTokenResponseDto> reissue(
-        @CookieValue("refreshToken") String refreshToken,
-        @RequestHeader("Authorization") String accessTokenHeader
+        @CookieValue("refreshToken") String refreshToken
     );
 }

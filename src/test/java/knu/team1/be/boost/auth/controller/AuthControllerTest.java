@@ -63,9 +63,10 @@ class AuthControllerTest {
         @DisplayName("성공")
         void kakaoLogin_Success() throws Exception {
             // given
-            LoginRequestDto requestDto = new LoginRequestDto("test_kakao_auth_code");
+            LoginRequestDto requestDto = new LoginRequestDto("test_kakao_auth_code",
+                "test_redirect_uri");
             TokenDto tokenDto = new TokenDto("mock_access_token", "mock_refresh_token");
-            given(authService.login(requestDto.code())).willReturn(tokenDto);
+            given(authService.login(requestDto)).willReturn(tokenDto);
 
             // when
             ResultActions resultActions = mockMvc.perform(post("/api/auth/login/kakao")
@@ -92,8 +93,9 @@ class AuthControllerTest {
         @DisplayName("실패: 유효하지 않은 인가 코드일 경우 KAKAO_INVALID_AUTH_CODE")
         void kakaoLogin_Fail_WhenServiceThrowsBusinessException() throws Exception {
             // given
-            LoginRequestDto requestDto = new LoginRequestDto("invalid_kakao_code");
-            given(authService.login(requestDto.code()))
+            LoginRequestDto requestDto = new LoginRequestDto("invalid_kakao_code",
+                "test_redirect_uri");
+            given(authService.login(requestDto))
                 .willThrow(new BusinessException(ErrorCode.KAKAO_INVALID_AUTH_CODE));
 
             // when
@@ -156,18 +158,14 @@ class AuthControllerTest {
         @DisplayName("성공")
         void reissue_Success() throws Exception {
             // given
-            String expiredAccessToken = "expired_access_token";
             String validRefreshToken = "valid_refresh_token";
             TokenDto newTokenDto = new TokenDto("new_access_token", "new_refresh_token");
 
-            given(jwtUtil.resolveToken("Bearer " + expiredAccessToken))
-                .willReturn(expiredAccessToken);
-            given(authService.reissue(expiredAccessToken, validRefreshToken))
+            given(authService.reissue(validRefreshToken))
                 .willReturn(newTokenDto);
 
             // when
             ResultActions resultActions = mockMvc.perform(post("/api/auth/reissue")
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + expiredAccessToken)
                 .cookie(new Cookie("refreshToken", validRefreshToken)));
 
             // then
@@ -188,29 +186,15 @@ class AuthControllerTest {
         }
 
         @Test
-        @DisplayName("실패: Authorization 헤더가 없을 경우 MissingRequestHeaderException")
-        void reissue_Fail_WhenHeaderIsMissing() throws Exception {
-            // when
-            ResultActions resultActions = mockMvc.perform(post("/api/auth/reissue")
-                .cookie(new Cookie("refreshToken", "valid_token")));
-            // then
-            resultActions.andExpect(status().isBadRequest());
-        }
-
-        @Test
         @DisplayName("실패: 유효하지 않은 Refresh Token일 경우 INVALID_REFRESH_TOKEN")
         void reissue_Fail_WhenRefreshTokenIsInvalid() throws Exception {
             // given
-            String expiredAccessToken = "expired_token";
             String invalidRefreshToken = "invalid_token";
-            given(jwtUtil.resolveToken("Bearer " + expiredAccessToken))
-                .willReturn(expiredAccessToken);
-            given(authService.reissue(expiredAccessToken, invalidRefreshToken))
+            given(authService.reissue(invalidRefreshToken))
                 .willThrow(new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN));
 
             // when
             ResultActions resultActions = mockMvc.perform(post("/api/auth/reissue")
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + expiredAccessToken)
                 .cookie(new Cookie("refreshToken", invalidRefreshToken)));
 
             // then
@@ -221,16 +205,12 @@ class AuthControllerTest {
         @DisplayName("실패: DB에 Refresh Token이 없을 경우 REFRESH_TOKEN_NOT_FOUND")
         void reissue_Fail_WhenRefreshTokenNotFound() throws Exception {
             // given
-            String expiredAccessToken = "expired_token";
             String unknownRefreshToken = "unknown_token";
-            given(jwtUtil.resolveToken("Bearer " + expiredAccessToken))
-                .willReturn(expiredAccessToken);
-            given(authService.reissue(expiredAccessToken, unknownRefreshToken))
+            given(authService.reissue(unknownRefreshToken))
                 .willThrow(new BusinessException(ErrorCode.REFRESH_TOKEN_NOT_FOUND));
 
             // when
             ResultActions resultActions = mockMvc.perform(post("/api/auth/reissue")
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + expiredAccessToken)
                 .cookie(new Cookie("refreshToken", unknownRefreshToken)));
 
             // then

@@ -50,6 +50,7 @@ public enum ErrorCode {
     REFRESH_TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "Refresh token not found", "리프레시 토큰을 찾을 수 없습니다."),
     REFRESH_TOKEN_NOT_EQUALS(HttpStatus.UNAUTHORIZED, "Refresh token not equals", "리프레시 토큰이 일치하지 않습니다."),
     KAKAO_INVALID_AUTH_CODE(HttpStatus.BAD_REQUEST, "Kakao invalid auth code", "카카오 인가 코드가 유효하지 않습니다."),
+    INVALID_REDIRECT_URI(HttpStatus.BAD_REQUEST, "Invalid redirect URI", "허용되지 않은 redirect URI입니다."),
 
     // JWT 관련
     TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "Token expired", "만료된 토큰입니다."),

@@ -1,9 +1,15 @@
 package knu.team1.be.boost.auth.service;
 
 import io.jsonwebtoken.JwtException;
+import jakarta.annotation.PostConstruct;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.UUID;
 import knu.team1.be.boost.auth.dto.KakaoDto;
+import knu.team1.be.boost.auth.dto.LoginRequestDto;
 import knu.team1.be.boost.auth.dto.TokenDto;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.auth.entity.RefreshToken;
@@ -15,6 +21,7 @@ import knu.team1.be.boost.member.entity.vo.OauthInfo;
 import knu.team1.be.boost.member.repository.MemberRepository;
 import knu.team1.be.boost.security.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -37,9 +44,28 @@ public class AuthService {
 
     private final String DEFAULT_AVATAR = "1111";
 
+    @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
+    private String allowedRedirectUrisRaw;
+
+    private Set<String> allowedRedirectUris;
+
+    @PostConstruct
+    private void init() {
+        allowedRedirectUris = Arrays.stream(allowedRedirectUrisRaw.split(","))
+            .map(String::trim)
+            .filter(s -> !s.isEmpty())
+            .collect(Collectors.toUnmodifiableSet());
+    }
+
     @Transactional
-    public TokenDto login(String code) {
-        KakaoDto.UserInfo kakaoUserInfo = kakaoClientService.getUserInfo(code);
+    public TokenDto login(LoginRequestDto requestDto) {
+        if (!allowedRedirectUris.contains(requestDto.redirectUri())) {
+            throw new BusinessException(
+                ErrorCode.INVALID_REDIRECT_URI, "redirectUri: " + requestDto.redirectUri()
+            );
+        }
+
+        KakaoDto.UserInfo kakaoUserInfo = kakaoClientService.getUserInfo(requestDto);
         Member member = registerOrLogin(kakaoUserInfo);
 
         Authentication userAuthentication = createUserAuthentication(member);
@@ -56,33 +82,37 @@ public class AuthService {
     }
 
     @Transactional
-    public TokenDto reissue(String expiredAccessToken, String refreshToken) {
-        // Refresh Token 자체의 유효성 검증
+    public TokenDto reissue(String refreshToken) {
+        // Refresh Token에서 memberId 추출 및 자체의 유효성 검증
+        UUID userId;
         try {
-            jwtUtil.validateToken(refreshToken);
+            userId = jwtUtil.getUserId(refreshToken);
         } catch (JwtException e) {
             throw new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
 
-        // 만료된 Access Token에서 memberId 추출
-        Authentication userAuthentication = jwtUtil.getAuthentication(expiredAccessToken);
-        UserPrincipalDto userPrincipalDto = (UserPrincipalDto) userAuthentication.getPrincipal();
-
-        RefreshToken storedRefreshToken = refreshTokenRepository.findByMemberId(
-                userPrincipalDto.id())
+        RefreshToken storedRefreshToken = refreshTokenRepository.findByMemberId(userId)
             .orElseThrow(() -> new BusinessException(
                 ErrorCode.REFRESH_TOKEN_NOT_FOUND,
-                "memberId: " + userPrincipalDto.id()
+                "memberId: " + userId
             ));
 
         if (!storedRefreshToken.getRefreshToken().equals(refreshToken)) {
             throw new BusinessException(
                 ErrorCode.REFRESH_TOKEN_NOT_EQUALS,
-                "refreshToken mismatch for memberId: " + userPrincipalDto.id()
+                "refreshToken mismatch for memberId: " + userId
             );
         }
 
         // 모든 검증을 통과하면 새로운 토큰을 생성
+        Member member = storedRefreshToken.getMember();
+        if (member == null) {
+            throw new BusinessException(
+                ErrorCode.MEMBER_NOT_FOUND,
+                "memberId: " + userId
+            );
+        }
+        Authentication userAuthentication = createUserAuthentication(member);
         TokenDto newTokenDto = jwtUtil.generateToken(userAuthentication);
 
         storedRefreshToken.updateToken(newTokenDto.refreshToken());
