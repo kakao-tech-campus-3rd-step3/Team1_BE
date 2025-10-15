@@ -62,7 +62,6 @@ public class TagService {
         accessPolicy.ensureProjectMember(project.getId(), user.id());
 
         List<Tag> tags = tagRepository.findAllByProjectId(project.getId());
-        tags.forEach(tag -> tag.ensureTagInProject(project.getId()));
 
         return tags.stream()
             .map(TagResponseDto::from)
