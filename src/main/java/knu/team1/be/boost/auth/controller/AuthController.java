@@ -32,7 +32,7 @@ public class AuthController implements AuthApi {
     public ResponseEntity<LoginResponseDto> kakaoLogin(
         @Valid @RequestBody LoginRequestDto requestDto
     ) {
-        LoginDto loginDto = authService.login(requestDto.code());
+        LoginDto loginDto = authService.login(requestDto);
 
         // 헤더에 Refresh Token 쿠키 추가
         HttpHeaders headers = createCookieHeaders(loginDto.tokenDto().refreshToken());

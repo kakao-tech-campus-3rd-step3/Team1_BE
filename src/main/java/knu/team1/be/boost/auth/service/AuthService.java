@@ -6,11 +6,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import knu.team1.be.boost.auth.dto.KakaoDto;
 import knu.team1.be.boost.auth.dto.LoginDto;
-import java.util.Set;
-import java.util.stream.Collectors;
 import knu.team1.be.boost.auth.dto.LoginRequestDto;
 import knu.team1.be.boost.auth.dto.TokenDto;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
@@ -64,8 +64,14 @@ public class AuthService {
     }
 
     @Transactional
-    public LoginDto login(String code) {
-        KakaoDto.UserInfo kakaoUserInfo = kakaoClientService.getUserInfo(code);
+    public LoginDto login(LoginRequestDto requestDto) {
+        if (!allowedRedirectUris.contains(requestDto.redirectUri())) {
+            throw new BusinessException(
+                ErrorCode.INVALID_REDIRECT_URI, "redirectUri: " + requestDto.redirectUri()
+            );
+        }
+
+        KakaoDto.UserInfo kakaoUserInfo = kakaoClientService.getUserInfo(requestDto);
 
         RegisterResult registerResult = registerOrLogin(kakaoUserInfo);
         Member member = registerResult.member();

@@ -14,6 +14,7 @@ import java.util.Optional;
 import java.util.UUID;
 import knu.team1.be.boost.auth.dto.KakaoDto;
 import knu.team1.be.boost.auth.dto.LoginDto;
+import knu.team1.be.boost.auth.dto.LoginRequestDto;
 import knu.team1.be.boost.auth.dto.TokenDto;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.auth.entity.RefreshToken;
@@ -83,7 +84,7 @@ class AuthServiceTest {
             given(jwtUtil.generateToken(any(Authentication.class))).willReturn(mockTokenDto);
 
             // when
-            LoginDto resultLoginDto = authService.login(code);
+            LoginDto resultLoginDto = authService.login(requestDto);
 
             // then
             assertThat(resultLoginDto.tokenDto()).isEqualTo(mockTokenDto);
@@ -112,7 +113,7 @@ class AuthServiceTest {
             given(jwtUtil.generateToken(any(Authentication.class))).willReturn(mockTokenDto);
 
             // when
-            LoginDto resultLoginDto = authService.login(code);
+            LoginDto resultLoginDto = authService.login(requestDto);
 
             // then
             assertThat(resultLoginDto.tokenDto()).isEqualTo(mockTokenDto);

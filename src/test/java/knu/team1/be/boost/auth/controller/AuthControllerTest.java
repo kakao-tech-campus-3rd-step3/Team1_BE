@@ -77,7 +77,7 @@ class AuthControllerTest {
                 LocalDateTime.now()
             );
             LoginDto loginDto = new LoginDto(memberResponseDto, tokenDto, true);
-            given(authService.login(requestDto.code())).willReturn(loginDto);
+            given(authService.login(requestDto)).willReturn(loginDto);
 
             // when
             ResultActions resultActions = mockMvc.perform(post("/api/auth/login/kakao")
