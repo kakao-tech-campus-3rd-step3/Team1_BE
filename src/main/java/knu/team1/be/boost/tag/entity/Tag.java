@@ -22,7 +22,10 @@ import org.hibernate.annotations.SQLRestriction;
 @Entity
 @Getter
 @Table(name = "tags", uniqueConstraints = {
-    @UniqueConstraint(name = "uk_project_tag_name", columnNames = {"project_id", "name"})
+    @UniqueConstraint(
+        name = "uk_project_tag_name_deleted_at",
+        columnNames = {"project_id", "name", "deleted_at"}
+    )
 })
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
