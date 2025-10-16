@@ -40,7 +40,7 @@ public interface MemoApi {
         @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
         @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
         @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
-        @ApiResponse(responseCode = "404", description = "메모를 찾을 수 없음", content = @Content),
+        @ApiResponse(responseCode = "404", description = "프로젝트를 찾을 수 없음", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
     @PostMapping("/memos")
