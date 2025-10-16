@@ -5,10 +5,12 @@ import jakarta.annotation.PostConstruct;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import knu.team1.be.boost.auth.dto.KakaoDto;
+import knu.team1.be.boost.auth.dto.LoginDto;
 import knu.team1.be.boost.auth.dto.LoginRequestDto;
 import knu.team1.be.boost.auth.dto.TokenDto;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
@@ -16,6 +18,7 @@ import knu.team1.be.boost.auth.entity.RefreshToken;
 import knu.team1.be.boost.auth.repository.RefreshTokenRepository;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
+import knu.team1.be.boost.member.dto.MemberResponseDto;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.entity.vo.OauthInfo;
 import knu.team1.be.boost.member.repository.MemberRepository;
@@ -35,7 +38,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthService {
 
     private final MemberRepository memberRepository;
-
     private final RefreshTokenRepository refreshTokenRepository;
 
     private final JwtUtil jwtUtil;
@@ -43,6 +45,10 @@ public class AuthService {
     private final KakaoClientService kakaoClientService;
 
     private final String DEFAULT_AVATAR = "1111";
+
+    private record RegisterResult(Member member, boolean isNewUser) {
+
+    }
 
     @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
     private String allowedRedirectUrisRaw;
@@ -58,7 +64,7 @@ public class AuthService {
     }
 
     @Transactional
-    public TokenDto login(LoginRequestDto requestDto) {
+    public LoginDto login(LoginRequestDto requestDto) {
         if (!allowedRedirectUris.contains(requestDto.redirectUri())) {
             throw new BusinessException(
                 ErrorCode.INVALID_REDIRECT_URI, "redirectUri: " + requestDto.redirectUri()
@@ -66,14 +72,21 @@ public class AuthService {
         }
 
         KakaoDto.UserInfo kakaoUserInfo = kakaoClientService.getUserInfo(requestDto);
-        Member member = registerOrLogin(kakaoUserInfo);
+
+        RegisterResult registerResult = registerOrLogin(kakaoUserInfo);
+        Member member = registerResult.member();
+        boolean isNewUser = registerResult.isNewUser();
 
         Authentication userAuthentication = createUserAuthentication(member);
         TokenDto tokenDto = jwtUtil.generateToken(userAuthentication);
 
         saveOrUpdateRefreshToken(member, tokenDto.refreshToken());
 
-        return tokenDto;
+        return new LoginDto(
+            MemberResponseDto.from(member),
+            tokenDto,
+            isNewUser
+        );
     }
 
     @Transactional
@@ -120,24 +133,28 @@ public class AuthService {
         return newTokenDto;
     }
 
-    private Member registerOrLogin(KakaoDto.UserInfo userInfo) {
-        return memberRepository.findByOauthInfoProviderAndOauthInfoProviderId(
+    private RegisterResult registerOrLogin(KakaoDto.UserInfo userInfo) {
+        Optional<Member> foundMember = memberRepository.findByOauthInfoProviderAndOauthInfoProviderId(
             "kakao", userInfo.id()
-        ).orElseGet(() -> {
+        );
+
+        if (foundMember.isPresent()) {
+            // 기존 회원일 경우
+            return new RegisterResult(foundMember.get(), false);
+        } else {
+            // 신규 회원일 경우
             OauthInfo oauthInfo = OauthInfo.builder()
                 .provider("kakao")
                 .providerId(userInfo.id())
                 .build();
             Member newMember = Member.builder()
-                .name(userInfo.kakaoAccount()
-                    .profile()
-                    .nickname()
-                )
+                .name(userInfo.kakaoAccount().profile().nickname())
                 .avatar(DEFAULT_AVATAR)
                 .oauthInfo(oauthInfo)
                 .build();
-            return memberRepository.save(newMember);
-        });
+            Member savedMember = memberRepository.save(newMember);
+            return new RegisterResult(savedMember, true);
+        }
     }
 
     private Authentication createUserAuthentication(Member member) {

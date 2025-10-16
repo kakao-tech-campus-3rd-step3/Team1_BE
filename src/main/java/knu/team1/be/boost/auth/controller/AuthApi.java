@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import knu.team1.be.boost.auth.dto.AccessTokenResponseDto;
 import knu.team1.be.boost.auth.dto.LoginRequestDto;
+import knu.team1.be.boost.auth.dto.LoginResponseDto;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -30,15 +31,13 @@ public interface AuthApi {
         @ApiResponse(
             responseCode = "200",
             description = "로그인 성공",
-            content = @Content(schema = @Schema(implementation = AccessTokenResponseDto.class))
+            content = @Content(schema = @Schema(implementation = LoginResponseDto.class))
         ),
         @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
     @PostMapping("/login/kakao")
-    ResponseEntity<AccessTokenResponseDto> kakaoLogin(
-        @Valid @RequestBody LoginRequestDto requestDto
-    );
+    ResponseEntity<LoginResponseDto> kakaoLogin(@Valid @RequestBody LoginRequestDto requestDto);
 
     @Operation(
         summary = "로그아웃",

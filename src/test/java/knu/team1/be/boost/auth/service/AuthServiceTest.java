@@ -11,8 +11,10 @@ import static org.mockito.Mockito.verify;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import knu.team1.be.boost.auth.dto.KakaoDto;
+import knu.team1.be.boost.auth.dto.LoginDto;
 import knu.team1.be.boost.auth.dto.LoginRequestDto;
 import knu.team1.be.boost.auth.dto.TokenDto;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
@@ -36,6 +38,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
@@ -57,6 +60,12 @@ class AuthServiceTest {
 
     private final String DEFAULT_AVATAR = "1111";
 
+    @BeforeEach
+    void init() {
+        ReflectionTestUtils.setField(authService, "allowedRedirectUris",
+            Set.of("https://test_redirect_uri.com"));
+    }
+
     @Nested
     @DisplayName("로그인/회원가입")
     class Login {
@@ -65,7 +74,8 @@ class AuthServiceTest {
         @DisplayName("성공: 신규 사용자일 경우 회원가입 후 토큰 발급")
         void login_Success_WhenNewUser() {
             // given
-            LoginRequestDto requestDto = new LoginRequestDto("test_code", "test_redirect_uri");
+            LoginRequestDto requestDto = new LoginRequestDto("test_code",
+                "https://test_redirect_uri.com");
             KakaoDto.UserInfo mockKakaoUser = createMockKakaoUser(12345L, "라이언");
             Member newMember = createMockMember(
                 UUID.randomUUID(),
@@ -83,10 +93,10 @@ class AuthServiceTest {
             given(jwtUtil.generateToken(any(Authentication.class))).willReturn(mockTokenDto);
 
             // when
-            TokenDto resultTokenDto = authService.login(requestDto);
+            LoginDto resultLoginDto = authService.login(requestDto);
 
             // then
-            assertThat(resultTokenDto).isEqualTo(mockTokenDto);
+            assertThat(resultLoginDto.tokenDto()).isEqualTo(mockTokenDto);
             verify(memberRepository).save(any(Member.class));
             verify(refreshTokenRepository).save(any(RefreshToken.class));
         }
@@ -95,7 +105,8 @@ class AuthServiceTest {
         @DisplayName("성공: 기존 사용자일 경우 로그인 후 토큰 발급")
         void login_Success_WhenExistingUser() {
             // given
-            LoginRequestDto requestDto = new LoginRequestDto("test_code", "test_redirect_uri");
+            LoginRequestDto requestDto = new LoginRequestDto("test_code",
+                "https://test_redirect_uri.com");
             KakaoDto.UserInfo mockKakaoUser = createMockKakaoUser(12345L, "라이언");
             Member existingMember = createMockMember(
                 UUID.randomUUID(),
@@ -112,10 +123,10 @@ class AuthServiceTest {
             given(jwtUtil.generateToken(any(Authentication.class))).willReturn(mockTokenDto);
 
             // when
-            TokenDto resultTokenDto = authService.login(requestDto);
+            LoginDto resultLoginDto = authService.login(requestDto);
 
             // then
-            assertThat(resultTokenDto).isEqualTo(mockTokenDto);
+            assertThat(resultLoginDto.tokenDto()).isEqualTo(mockTokenDto);
             verify(memberRepository, never()).save(any(Member.class));
             verify(refreshTokenRepository).save(any(RefreshToken.class));
         }
