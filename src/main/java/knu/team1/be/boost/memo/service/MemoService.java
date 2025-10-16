@@ -26,7 +26,6 @@ public class MemoService {
     private final MemoRepository memoRepository;
     private final ProjectRepository projectRepository;
     private final MemberRepository memberRepository;
-
     private final AccessPolicy accessPolicy;
 
     @Transactional
@@ -35,10 +34,7 @@ public class MemoService {
         UUID memberId,
         MemoCreateRequestDto requestDto
     ) {
-        accessPolicy.ensureProjectMember(projectId, memberId);
-
-        Project project = projectRepository.findById(projectId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.PROJECT_NOT_FOUND));
+        Project project = findProjectAndVerifyMember(projectId, memberId);
 
         Memo memo = Memo.builder()
             .project(project)
@@ -66,10 +62,7 @@ public class MemoService {
         UUID memoId,
         UUID memberId
     ) {
-        accessPolicy.ensureProjectMember(projectId, memberId);
-
-        Memo memo = memoRepository.findById(memoId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.MEMO_NOT_FOUND));
+        Memo memo = findMemoAndVerifyAccess(projectId, memoId, memberId);
 
         return MemoResponseDto.from(memo);
     }
@@ -81,10 +74,7 @@ public class MemoService {
         UUID memberId,
         MemoUpdateRequestDto requestDto
     ) {
-        accessPolicy.ensureProjectMember(projectId, memberId);
-
-        Memo memo = memoRepository.findById(memoId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.MEMO_NOT_FOUND));
+        Memo memo = findMemoAndVerifyAccess(projectId, memoId, memberId);
 
         memo.update(requestDto.title(), requestDto.content());
 
@@ -97,11 +87,31 @@ public class MemoService {
         UUID memoId,
         UUID memberId
     ) {
-        accessPolicy.ensureProjectMember(projectId, memberId);
-
-        Memo memo = memoRepository.findById(memoId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.MEMO_NOT_FOUND));
+        Memo memo = findMemoAndVerifyAccess(projectId, memoId, memberId);
 
         memoRepository.delete(memo);
     }
+
+    private Project findProjectAndVerifyMember(UUID projectId, UUID memberId) {
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
+            ));
+        accessPolicy.ensureProjectMember(projectId, memberId);
+        return project;
+    }
+
+    private Memo findMemoAndVerifyAccess(UUID projectId, UUID memoId, UUID memberId) {
+        accessPolicy.ensureProjectMember(projectId, memberId);
+
+        Memo memo = memoRepository.findById(memoId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.MEMO_NOT_FOUND, "memoId: " + memoId
+            ));
+
+        memo.ensureMemoInProject(projectId);
+
+        return memo;
+    }
 }
+
