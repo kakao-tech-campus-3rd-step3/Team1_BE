@@ -164,6 +164,7 @@ public interface TaskApi {
     @GetMapping("/projects/{projectId}/tasks")
     ResponseEntity<TaskStatusSectionDto> listTasksByStatus(
         @PathVariable UUID projectId,
+        @RequestParam(required = false) UUID tagId,
         @RequestParam(required = false, defaultValue = "TODO") TaskStatus status,
         @RequestParam(required = false, defaultValue = "CREATED_AT") TaskSortBy sortBy,
         @RequestParam(required = false, defaultValue = "ASC") TaskSortDirection direction,

@@ -15,6 +15,7 @@ import knu.team1.be.boost.project.repository.ProjectRepository;
 import knu.team1.be.boost.projectMembership.entity.ProjectMembership;
 import knu.team1.be.boost.projectMembership.entity.ProjectRole;
 import knu.team1.be.boost.projectMembership.repository.ProjectMembershipRepository;
+import knu.team1.be.boost.tag.repository.TagRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +27,7 @@ public class ProjectService {
 
     private static final int DEFAULT_REVIEWER_COUNT = 2;
 
+    private final TagRepository tagRepository;
     private final ProjectRepository projectRepository;
     private final MemberRepository memberRepository;
     private final ProjectMembershipRepository projectMembershipRepository;
@@ -107,6 +109,7 @@ public class ProjectService {
             ));
 
         accessPolicy.ensureProjectOwner(projectId, memberId);
+        tagRepository.deleteAllByProjectId(projectId);
         projectMembershipRepository.softDeleteAllByProjectId(projectId);
         projectRepository.delete(project);
     }

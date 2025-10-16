@@ -1,8 +1,6 @@
 package knu.team1.be.boost.task.entity;
 
-import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -24,6 +22,7 @@ import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.project.entity.Project;
+import knu.team1.be.boost.tag.entity.Tag;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -61,11 +60,14 @@ public class Task extends SoftDeletableEntity {
 
     private Integer requiredReviewerCount;
 
-    @ElementCollection
-    @CollectionTable(name = "task_tags", joinColumns = @JoinColumn(name = "task_id"))
-    @Column(name = "tag")
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "task_tags",
+        joinColumns = @JoinColumn(name = "task_id"),
+        inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
     @Builder.Default
-    private List<String> tags = new ArrayList<>();
+    private List<Tag> tags = new ArrayList<>();
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
@@ -93,7 +95,7 @@ public class Task extends SoftDeletableEntity {
         LocalDate dueDate,
         Boolean urgent,
         Integer requiredReviewerCount,
-        List<String> tags,
+        List<Tag> tags,
         Set<Member> assignees
     ) {
         return Task.builder()
@@ -109,9 +111,16 @@ public class Task extends SoftDeletableEntity {
             .build();
     }
 
-    public void update(String title, String description, TaskStatus status,
-        LocalDate dueDate, Boolean urgent, Integer requiredReviewerCount,
-        List<String> tags, Set<Member> assignees) {
+    public void update(
+        String title,
+        String description,
+        TaskStatus status,
+        LocalDate dueDate,
+        Boolean urgent,
+        Integer requiredReviewerCount,
+        List<Tag> tags,
+        Set<Member> assignees
+    ) {
         this.title = title;
         this.description = description;
         this.status = status;

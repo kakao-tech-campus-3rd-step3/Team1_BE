@@ -39,8 +39,8 @@ public record TaskCreateRequestDto(
     @Min(value = 0, message = "필요 리뷰어 수는 0 이상이어야 합니다.")
     Integer requiredReviewerCount,
 
-    @Schema(description = "태그 목록", example = "[\"피드백\", \"멘토링\"]")
-    List<String> tags,
+    @Schema(description = "태그 UUID 목록", example = "[\"770e8400-e29b-41d4-a716-446655440000\", \"770e8400-e29b-41d4-a716-446655440111\"]")
+    List<UUID> tags,
 
     @Schema(description = "담당자 UUID 목록", example = "[\"550e8400-e29b-41d4-a716-446655440000\", \"550e8400-e29b-41d4-a716-446655440111\"]")
     List<UUID> assignees

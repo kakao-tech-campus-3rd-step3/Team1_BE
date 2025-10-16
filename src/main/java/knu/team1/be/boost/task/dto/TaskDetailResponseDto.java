@@ -12,6 +12,7 @@ import knu.team1.be.boost.file.dto.FileResponseDto;
 import knu.team1.be.boost.file.entity.File;
 import knu.team1.be.boost.member.dto.MemberResponseDto;
 import knu.team1.be.boost.member.entity.Member;
+import knu.team1.be.boost.tag.dto.TagResponseDto;
 import knu.team1.be.boost.task.entity.Task;
 
 @Schema(description = "할 일(Task) 상세 응답 DTO")
@@ -41,8 +42,12 @@ public record TaskDetailResponseDto(
     @Schema(description = "필요 리뷰어 수", example = "2")
     Integer requiredReviewerCount,
 
-    @Schema(description = "태그 목록", example = "[\"피드백\", \"멘토링\"]")
-    List<String> tags,
+    @Schema(
+        description = "태그 목록",
+        example = "[{\"tagId\":\"770e8400-e29b-41d4-a716-446655440000\",\"name\":\"피드백\"}," +
+            "{\"tagId\":\"770e8400-e29b-41d4-a716-446655440111\",\"name\":\"버그\"}]"
+    )
+    List<TagResponseDto> tags,
 
     @Schema(description = "담당자 목록", example = "[{\"id\":\"550e8400-e29b-41d4-a716-446655440000\",\"name\":\"홍길동\"}]")
     List<MemberResponseDto> assignees,
@@ -75,7 +80,9 @@ public record TaskDetailResponseDto(
             task.getUrgent(),
             task.getApprovers().size(),
             task.getRequiredApprovalsCount(projectMembers),
-            task.getTags(),
+            task.getTags().stream()
+                .map(TagResponseDto::from)
+                .collect(Collectors.toList()),
             task.getAssignees().stream()
                 .map(MemberResponseDto::from)
                 .collect(Collectors.toList()),

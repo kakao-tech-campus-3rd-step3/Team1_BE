@@ -29,6 +29,11 @@ public enum ErrorCode {
     INVALID_APPROVER(HttpStatus.FORBIDDEN, "Invalid approver", "담당자는 승인할 수 없습니다."),
     ALREADY_APPROVED(HttpStatus.CONFLICT, "Already approved", "이미 승인한 사용자입니다."),
 
+    // Tag 관련
+    TAG_NOT_FOUND(HttpStatus.NOT_FOUND, "Tag not found", "해당 태그를 찾을 수 없습니다."),
+    TAG_NOT_IN_PROJECT(HttpStatus.CONFLICT, "Tag not in project", "해당 태그가 프로젝트에 속하지 않습니다."),
+    DUPLICATED_TAG_NAME(HttpStatus.CONFLICT, "Duplicated tag name", "이미 존재하는 태그 이름입니다."),
+
     // File 관련
     FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "File not found", "파일을 찾을 수 없습니다."),
     FILE_TOO_LARGE(HttpStatus.PAYLOAD_TOO_LARGE, "File too large", "파일 크기가 너무 큽니다."),

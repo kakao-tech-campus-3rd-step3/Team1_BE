@@ -28,6 +28,8 @@ import knu.team1.be.boost.member.repository.MemberRepository;
 import knu.team1.be.boost.project.entity.Project;
 import knu.team1.be.boost.project.repository.ProjectRepository;
 import knu.team1.be.boost.projectMembership.repository.ProjectMembershipRepository;
+import knu.team1.be.boost.tag.entity.Tag;
+import knu.team1.be.boost.tag.repository.TagRepository;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
 import knu.team1.be.boost.task.dto.TaskResponseDto;
 import knu.team1.be.boost.task.dto.TaskStatusRequestDto;
@@ -47,6 +49,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class TaskServiceTest {
 
+    @Mock
+    TagRepository tagRepository;
     @Mock
     TaskRepository taskRepository;
     @Mock
@@ -79,6 +83,7 @@ class TaskServiceTest {
         baseTask = Fixtures.task(UUID.randomUUID(), project);
 
         taskService = new TaskService(
+            tagRepository,
             taskRepository,
             fileRepository,
             memberRepository,
@@ -109,6 +114,11 @@ class TaskServiceTest {
             doNothing().when(accessPolicy)
                 .ensureAssigneesAreProjectMembers(eq(projectId), any(Set.class));
 
+            UUID t1 = UUID.randomUUID();
+            UUID t2 = UUID.randomUUID();
+            given(tagRepository.findAllById(anyList()))
+                .willReturn(List.of(Fixtures.tag(t1, "태그1", project), Fixtures.tag(t2, "태그2", project)));
+
             TaskCreateRequestDto request = Fixtures.reqCreate(
                 "1회차 기술 멘토링 피드백 반영",
                 "기술 멘토링에서 나온 멘토님의 피드백을 반영한다.",
@@ -116,7 +126,7 @@ class TaskServiceTest {
                 Fixtures.DUE,
                 false,
                 1,
-                List.of("피드백", "멘토링"),
+                List.of(t1, t2),
                 List.of(m1, m2)
             );
 
@@ -134,7 +144,7 @@ class TaskServiceTest {
             assertThat(res.dueDate()).isEqualTo(Fixtures.DUE);
             assertThat(res.urgent()).isFalse();
             assertThat(res.requiredReviewerCount()).isEqualTo(1);
-            assertThat(res.tags()).containsExactlyInAnyOrder("피드백", "멘토링");
+            assertThat(res.tags()).hasSize(2);
             assertThat(res.assignees()).hasSize(2);
 
             ArgumentCaptor<Task> cap = ArgumentCaptor.forClass(Task.class);
@@ -158,7 +168,7 @@ class TaskServiceTest {
                 Fixtures.DUE,
                 false,
                 1,
-                List.of("피드백", "멘토링"),
+                List.of(),
                 List.of()
             );
 
@@ -188,7 +198,7 @@ class TaskServiceTest {
                 Fixtures.DUE,
                 false,
                 1,
-                List.of("피드백", "멘토링"),
+                List.of(),
                 List.of(m1, missing)
             );
 
@@ -223,6 +233,10 @@ class TaskServiceTest {
             given(memberRepository.findAllById(anyList()))
                 .willReturn(List.of(Fixtures.member(m1, "비버")));
 
+            UUID t1 = UUID.randomUUID();
+            given(tagRepository.findAllById(anyList()))
+                .willReturn(List.of(Fixtures.tag(t1, "태그1", project)));
+
             doNothing().when(accessPolicy)
                 .ensureProjectMember(eq(projectId), eq(userId));
             doNothing().when(accessPolicy)
@@ -237,7 +251,7 @@ class TaskServiceTest {
                 Fixtures.DUE2,
                 true,
                 3,
-                List.of("수정"),
+                List.of(t1),
                 List.of(m1)
             );
 
@@ -251,7 +265,7 @@ class TaskServiceTest {
             assertThat(res.dueDate()).isEqualTo(Fixtures.DUE2);
             assertThat(res.urgent()).isTrue();
             assertThat(res.requiredReviewerCount()).isEqualTo(3);
-            assertThat(res.tags()).containsExactlyInAnyOrder("수정");
+            assertThat(res.tags()).hasSize(1);
             assertThat(res.assignees()).hasSize(1);
         }
 
@@ -269,7 +283,7 @@ class TaskServiceTest {
                 Fixtures.DUE2,
                 true,
                 3,
-                List.of("수정"),
+                List.of(),
                 List.of()
             );
 
@@ -296,7 +310,7 @@ class TaskServiceTest {
                 Fixtures.DUE2,
                 true,
                 3,
-                List.of("수정"),
+                List.of(),
                 List.of()
             );
 
@@ -326,7 +340,7 @@ class TaskServiceTest {
                 Fixtures.DUE2,
                 true,
                 3,
-                List.of("수정"),
+                List.of(),
                 List.of()
             );
 
@@ -517,7 +531,14 @@ class TaskServiceTest {
             return Member.builder().id(id).name(name).build();
         }
 
+        static Tag tag(UUID id, String name, Project project) {
+            return Tag.builder().id(id).name(name).project(project).build();
+        }
+
         static Task task(UUID taskId, Project project) {
+            Tag tag1 = Tag.builder().id(UUID.randomUUID()).name("피드백").build();
+            Tag tag2 = Tag.builder().id(UUID.randomUUID()).name("멘토링").build();
+
             return Task.builder()
                 .id(taskId)
                 .project(project)
@@ -527,7 +548,7 @@ class TaskServiceTest {
                 .dueDate(DUE)
                 .urgent(false)
                 .requiredReviewerCount(1)
-                .tags(new ArrayList<>(List.of("피드백", "멘토링")))
+                .tags(new ArrayList<>(List.of(tag1, tag2)))
                 .assignees(Set.of())
                 .build();
         }
@@ -539,7 +560,7 @@ class TaskServiceTest {
             LocalDate due,
             boolean urgent,
             int reviewers,
-            List<String> tags,
+            List<UUID> tags,
             List<UUID> assignees
         ) {
             return new TaskCreateRequestDto(
@@ -554,7 +575,7 @@ class TaskServiceTest {
             LocalDate due,
             boolean urgent,
             int reviewers,
-            List<String> tags,
+            List<UUID> tags,
             List<UUID> assignees
         ) {
             return new TaskUpdateRequestDto(
