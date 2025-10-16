@@ -20,14 +20,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 @Tag(name = "ProjectMembership", description = "Project 참여/떠나기 관련 API")
-@RequestMapping("/api/projects/{projectId}")
 @SecurityRequirement(name = "bearerAuth")
 public interface ProjectMembershipApi {
 
-    @PostMapping("/join-code")
+    @PostMapping("/api/projects/{projectId}/join-code")
     @Operation(
         summary = "프로젝트 참여 코드 생성",
         description = "새 프로젝트 참여 코드를 생성합니다. 기존 코드는 만료됩니다. "
@@ -50,7 +48,7 @@ public interface ProjectMembershipApi {
         @AuthenticationPrincipal UserPrincipalDto user
     );
 
-    @GetMapping("/join-code")
+    @GetMapping("/api/projects/{projectId}/join-code")
     @Operation(
         summary = "프로젝트 참여 코드 조회",
         description = "유효한 프로젝트 참여 코드를 조회합니다. "
@@ -73,7 +71,7 @@ public interface ProjectMembershipApi {
         @AuthenticationPrincipal UserPrincipalDto user
     );
 
-    @PostMapping("/join")
+    @PostMapping("/api/projects/join")
     @Operation(summary = "프로젝트 참여", description = "프로젝트에 참여합니다.")
     @ApiResponses(value = {
         @ApiResponse(
@@ -89,12 +87,11 @@ public interface ProjectMembershipApi {
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
     ResponseEntity<ProjectJoinResponseDto> joinProject(
-        @PathVariable UUID projectId,
         @AuthenticationPrincipal UserPrincipalDto user,
         @Valid @RequestBody ProjectJoinRequestDto projectJoinRequestDto
     );
 
-    @DeleteMapping("/leave")
+    @DeleteMapping("/api/projects/{projectId}/leave")
     @Operation(summary = "프로젝트 나가기", description = "프로젝트에서 나갑니다.")
     @ApiResponses(value = {
         @ApiResponse(

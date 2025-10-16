@@ -40,7 +40,6 @@ public class ProjectMembershipController implements ProjectMembershipApi {
 
     @Override
     public ResponseEntity<ProjectJoinResponseDto> joinProject(
-        @PathVariable UUID projectId,
         @AuthenticationPrincipal UserPrincipalDto user,
         @RequestBody ProjectJoinRequestDto requestDto
     ) {
