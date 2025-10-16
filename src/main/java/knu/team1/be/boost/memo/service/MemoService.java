@@ -5,7 +5,6 @@ import java.util.UUID;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.common.policy.AccessPolicy;
-import knu.team1.be.boost.member.repository.MemberRepository;
 import knu.team1.be.boost.memo.dto.MemoCreateRequestDto;
 import knu.team1.be.boost.memo.dto.MemoItemResponseDto;
 import knu.team1.be.boost.memo.dto.MemoResponseDto;
@@ -25,7 +24,6 @@ public class MemoService {
 
     private final MemoRepository memoRepository;
     private final ProjectRepository projectRepository;
-    private final MemberRepository memberRepository;
     private final AccessPolicy accessPolicy;
 
     @Transactional
@@ -48,6 +46,13 @@ public class MemoService {
     }
 
     public List<MemoItemResponseDto> findMemosByProjectId(UUID projectId, UUID memberId) {
+        if (!projectRepository.existsById(projectId)) {
+            throw new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND,
+                "projectId: " + projectId
+            );
+        }
+
         accessPolicy.ensureProjectMember(projectId, memberId);
 
         List<Memo> memos = memoRepository.findAllByProjectId(projectId);
@@ -97,7 +102,7 @@ public class MemoService {
             .orElseThrow(() -> new BusinessException(
                 ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
             ));
-        
+
         accessPolicy.ensureProjectMember(projectId, memberId);
 
         return project;
