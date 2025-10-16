@@ -6,8 +6,8 @@ import java.util.UUID;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.file.dto.FileCompleteRequestDto;
 import knu.team1.be.boost.file.dto.FileCompleteResponseDto;
+import knu.team1.be.boost.file.dto.FilePresignedUrlResponseDto;
 import knu.team1.be.boost.file.dto.FileRequestDto;
-import knu.team1.be.boost.file.dto.FileResponseDto;
 import knu.team1.be.boost.file.service.FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,21 +23,21 @@ public class FileController implements FileApi {
     private final FileService fileService;
 
     @Override
-    public ResponseEntity<FileResponseDto> uploadFile(
+    public ResponseEntity<FilePresignedUrlResponseDto> uploadFile(
         @Valid @RequestBody FileRequestDto request,
         @AuthenticationPrincipal UserPrincipalDto user
     ) {
-        FileResponseDto response = fileService.uploadFile(request, user);
+        FilePresignedUrlResponseDto response = fileService.uploadFile(request, user);
         URI location = URI.create("/api/files/" + response.fileId());
         return ResponseEntity.created(location).body(response);
     }
 
     @Override
-    public ResponseEntity<FileResponseDto> downloadFile(
+    public ResponseEntity<FilePresignedUrlResponseDto> downloadFile(
         @PathVariable UUID fileId,
         @AuthenticationPrincipal UserPrincipalDto user
     ) {
-        FileResponseDto response = fileService.downloadFile(fileId, user);
+        FilePresignedUrlResponseDto response = fileService.downloadFile(fileId, user);
         return ResponseEntity.ok(response);
     }
 
