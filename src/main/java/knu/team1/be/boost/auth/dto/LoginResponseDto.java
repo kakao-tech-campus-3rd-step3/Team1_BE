@@ -14,4 +14,11 @@ public record LoginResponseDto(
     Boolean isNewUser
 ) {
 
+    public static LoginResponseDto from(LoginDto loginDto) {
+        return new LoginResponseDto(
+            loginDto.memberResponseDto(),
+            loginDto.tokenDto().accessToken(),
+            loginDto.isNewUser()
+        );
+    }
 }
