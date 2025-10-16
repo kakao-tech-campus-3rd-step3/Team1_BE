@@ -1,6 +1,7 @@
 package knu.team1.be.boost.memo.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -55,11 +56,11 @@ public interface MemoApi {
         @ApiResponse(
             responseCode = "200",
             description = "메모 목록 조회 성공",
-            content = @Content(schema = @Schema(implementation = List.class))
+            content = @Content(array = @ArraySchema(schema = @Schema(implementation = MemoItemResponseDto.class)))
         ),
         @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
         @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
-        @ApiResponse(responseCode = "404", description = "메모를 찾을 수 없음", content = @Content),
+        @ApiResponse(responseCode = "404", description = "프로젝트를 찾을 수 없음", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
     @GetMapping("/memos")
@@ -78,6 +79,7 @@ public interface MemoApi {
         @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
         @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
         @ApiResponse(responseCode = "404", description = "메모를 찾을 수 없음", content = @Content),
+        @ApiResponse(responseCode = "409", description = "메모가 프로젝트에 속하지 않음", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
     @GetMapping("/memos/{memoId}")
@@ -98,6 +100,7 @@ public interface MemoApi {
         @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
         @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
         @ApiResponse(responseCode = "404", description = "메모를 찾을 수 없음", content = @Content),
+        @ApiResponse(responseCode = "409", description = "메모가 프로젝트에 속하지 않음", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
     @PutMapping("/memos/{memoId}")
@@ -114,6 +117,7 @@ public interface MemoApi {
         @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
         @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
         @ApiResponse(responseCode = "404", description = "메모를 찾을 수 없음", content = @Content),
+        @ApiResponse(responseCode = "409", description = "메모가 프로젝트에 속하지 않음", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
     @DeleteMapping("/memos/{memoId}")

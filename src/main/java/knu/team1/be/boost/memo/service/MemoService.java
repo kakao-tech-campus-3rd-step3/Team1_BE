@@ -97,7 +97,9 @@ public class MemoService {
             .orElseThrow(() -> new BusinessException(
                 ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
             ));
+        
         accessPolicy.ensureProjectMember(projectId, memberId);
+
         return project;
     }
 
