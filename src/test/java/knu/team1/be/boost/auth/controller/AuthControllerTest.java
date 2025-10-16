@@ -67,7 +67,7 @@ class AuthControllerTest {
         void kakaoLogin_Success() throws Exception {
             // given
             LoginRequestDto requestDto = new LoginRequestDto("test_kakao_auth_code",
-                "test_redirect_uri");
+                "https://test_redirect_uri.com");
             TokenDto tokenDto = new TokenDto("mock_access_token", "mock_refresh_token");
             MemberResponseDto memberResponseDto = new MemberResponseDto(
                 UUID.randomUUID(),
