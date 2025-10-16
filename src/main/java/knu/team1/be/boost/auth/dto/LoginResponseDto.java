@@ -3,6 +3,7 @@ package knu.team1.be.boost.auth.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import knu.team1.be.boost.member.dto.MemberResponseDto;
 
+@Schema(description = "로그인 응답 DTO")
 public record LoginResponseDto(
     @Schema(description = "사용자 정보")
     MemberResponseDto memberResponseDto,
