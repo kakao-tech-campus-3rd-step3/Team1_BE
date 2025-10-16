@@ -45,6 +45,7 @@ public enum ErrorCode {
 
     // Memo 관련
     MEMO_NOT_FOUND(HttpStatus.NOT_FOUND, "Memo not found", "메모를 찾을 수 없습니다."),
+    PROJECT_MEMO_ONLY(HttpStatus.CONFLICT, "Memo not in project", "해당 메모가 프로젝트에 속하지 않습니다."),
 
     // Auth 관련
     INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "Invalid refresh token", "유효하지 않은 리프레시 토큰입니다."),
