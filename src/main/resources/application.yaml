@@ -13,9 +13,7 @@ spring:
           model: gpt-4.1-mini
           temperature: 0.7
           max-tokens: 500
-    comment:
-      transform:
-        timeout-seconds: 10
+
   security:
     oauth2:
       client:
@@ -54,3 +52,7 @@ boost:
       expire-seconds: 900
   file:
     max-upload-size: 5MB
+ai:
+  comment:
+    transform:
+      timeout-seconds: 10
