@@ -1,33 +1,56 @@
 package knu.team1.be.boost.ai.service;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import knu.team1.be.boost.ai.dto.AiCommentTransformRequestDto;
 import knu.team1.be.boost.ai.dto.AiCommentTransformResponseDto;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Service;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AiCommentTransformService {
 
     private final ChatClient chatClient;
 
+    private static final long TIMEOUT_SECONDS = 10L;
+
     public AiCommentTransformResponseDto transformComment(AiCommentTransformRequestDto requestDto) {
         String originalText = requestDto.text();
+        String processedText = preprocessInput(originalText);
 
         try {
-            String transformedText = this.chatClient.prompt().user(requestDto.text()).call()
-                .content();
+            CompletableFuture<String> future = CompletableFuture.supplyAsync(() ->
+                this.chatClient.prompt()
+                    .user(processedText)
+                    .call()
+                    .content());
 
-            return new AiCommentTransformResponseDto(originalText, transformedText);
+            String transformedText = future.get(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+
+            return new AiCommentTransformResponseDto(originalText, transformedText.trim());
+
+        } catch (TimeoutException e) {
+            throw new BusinessException(ErrorCode.AI_SERVICE_TIMEOUT);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new BusinessException(ErrorCode.AI_SERVICE_ERROR);
         } catch (Exception e) {
-            log.error("AI 댓글 변환 중 오류 발생: {}", e.getMessage(), e);
-            throw new BusinessException(ErrorCode.AI_SERVICE_ERROR, e.getMessage());
+            throw new BusinessException(ErrorCode.AI_SERVICE_ERROR);
         }
+    }
+
+    private String preprocessInput(String text) {
+        String processed = text.trim();
+
+        // 연속된 공백(스페이스, 탭, 줄바꿈 등)을 하나의 공백으로 정리
+        processed = processed.replaceAll("\\s+", " ");
+
+        return processed;
     }
 }
 
