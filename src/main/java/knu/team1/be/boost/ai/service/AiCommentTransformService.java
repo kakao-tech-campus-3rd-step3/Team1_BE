@@ -1,6 +1,7 @@
 package knu.team1.be.boost.ai.service;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import knu.team1.be.boost.ai.dto.AiCommentTransformRequestDto;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 public class AiCommentTransformService {
 
     private final ChatClient chatClient;
+    private final Executor aiTaskExecutor;
 
     @Value("${ai.comment.transform.timeout-seconds:10}")
     private long timeoutSeconds;
@@ -27,10 +29,11 @@ public class AiCommentTransformService {
 
         try {
             CompletableFuture<String> future = CompletableFuture.supplyAsync(() ->
-                this.chatClient.prompt()
-                    .user(processedText)
-                    .call()
-                    .content());
+                    this.chatClient.prompt()
+                        .user(processedText)
+                        .call()
+                        .content(),
+                aiTaskExecutor);
 
             String transformedText = future.get(timeoutSeconds, TimeUnit.SECONDS);
 
