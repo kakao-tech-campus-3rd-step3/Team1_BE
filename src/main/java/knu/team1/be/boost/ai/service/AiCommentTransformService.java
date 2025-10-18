@@ -9,6 +9,7 @@ import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,7 +18,8 @@ public class AiCommentTransformService {
 
     private final ChatClient chatClient;
 
-    private static final long TIMEOUT_SECONDS = 10L;
+    @Value("${ai.comment.transform.timeout-seconds:10}")
+    private long timeoutSeconds;
 
     public AiCommentTransformResponseDto transformComment(AiCommentTransformRequestDto requestDto) {
         String originalText = requestDto.text();
@@ -30,7 +32,7 @@ public class AiCommentTransformService {
                     .call()
                     .content());
 
-            String transformedText = future.get(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            String transformedText = future.get(timeoutSeconds, TimeUnit.SECONDS);
 
             return new AiCommentTransformResponseDto(originalText, transformedText.trim());
 
