@@ -68,7 +68,11 @@ public enum ErrorCode {
     UNSUPPORTED_TOKEN(HttpStatus.UNAUTHORIZED, "Unsupported token", "지원하지 않는 형식의 토큰입니다."),
     MISSING_CLAIMS(HttpStatus.BAD_REQUEST, "Missing claims", "토큰에 필요한 클레임이 누락되었습니다."),
     AUTHENTICATION_FAILED(HttpStatus.UNAUTHORIZED, "Authentication failed",
-        "인증에 실패했습니다. 유효한 토큰이 필요합니다.");
+        "인증에 실패했습니다. 유효한 토큰이 필요합니다."),
+
+    // AI 관련
+    AI_SERVICE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "AI service error",
+        "AI 서비스 처리 중 오류가 발생했습니다.");
 
     private final HttpStatus httpStatus;
     private final String errorMessage;
