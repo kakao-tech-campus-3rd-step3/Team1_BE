@@ -7,8 +7,8 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
-import knu.team1.be.boost.task.dto.MemberTaskStatusCountResponse;
-import knu.team1.be.boost.task.dto.ProjectTaskStatusCountResponse;
+import knu.team1.be.boost.task.dto.MemberTaskStatusCountResponseDto;
+import knu.team1.be.boost.task.dto.ProjectTaskStatusCountResponseDto;
 import knu.team1.be.boost.task.dto.TaskApproveResponse;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
 import knu.team1.be.boost.task.dto.TaskDetailResponseDto;
@@ -162,11 +162,11 @@ public class TaskController implements TaskApi {
     }
 
     @GetMapping("/projects/{projectId}/tasks/status-count")
-    public ResponseEntity<ProjectTaskStatusCountResponse> getProjectTaskStatusCount(
+    public ResponseEntity<ProjectTaskStatusCountResponseDto> getProjectTaskStatusCount(
         @PathVariable UUID projectId,
         @AuthenticationPrincipal UserPrincipalDto user
     ) {
-        ProjectTaskStatusCountResponse response = taskService.countTasksByStatusForProject(
+        ProjectTaskStatusCountResponseDto response = taskService.countTasksByStatusForProject(
             projectId,
             user
         );
@@ -174,11 +174,11 @@ public class TaskController implements TaskApi {
     }
 
     @GetMapping("/projects/{projectId}/tasks/members/status-count")
-    public ResponseEntity<List<MemberTaskStatusCountResponse>> getMemberTaskStatusCount(
+    public ResponseEntity<List<MemberTaskStatusCountResponseDto>> getMemberTaskStatusCount(
         @PathVariable UUID projectId,
         @AuthenticationPrincipal UserPrincipalDto user
     ) {
-        List<MemberTaskStatusCountResponse> response = taskService.countTasksByStatusForAllMembers(
+        List<MemberTaskStatusCountResponseDto> response = taskService.countTasksByStatusForAllMembers(
             projectId,
             user
         );

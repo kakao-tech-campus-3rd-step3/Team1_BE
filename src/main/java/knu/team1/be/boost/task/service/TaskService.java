@@ -26,8 +26,8 @@ import knu.team1.be.boost.projectMembership.repository.ProjectMembershipReposito
 import knu.team1.be.boost.tag.entity.Tag;
 import knu.team1.be.boost.tag.repository.TagRepository;
 import knu.team1.be.boost.task.dto.CursorInfo;
-import knu.team1.be.boost.task.dto.MemberTaskStatusCountResponse;
-import knu.team1.be.boost.task.dto.ProjectTaskStatusCountResponse;
+import knu.team1.be.boost.task.dto.MemberTaskStatusCountResponseDto;
+import knu.team1.be.boost.task.dto.ProjectTaskStatusCountResponseDto;
 import knu.team1.be.boost.task.dto.TaskApproveResponse;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
 import knu.team1.be.boost.task.dto.TaskDetailResponseDto;
@@ -224,7 +224,7 @@ public class TaskService {
     }
 
     @Transactional(readOnly = true)
-    public ProjectTaskStatusCountResponse countTasksByStatusForProject(
+    public ProjectTaskStatusCountResponseDto countTasksByStatusForProject(
         UUID projectId,
         UserPrincipalDto user
     ) {
@@ -240,7 +240,7 @@ public class TaskService {
         int review = taskRepository.countByProjectIdAndStatus(projectId, TaskStatus.REVIEW);
         int done = taskRepository.countByProjectIdAndStatus(projectId, TaskStatus.DONE);
 
-        return ProjectTaskStatusCountResponse.from(
+        return ProjectTaskStatusCountResponseDto.from(
             projectId,
             todo,
             progress,
@@ -250,7 +250,7 @@ public class TaskService {
     }
 
     @Transactional(readOnly = true)
-    public List<MemberTaskStatusCountResponse> countTasksByStatusForAllMembers(
+    public List<MemberTaskStatusCountResponseDto> countTasksByStatusForAllMembers(
         UUID projectId,
         UserPrincipalDto user
     ) {
@@ -275,7 +275,7 @@ public class TaskService {
                 int review = taskRepository.countByProjectIdAndMemberIdAndStatus(
                     projectId, member.getId(), TaskStatus.REVIEW);
 
-                return MemberTaskStatusCountResponse.from(
+                return MemberTaskStatusCountResponseDto.from(
                     projectId,
                     member.getId(),
                     todo,
