@@ -237,10 +237,10 @@ public class TaskService {
 
         accessPolicy.ensureProjectMember(project.getId(), user.id());
 
-        ProjectTaskStatusCount count = taskRepository.countByProjectGrouped(projectId);
+        ProjectTaskStatusCount count = taskRepository.countByProjectGrouped(project.getId());
 
         return ProjectTaskStatusCountResponseDto.from(
-            projectId,
+            project.getId(),
             count.todo(),
             count.progress(),
             count.review(),
@@ -261,11 +261,11 @@ public class TaskService {
         accessPolicy.ensureProjectMember(project.getId(), user.id());
 
         List<MemberTaskStatusCount> counts = taskRepository
-            .countTasksByStatusForAllMembersGrouped(projectId);
+            .countTasksByStatusForAllMembersGrouped(project.getId());
 
         return counts.stream()
             .map(c -> MemberTaskStatusCountResponseDto.from(
-                projectId,
+                project.getId(),
                 c.memberId(),
                 c.todo(),
                 c.progress(),
