@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -257,7 +258,10 @@ public class TaskService {
             pageable
         );
 
-        return TaskStatusSectionDto.from(tasks, limit);
+        Map<UUID, Integer> fileCountMap = getFileCounts(tasks);
+        Map<UUID, Integer> commentCountMap = getCommentCounts(tasks);
+
+        return TaskStatusSectionDto.from(tasks, limit, fileCountMap, commentCountMap);
     }
 
     @Transactional(readOnly = true)
@@ -299,7 +303,10 @@ public class TaskService {
             pageable
         );
 
-        return TaskStatusSectionDto.from(tasks, limit);
+        Map<UUID, Integer> fileCountMap = getFileCounts(tasks);
+        Map<UUID, Integer> commentCountMap = getCommentCounts(tasks);
+
+        return TaskStatusSectionDto.from(tasks, limit, fileCountMap, commentCountMap);
     }
 
     @Transactional(readOnly = true)
@@ -344,7 +351,16 @@ public class TaskService {
             pageable
         );
 
-        return TaskMemberSectionResponseDto.from(member, tasks, safeLimit);
+        Map<UUID, Integer> fileCountMap = getFileCounts(tasks);
+        Map<UUID, Integer> commentCountMap = getCommentCounts(tasks);
+
+        return TaskMemberSectionResponseDto.from(
+            member,
+            tasks,
+            safeLimit,
+            fileCountMap,
+            commentCountMap
+        );
     }
 
     @Transactional
@@ -382,6 +398,21 @@ public class TaskService {
 
         return TaskApproveResponse.from(task, projectMembers);
     }
+
+    private Map<UUID, Integer> getFileCounts(List<Task> tasks) {
+        List<UUID> taskIds = tasks.stream()
+            .map(Task::getId)
+            .toList();
+        return fileRepository.countByTaskIds(taskIds);
+    }
+
+    private Map<UUID, Integer> getCommentCounts(List<Task> tasks) {
+        List<UUID> taskIds = tasks.stream()
+            .map(Task::getId)
+            .toList();
+        return commentRepository.countByTaskIds(taskIds);
+    }
+
 
     private List<Tag> findTagsByIds(List<UUID> tagIds) {
         if (tagIds == null || tagIds.isEmpty()) {

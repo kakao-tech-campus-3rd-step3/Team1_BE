@@ -37,6 +37,12 @@ public record TaskResponseDto(
     @Schema(description = "필요 리뷰어 수 (0 이상)", example = "2")
     Integer requiredReviewerCount,
 
+    @Schema(description = "첨부 파일 수", example = "3")
+    Integer fileCount,
+
+    @Schema(description = "댓글 수", example = "7")
+    Integer commentCount,
+
     @Schema(
         description = "태그 목록",
         example = "[{\"tagId\":\"770e8400-e29b-41d4-a716-446655440000\",\"name\":\"피드백\"}," +
@@ -64,6 +70,31 @@ public record TaskResponseDto(
             task.getDueDate(),
             task.getUrgent(),
             task.getRequiredReviewerCount(),
+            0,
+            0,
+            task.getTags().stream()
+                .map(TagResponseDto::from)
+                .toList(),
+            task.getAssignees().stream()
+                .map(MemberResponseDto::from)
+                .toList(),
+            task.getCreatedAt(),
+            LocalDateTime.now()
+        );
+    }
+
+    public static TaskResponseDto from(Task task, int fileCount, int commentCount) {
+        return new TaskResponseDto(
+            task.getId(),
+            task.getProject().getId(),
+            task.getTitle(),
+            task.getDescription(),
+            task.getStatus(),
+            task.getDueDate(),
+            task.getUrgent(),
+            task.getRequiredReviewerCount(),
+            fileCount,
+            commentCount,
             task.getTags().stream()
                 .map(TagResponseDto::from)
                 .toList(),
