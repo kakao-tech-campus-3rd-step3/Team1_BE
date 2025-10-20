@@ -25,6 +25,8 @@ import knu.team1.be.boost.projectMembership.repository.ProjectMembershipReposito
 import knu.team1.be.boost.tag.entity.Tag;
 import knu.team1.be.boost.tag.repository.TagRepository;
 import knu.team1.be.boost.task.dto.CursorInfo;
+import knu.team1.be.boost.task.dto.MemberTaskStatusCountResponse;
+import knu.team1.be.boost.task.dto.ProjectTaskStatusCountResponse;
 import knu.team1.be.boost.task.dto.TaskApproveResponse;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
 import knu.team1.be.boost.task.dto.TaskDetailResponseDto;
@@ -218,6 +220,69 @@ public class TaskService {
             .toList();
 
         return TaskDetailResponseDto.from(task, comments, files, projectMembers);
+    }
+
+    @Transactional(readOnly = true)
+    public ProjectTaskStatusCountResponse countTasksByStatusForProject(
+        UUID projectId,
+        UserPrincipalDto user
+    ) {
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
+            ));
+
+        accessPolicy.ensureProjectMember(project.getId(), user.id());
+
+        int todo = taskRepository.countByProjectIdAndStatus(projectId, TaskStatus.TODO);
+        int progress = taskRepository.countByProjectIdAndStatus(projectId, TaskStatus.PROGRESS);
+        int review = taskRepository.countByProjectIdAndStatus(projectId, TaskStatus.REVIEW);
+        int done = taskRepository.countByProjectIdAndStatus(projectId, TaskStatus.DONE);
+
+        return ProjectTaskStatusCountResponse.from(
+            projectId,
+            todo,
+            progress,
+            review,
+            done
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public List<MemberTaskStatusCountResponse> countTasksByStatusForAllMembers(
+        UUID projectId,
+        UserPrincipalDto user
+    ) {
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
+            ));
+
+        accessPolicy.ensureProjectMember(project.getId(), user.id());
+
+        List<Member> members = projectMembershipRepository.findAllByProjectId(projectId)
+            .stream()
+            .map(ProjectMembership::getMember)
+            .toList();
+
+        return members.stream()
+            .map(member -> {
+                int todo = taskRepository.countByProjectIdAndMemberIdAndStatus(
+                    projectId, member.getId(), TaskStatus.TODO);
+                int progress = taskRepository.countByProjectIdAndMemberIdAndStatus(
+                    projectId, member.getId(), TaskStatus.PROGRESS);
+                int review = taskRepository.countByProjectIdAndMemberIdAndStatus(
+                    projectId, member.getId(), TaskStatus.REVIEW);
+
+                return MemberTaskStatusCountResponse.from(
+                    projectId,
+                    member.getId(),
+                    todo,
+                    progress,
+                    review
+                );
+            })
+            .toList();
     }
 
     @Transactional(readOnly = true)

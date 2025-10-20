@@ -17,6 +17,22 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
 
     boolean existsByIdAndAssigneesId(UUID taskId, UUID memberId);
 
+    int countByProjectIdAndStatus(UUID projectId, TaskStatus status);
+
+    @Query("""
+            SELECT COUNT(t)
+            FROM Task t
+            JOIN t.assignees a
+            WHERE t.project.id = :projectId
+              AND a.id = :memberId
+              AND t.status = :status
+        """)
+    int countByProjectIdAndMemberIdAndStatus(
+        @Param("projectId") UUID projectId,
+        @Param("memberId") UUID memberId,
+        @Param("status") TaskStatus status
+    );
+
     @Query("""
             SELECT DISTINCT t FROM Task t
             LEFT JOIN t.tags tag
