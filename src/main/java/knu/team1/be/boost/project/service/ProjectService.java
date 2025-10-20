@@ -5,6 +5,7 @@ import java.util.UUID;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.common.policy.AccessPolicy;
+import knu.team1.be.boost.member.dto.MemberResponseDto;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
 import knu.team1.be.boost.project.dto.ProjectCreateRequestDto;
@@ -112,5 +113,24 @@ public class ProjectService {
         tagRepository.deleteAllByProjectId(projectId);
         projectMembershipRepository.softDeleteAllByProjectId(projectId);
         projectRepository.delete(project);
+    }
+
+    public List<MemberResponseDto> getProjectMembers(UUID projectId, UUID memberId) {
+
+        projectRepository.findById(projectId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND,
+                "projectId: " + projectId
+            ));
+
+        accessPolicy.ensureProjectMember(projectId, memberId);
+
+        List<ProjectMembership> projectMemberships = projectMembershipRepository.findAllByProjectId(
+            projectId);
+
+        return projectMemberships.stream()
+            .map(ProjectMembership::getMember)
+            .map(MemberResponseDto::from)
+            .toList();
     }
 }
