@@ -1,6 +1,7 @@
 package knu.team1.be.boost.task.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -275,7 +276,7 @@ public interface TaskApi {
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "조회 성공",
-            content = @Content(schema = @Schema(implementation = MemberTaskStatusCountResponse.class))
+            content = @Content(array = @ArraySchema(schema = @Schema(implementation = MemberTaskStatusCountResponse.class)))
         ),
         @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
         @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
