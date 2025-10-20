@@ -47,8 +47,11 @@ public class Member extends SoftDeletableEntity {
     @Builder.Default
     private List<ProjectMembership> projectMemberships = new ArrayList<>();
 
-    public void updateMember(String name, String avatar) {
+    public void updateName(String name) {
         this.name = name;
+    }
+
+    public void updateAvatar(String avatar) {
         this.avatar = avatar;
     }
 }
