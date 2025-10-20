@@ -27,6 +27,7 @@ import knu.team1.be.boost.tag.entity.Tag;
 import knu.team1.be.boost.tag.repository.TagRepository;
 import knu.team1.be.boost.task.dto.CursorInfo;
 import knu.team1.be.boost.task.dto.MemberTaskStatusCountResponseDto;
+import knu.team1.be.boost.task.dto.ProjectTaskStatusCount;
 import knu.team1.be.boost.task.dto.ProjectTaskStatusCountResponseDto;
 import knu.team1.be.boost.task.dto.TaskApproveResponse;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
@@ -235,17 +236,14 @@ public class TaskService {
 
         accessPolicy.ensureProjectMember(project.getId(), user.id());
 
-        int todo = taskRepository.countByProjectIdAndStatus(projectId, TaskStatus.TODO);
-        int progress = taskRepository.countByProjectIdAndStatus(projectId, TaskStatus.PROGRESS);
-        int review = taskRepository.countByProjectIdAndStatus(projectId, TaskStatus.REVIEW);
-        int done = taskRepository.countByProjectIdAndStatus(projectId, TaskStatus.DONE);
+        ProjectTaskStatusCount count = taskRepository.countByProjectGrouped(projectId);
 
         return ProjectTaskStatusCountResponseDto.from(
             projectId,
-            todo,
-            progress,
-            review,
-            done
+            count.todo(),
+            count.progress(),
+            count.review(),
+            count.done()
         );
     }
 

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.UUID;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.project.entity.Project;
+import knu.team1.be.boost.task.dto.ProjectTaskStatusCount;
 import knu.team1.be.boost.task.entity.Task;
 import knu.team1.be.boost.task.entity.TaskStatus;
 import org.springframework.data.domain.Pageable;
@@ -17,7 +18,17 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
 
     boolean existsByIdAndAssigneesId(UUID taskId, UUID memberId);
 
-    int countByProjectIdAndStatus(UUID projectId, TaskStatus status);
+    @Query("""
+            SELECT new knu.team1.be.boost.task.dto.ProjectTaskStatusCount(
+                sum(case when t.status = 'TODO' then 1 else 0 end),
+                sum(case when t.status = 'PROGRESS' then 1 else 0 end),
+                sum(case when t.status = 'REVIEW' then 1 else 0 end),
+                sum(case when t.status = 'DONE' then 1 else 0 end)
+            )
+            FROM Task t
+            WHERE t.project.id = :projectId
+        """)
+    ProjectTaskStatusCount countByProjectGrouped(@Param("projectId") UUID projectId);
 
     @Query("""
             SELECT COUNT(t)

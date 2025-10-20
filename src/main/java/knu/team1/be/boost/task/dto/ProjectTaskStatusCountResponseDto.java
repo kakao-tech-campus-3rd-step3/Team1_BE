@@ -10,24 +10,24 @@ public record ProjectTaskStatusCountResponseDto(
     UUID projectId,
 
     @Schema(description = "TODO 상태의 할 일 수", example = "5")
-    int todo,
+    long todo,
 
     @Schema(description = "진행 중(PROGRESS) 상태의 할 일 수", example = "3")
-    int progress,
+    long progress,
 
     @Schema(description = "검토 중(REVIEW) 상태의 할 일 수", example = "2")
-    int review,
+    long review,
 
     @Schema(description = "완료(DONE) 상태의 할 일 수", example = "7")
-    int done
+    long done
 ) {
 
     public static ProjectTaskStatusCountResponseDto from(
         UUID projectId,
-        int todo,
-        int progress,
-        int review,
-        int done
+        long todo,
+        long progress,
+        long review,
+        long done
     ) {
         return new ProjectTaskStatusCountResponseDto(
             projectId,
