@@ -2,6 +2,7 @@ package knu.team1.be.boost.task.service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -465,16 +466,26 @@ public class TaskService {
     }
 
     private Map<UUID, Integer> getFileCounts(List<Task> tasks) {
+        if (tasks.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
         List<UUID> taskIds = tasks.stream()
             .map(Task::getId)
             .toList();
+
         return fileRepository.countByTaskIds(taskIds);
     }
 
     private Map<UUID, Integer> getCommentCounts(List<Task> tasks) {
+        if (tasks.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
         List<UUID> taskIds = tasks.stream()
             .map(Task::getId)
             .toList();
+
         return commentRepository.countByTaskIds(taskIds);
     }
 
