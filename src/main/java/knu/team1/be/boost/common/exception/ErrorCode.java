@@ -17,6 +17,8 @@ public enum ErrorCode {
         "해당 프로젝트에 참여하지 않은 멤버입니다."),
     PROJECT_MEMBER_ONLY(HttpStatus.FORBIDDEN, "Project member only", "프로젝트 멤버만 사용할 수 있습니다."),
     PROJECT_OWNER_ONLY(HttpStatus.FORBIDDEN, "Project owner only", "프로젝트 소유자만 수행할 수 있습니다."),
+    PROJECT_OWNER_CANNOT_LEAVE(HttpStatus.FORBIDDEN, "Project owner cannot leave",
+        "프로젝트 소유자는 프로젝트를 나갈 수 없습니다."),
 
     // Project Join Code 관련
     EXPIRED_JOIN_CODE(HttpStatus.BAD_REQUEST, "Expired join code", "만료된 참가 코드입니다."),
