@@ -372,7 +372,7 @@ public class TaskService {
         Map<UUID, Integer> fileCountMap = getFileCounts(tasks);
         Map<UUID, Integer> commentCountMap = getCommentCounts(tasks);
 
-        return TaskStatusSectionDto.from(tasks, limit, fileCountMap, commentCountMap);
+        return TaskStatusSectionDto.from(tasks, safeLimit, fileCountMap, commentCountMap);
     }
 
     @Transactional(readOnly = true)
