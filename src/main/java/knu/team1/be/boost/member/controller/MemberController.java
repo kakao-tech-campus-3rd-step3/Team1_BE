@@ -28,13 +28,14 @@ public class MemberController implements MemberApi {
 
     @Override
     public ResponseEntity<MemberResponseDto> updateMyName(
-        MemberNameUpdateRequestDto requestDto,
+        @Valid @RequestBody MemberNameUpdateRequestDto requestDto,
         @AuthenticationPrincipal UserPrincipalDto user
     ) {
         MemberResponseDto updatedMemberInfo = memberService.updateMemberName(user.id(), requestDto);
         return ResponseEntity.ok(updatedMemberInfo);
     }
 
+    @Override
     public ResponseEntity<MemberResponseDto> updateMyAvatar(
         @Valid @RequestBody MemberAvatarUpdateRequestDto requestDto,
         @AuthenticationPrincipal UserPrincipalDto user
