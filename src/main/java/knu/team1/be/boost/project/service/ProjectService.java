@@ -117,11 +117,12 @@ public class ProjectService {
 
     public List<MemberResponseDto> getProjectMembers(UUID projectId, UUID memberId) {
 
-        projectRepository.findById(projectId)
-            .orElseThrow(() -> new BusinessException(
+        if (!projectRepository.existsById(projectId)) {
+            throw new BusinessException(
                 ErrorCode.PROJECT_NOT_FOUND,
                 "projectId: " + projectId
-            ));
+            );
+        }
 
         accessPolicy.ensureProjectMember(projectId, memberId);
 
