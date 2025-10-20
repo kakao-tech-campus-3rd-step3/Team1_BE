@@ -13,21 +13,21 @@ public record MemberTaskStatusCountResponseDto(
     UUID memberId,
 
     @Schema(description = "TODO 상태의 할 일 수", example = "4")
-    int todo,
+    long todo,
 
     @Schema(description = "진행 중(PROGRESS) 상태의 할 일 수", example = "3")
-    int progress,
+    long progress,
 
     @Schema(description = "검토 중(REVIEW) 상태의 할 일 수", example = "2")
-    int review
+    long review
 ) {
 
     public static MemberTaskStatusCountResponseDto from(
         UUID projectId,
         UUID memberId,
-        int todo,
-        int progress,
-        int review
+        long todo,
+        long progress,
+        long review
     ) {
         return new MemberTaskStatusCountResponseDto(
             projectId,

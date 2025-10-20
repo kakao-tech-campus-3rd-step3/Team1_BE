@@ -26,6 +26,7 @@ import knu.team1.be.boost.projectMembership.repository.ProjectMembershipReposito
 import knu.team1.be.boost.tag.entity.Tag;
 import knu.team1.be.boost.tag.repository.TagRepository;
 import knu.team1.be.boost.task.dto.CursorInfo;
+import knu.team1.be.boost.task.dto.MemberTaskStatusCount;
 import knu.team1.be.boost.task.dto.MemberTaskStatusCountResponseDto;
 import knu.team1.be.boost.task.dto.ProjectTaskStatusCount;
 import knu.team1.be.boost.task.dto.ProjectTaskStatusCountResponseDto;
@@ -259,28 +260,17 @@ public class TaskService {
 
         accessPolicy.ensureProjectMember(project.getId(), user.id());
 
-        List<Member> members = projectMembershipRepository.findAllByProjectId(projectId)
-            .stream()
-            .map(ProjectMembership::getMember)
-            .toList();
+        List<MemberTaskStatusCount> counts = taskRepository
+            .countTasksByStatusForAllMembersGrouped(projectId);
 
-        return members.stream()
-            .map(member -> {
-                int todo = taskRepository.countByProjectIdAndMemberIdAndStatus(
-                    projectId, member.getId(), TaskStatus.TODO);
-                int progress = taskRepository.countByProjectIdAndMemberIdAndStatus(
-                    projectId, member.getId(), TaskStatus.PROGRESS);
-                int review = taskRepository.countByProjectIdAndMemberIdAndStatus(
-                    projectId, member.getId(), TaskStatus.REVIEW);
-
-                return MemberTaskStatusCountResponseDto.from(
-                    projectId,
-                    member.getId(),
-                    todo,
-                    progress,
-                    review
-                );
-            })
+        return counts.stream()
+            .map(c -> MemberTaskStatusCountResponseDto.from(
+                projectId,
+                c.memberId(),
+                c.todo(),
+                c.progress(),
+                c.review()
+            ))
             .toList();
     }
 

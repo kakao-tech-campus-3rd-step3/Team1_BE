@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.UUID;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.project.entity.Project;
+import knu.team1.be.boost.task.dto.MemberTaskStatusCount;
 import knu.team1.be.boost.task.dto.ProjectTaskStatusCount;
 import knu.team1.be.boost.task.entity.Task;
 import knu.team1.be.boost.task.entity.TaskStatus;
@@ -31,17 +32,19 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     ProjectTaskStatusCount countByProjectGrouped(@Param("projectId") UUID projectId);
 
     @Query("""
-            SELECT COUNT(t)
+            SELECT new knu.team1.be.boost.task.dto.MemberTaskStatusCount(
+                a.id,
+                sum(case when t.status = 'TODO' then 1 else 0 end),
+                sum(case when t.status = 'PROGRESS' then 1 else 0 end),
+                sum(case when t.status = 'REVIEW' then 1 else 0 end)
+            )
             FROM Task t
             JOIN t.assignees a
             WHERE t.project.id = :projectId
-              AND a.id = :memberId
-              AND t.status = :status
+            GROUP BY a.id
         """)
-    int countByProjectIdAndMemberIdAndStatus(
-        @Param("projectId") UUID projectId,
-        @Param("memberId") UUID memberId,
-        @Param("status") TaskStatus status
+    List<MemberTaskStatusCount> countTasksByStatusForAllMembersGrouped(
+        @Param("projectId") UUID projectId
     );
 
     @Query("""
