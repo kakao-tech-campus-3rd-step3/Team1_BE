@@ -1,5 +1,6 @@
 package knu.team1.be.boost.task.dto;
 
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -37,14 +38,16 @@ public record TaskResponseDto(
     @Schema(description = "필요 리뷰어 수 (0 이상)", example = "2")
     Integer requiredReviewerCount,
 
-    @Schema(
-        description = "태그 목록",
-        example = "[{\"tagId\":\"770e8400-e29b-41d4-a716-446655440000\",\"name\":\"피드백\"}," +
-            "{\"tagId\":\"770e8400-e29b-41d4-a716-446655440111\",\"name\":\"버그\"}]"
+    @ArraySchema(
+        schema = @Schema(implementation = TagResponseDto.class),
+        arraySchema = @Schema(description = "태그 목록")
     )
     List<TagResponseDto> tags,
 
-    @Schema(description = "담당자 목록", example = "[{\"id\":\"550e8400-e29b-41d4-a716-446655440000\",\"name\":\"홍길동\"}]")
+    @ArraySchema(
+        schema = @Schema(implementation = MemberResponseDto.class),
+        arraySchema = @Schema(description = "담당자 목록")
+    )
     List<MemberResponseDto> assignees,
 
     @Schema(description = "할 일 생성일", example = "2025-09-12T12:00:00")
