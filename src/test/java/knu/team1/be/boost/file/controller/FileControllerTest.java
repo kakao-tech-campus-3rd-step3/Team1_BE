@@ -235,7 +235,7 @@ class FileControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.fileId").value(fileId.toString()))
                 .andExpect(jsonPath("$.taskId").value(taskId.toString()))
-                .andExpect(jsonPath("$.status").value(FileStatus.COMPLETED.toString()))
+                .andExpect(jsonPath("$.status").value(FileStatus.COMPLETED.name()))
                 .andExpect(jsonPath("$.completedAt").value("2025-09-10T12:34:56"));
         }
 
