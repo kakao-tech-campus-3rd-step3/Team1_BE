@@ -152,6 +152,20 @@ public class FileService {
         return FileCompleteResponseDto.from(file, taskId);
     }
 
+    @Transactional
+    public void deleteFile(UUID fileId, UserPrincipalDto user) {
+        File file = fileRepository.findById(fileId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.FILE_NOT_FOUND, "fileId: " + fileId
+            ));
+
+        UUID projectId = file.getTask().getProject().getId();
+        accessPolicy.ensureProjectMember(projectId, user.id());
+        accessPolicy.ensureTaskAssignee(file.getTask().getId(), user.id());
+
+        fileRepository.delete(file);
+    }
+
     private void validateFileLimit(long sizeBytes, UUID fileIdOrNull) {
         long max = maxUploadSize.toBytes();
         if (sizeBytes > max) {

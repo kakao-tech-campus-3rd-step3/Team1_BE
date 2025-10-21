@@ -50,4 +50,13 @@ public class FileController implements FileApi {
         FileCompleteResponseDto response = fileService.completeUpload(fileId, request, user);
         return ResponseEntity.ok(response);
     }
+
+    @Override
+    public ResponseEntity<Void> deleteFile(
+        @PathVariable UUID fileId,
+        @AuthenticationPrincipal UserPrincipalDto user
+    ) {
+        fileService.deleteFile(fileId, user);
+        return ResponseEntity.noContent().build();
+    }
 }
