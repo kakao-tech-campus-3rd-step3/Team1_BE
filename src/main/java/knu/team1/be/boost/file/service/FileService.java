@@ -17,6 +17,7 @@ import knu.team1.be.boost.file.infra.s3.PresignedUrlFactory;
 import knu.team1.be.boost.file.repository.FileRepository;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
+import knu.team1.be.boost.project.entity.Project;
 import knu.team1.be.boost.task.entity.Task;
 import knu.team1.be.boost.task.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
@@ -160,8 +161,22 @@ public class FileService {
             ));
 
         Task task = file.getTask();
-        UUID projectId = task.getProject().getId();
-        accessPolicy.ensureProjectMember(projectId, user.id());
+        if (task == null) {
+            throw new BusinessException(
+                ErrorCode.TASK_NOT_FOUND,
+                "파일에 연결된 할 일이 존재하지 않습니다. fileId: " + fileId
+            );
+        }
+
+        Project project = task.getProject();
+        if (project == null) {
+            throw new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND,
+                "작업에 연결된 프로젝트가 존재하지 않습니다. fileId: " + fileId + ", taskId: " + task.getId()
+            );
+        }
+
+        accessPolicy.ensureProjectMember(project.getId(), user.id());
         accessPolicy.ensureTaskAssignee(task.getId(), user.id());
 
         fileRepository.delete(file);
