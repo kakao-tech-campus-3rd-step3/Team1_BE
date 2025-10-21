@@ -1,6 +1,7 @@
 package knu.team1.be.boost.file.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import knu.team1.be.boost.file.entity.File;
 
@@ -20,7 +21,10 @@ public record FileResponseDto(
     Integer sizeBytes,
 
     @Schema(description = "파일 타입", example = "PDF")
-    String type
+    String type,
+
+    @Schema(description = "업로드 완료 시간", example = "2025-10-21T15:30:00")
+    LocalDateTime completedAt
 
 ) {
 
@@ -30,7 +34,8 @@ public record FileResponseDto(
             file.getMetadata().originalFilename(),
             file.getMetadata().contentType(),
             file.getMetadata().sizeBytes(),
-            file.getType().name()
+            file.getType().name(),
+            file.getCompletedAt()
         );
     }
 }
