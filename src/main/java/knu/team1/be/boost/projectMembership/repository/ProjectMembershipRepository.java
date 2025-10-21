@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.UUID;
 import knu.team1.be.boost.projectMembership.entity.ProjectMembership;
 import knu.team1.be.boost.projectMembership.entity.ProjectRole;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -32,7 +33,8 @@ public interface ProjectMembershipRepository extends JpaRepository<ProjectMember
     boolean existsByProjectIdAndMemberIdAndRole(UUID projectId, UUID memberId, ProjectRole role);
 
     List<ProjectMembership> findAllByMemberId(UUID memberId);
-
+    
+    @EntityGraph(attributePaths = {"member"})
     List<ProjectMembership> findAllByProjectId(UUID projectId);
 
     @Modifying
