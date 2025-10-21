@@ -22,6 +22,7 @@ import knu.team1.be.boost.file.dto.FileCompleteRequestDto;
 import knu.team1.be.boost.file.dto.FileCompleteResponseDto;
 import knu.team1.be.boost.file.dto.FilePresignedUrlResponseDto;
 import knu.team1.be.boost.file.dto.FileRequestDto;
+import knu.team1.be.boost.file.entity.FileStatus;
 import knu.team1.be.boost.file.service.FileService;
 import knu.team1.be.boost.security.filter.JwtAuthFilter;
 import org.junit.jupiter.api.DisplayName;
@@ -216,7 +217,7 @@ class FileControllerTest {
                 new FileCompleteResponseDto(
                     fileId,
                     taskId,
-                    "completed",
+                    FileStatus.COMPLETED,
                     LocalDateTime.of(2025, 9, 10, 12, 34, 56)
                 );
 
@@ -234,7 +235,7 @@ class FileControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.fileId").value(fileId.toString()))
                 .andExpect(jsonPath("$.taskId").value(taskId.toString()))
-                .andExpect(jsonPath("$.status").value("completed"))
+                .andExpect(jsonPath("$.status").value(FileStatus.COMPLETED.toString()))
                 .andExpect(jsonPath("$.completedAt").value("2025-09-10T12:34:56"));
         }
 
