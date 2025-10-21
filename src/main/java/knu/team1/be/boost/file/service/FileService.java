@@ -159,9 +159,10 @@ public class FileService {
                 ErrorCode.FILE_NOT_FOUND, "fileId: " + fileId
             ));
 
-        UUID projectId = file.getTask().getProject().getId();
+        Task task = file.getTask();
+        UUID projectId = task.getProject().getId();
         accessPolicy.ensureProjectMember(projectId, user.id());
-        accessPolicy.ensureTaskAssignee(file.getTask().getId(), user.id());
+        accessPolicy.ensureTaskAssignee(task.getId(), user.id());
 
         fileRepository.delete(file);
     }
