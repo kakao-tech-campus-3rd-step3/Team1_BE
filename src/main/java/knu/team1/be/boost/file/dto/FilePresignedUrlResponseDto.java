@@ -15,13 +15,13 @@ public record FilePresignedUrlResponseDto(
     @Schema(description = "파일 ID (UUID)", example = "2f8f2a2e-4a63-4f3a-8d1b-2a4de6d6f8aa")
     UUID fileId,
 
-    @Schema(description = "스토리지 오브젝트 키(경로)", example = "uploads/2025/09/05/2f8f2a2e-4a63-4f3a-8d1b-2a4de6d6f8aa.pdf")
+    @Schema(description = "스토리지 오브젝트 키(경로)", example = "file/2025/09/05/2f8f2a2e-4a63-4f3a-8d1b-2a4de6d6f8aa.pdf")
     String key,
 
     @Schema(description = "Presigned URL", example = "https://boost-s3-bucket-storage.s3.ap-northeast-2.amazonaws.com/...")
     String url,
 
-    @Schema(description = "요청 메서드 (PUT/GET)", example = "PUT")
+    @Schema(description = "요청 메서드 (PUT/GET)", example = "PUT/GET")
     String method,
 
     @Schema(
