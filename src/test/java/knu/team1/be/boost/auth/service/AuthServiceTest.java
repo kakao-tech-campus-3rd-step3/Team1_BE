@@ -5,16 +5,17 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-import io.jsonwebtoken.JwtException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import knu.team1.be.boost.auth.dto.KakaoDto;
+import knu.team1.be.boost.auth.dto.LoginDto;
+import knu.team1.be.boost.auth.dto.LoginRequestDto;
 import knu.team1.be.boost.auth.dto.TokenDto;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.auth.entity.RefreshToken;
@@ -37,6 +38,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
@@ -58,6 +60,12 @@ class AuthServiceTest {
 
     private final String DEFAULT_AVATAR = "1111";
 
+    @BeforeEach
+    void init() {
+        ReflectionTestUtils.setField(authService, "allowedRedirectUris",
+            Set.of("https://test_redirect_uri.com"));
+    }
+
     @Nested
     @DisplayName("로그인/회원가입")
     class Login {
@@ -66,7 +74,8 @@ class AuthServiceTest {
         @DisplayName("성공: 신규 사용자일 경우 회원가입 후 토큰 발급")
         void login_Success_WhenNewUser() {
             // given
-            String code = "test_code";
+            LoginRequestDto requestDto = new LoginRequestDto("test_code",
+                "https://test_redirect_uri.com");
             KakaoDto.UserInfo mockKakaoUser = createMockKakaoUser(12345L, "라이언");
             Member newMember = createMockMember(
                 UUID.randomUUID(),
@@ -77,17 +86,17 @@ class AuthServiceTest {
             );
             TokenDto mockTokenDto = new TokenDto("access", "refresh");
 
-            given(kakaoClientService.getUserInfo(code)).willReturn(mockKakaoUser);
+            given(kakaoClientService.getUserInfo(requestDto)).willReturn(mockKakaoUser);
             given(memberRepository.findByOauthInfoProviderAndOauthInfoProviderId("kakao",
                 mockKakaoUser.id())).willReturn(Optional.empty());
             given(memberRepository.save(any(Member.class))).willReturn(newMember);
             given(jwtUtil.generateToken(any(Authentication.class))).willReturn(mockTokenDto);
 
             // when
-            TokenDto resultTokenDto = authService.login(code);
+            LoginDto resultLoginDto = authService.login(requestDto);
 
             // then
-            assertThat(resultTokenDto).isEqualTo(mockTokenDto);
+            assertThat(resultLoginDto.tokenDto()).isEqualTo(mockTokenDto);
             verify(memberRepository).save(any(Member.class));
             verify(refreshTokenRepository).save(any(RefreshToken.class));
         }
@@ -96,7 +105,8 @@ class AuthServiceTest {
         @DisplayName("성공: 기존 사용자일 경우 로그인 후 토큰 발급")
         void login_Success_WhenExistingUser() {
             // given
-            String code = "test_code";
+            LoginRequestDto requestDto = new LoginRequestDto("test_code",
+                "https://test_redirect_uri.com");
             KakaoDto.UserInfo mockKakaoUser = createMockKakaoUser(12345L, "라이언");
             Member existingMember = createMockMember(
                 UUID.randomUUID(),
@@ -107,16 +117,16 @@ class AuthServiceTest {
             );
             TokenDto mockTokenDto = new TokenDto("access", "refresh");
 
-            given(kakaoClientService.getUserInfo(code)).willReturn(mockKakaoUser);
+            given(kakaoClientService.getUserInfo(requestDto)).willReturn(mockKakaoUser);
             given(memberRepository.findByOauthInfoProviderAndOauthInfoProviderId("kakao",
                 mockKakaoUser.id())).willReturn(Optional.of(existingMember));
             given(jwtUtil.generateToken(any(Authentication.class))).willReturn(mockTokenDto);
 
             // when
-            TokenDto resultTokenDto = authService.login(code);
+            LoginDto resultLoginDto = authService.login(requestDto);
 
             // then
-            assertThat(resultTokenDto).isEqualTo(mockTokenDto);
+            assertThat(resultLoginDto.tokenDto()).isEqualTo(mockTokenDto);
             verify(memberRepository, never()).save(any(Member.class));
             verify(refreshTokenRepository).save(any(RefreshToken.class));
         }
@@ -151,7 +161,6 @@ class AuthServiceTest {
     @DisplayName("토큰 재발급")
     class Reissue {
 
-        private final String expiredAccessToken = "expired_access";
         private Authentication authentication;
         private UserPrincipalDto principal;
 
@@ -181,20 +190,19 @@ class AuthServiceTest {
                 12345L,
                 "testUser"
             );
-            RefreshToken storedToken = RefreshToken.builder().member(member)
+            RefreshToken storedToken = RefreshToken.builder()
+                .member(member)
                 .refreshToken(validRefreshToken)
                 .build();
             TokenDto newTokenDto = new TokenDto("new_access", "new_refresh");
 
-            doNothing().when(jwtUtil)
-                .validateToken(validRefreshToken);
-            given(jwtUtil.getAuthentication(expiredAccessToken)).willReturn(authentication);
+            given(jwtUtil.getUserId(validRefreshToken)).willReturn(member.getId());
             given(refreshTokenRepository.findByMemberId(principal.id()))
                 .willReturn(Optional.of(storedToken));
-            given(jwtUtil.generateToken(authentication)).willReturn(newTokenDto);
+            given(jwtUtil.generateToken(any(Authentication.class))).willReturn(newTokenDto);
 
             // when
-            TokenDto resultTokenDto = authService.reissue(expiredAccessToken, validRefreshToken);
+            TokenDto resultTokenDto = authService.reissue(validRefreshToken);
 
             // then
             assertThat(resultTokenDto).isEqualTo(newTokenDto);
@@ -206,11 +214,11 @@ class AuthServiceTest {
         void reissue_Fail_WhenRefreshTokenIsInvalid() {
             // given
             String invalidRefreshToken = "invalid_refresh";
-            doThrow(new JwtException("Invalid Token")).when(jwtUtil)
-                .validateToken(invalidRefreshToken);
+            given(jwtUtil.getUserId(invalidRefreshToken))
+                .willThrow(new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN));
 
             // when & then
-            assertThatThrownBy(() -> authService.reissue(expiredAccessToken, invalidRefreshToken))
+            assertThatThrownBy(() -> authService.reissue(invalidRefreshToken))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_REFRESH_TOKEN);
         }
@@ -220,14 +228,14 @@ class AuthServiceTest {
         void reissue_Fail_WhenRefreshTokenNotFound() {
             // given
             String unknownRefreshToken = "unknown_refresh";
-            doNothing().when(jwtUtil)
-                .validateToken(unknownRefreshToken);
-            given(jwtUtil.getAuthentication(expiredAccessToken)).willReturn(authentication);
+
+            given(jwtUtil.getUserId(unknownRefreshToken))
+                .willReturn(principal.id());
             given(refreshTokenRepository.findByMemberId(principal.id()))
                 .willReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(() -> authService.reissue(expiredAccessToken, unknownRefreshToken))
+            assertThatThrownBy(() -> authService.reissue(unknownRefreshToken))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.REFRESH_TOKEN_NOT_FOUND);
         }
@@ -246,14 +254,13 @@ class AuthServiceTest {
             RefreshToken storedToken = RefreshToken.builder().member(member)
                 .refreshToken(storedRefreshTokenValue).build();
 
-            doNothing().when(jwtUtil)
-                .validateToken(clientRefreshToken);
-            given(jwtUtil.getAuthentication(expiredAccessToken)).willReturn(authentication);
+            given(jwtUtil.getUserId(clientRefreshToken))
+                .willReturn(principal.id());
             given(refreshTokenRepository.findByMemberId(principal.id()))
                 .willReturn(Optional.of(storedToken));
 
             // when & then
-            assertThatThrownBy(() -> authService.reissue(expiredAccessToken, clientRefreshToken))
+            assertThatThrownBy(() -> authService.reissue(clientRefreshToken))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.REFRESH_TOKEN_NOT_EQUALS);
         }

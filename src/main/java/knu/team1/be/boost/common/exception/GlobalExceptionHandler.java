@@ -165,7 +165,7 @@ public class GlobalExceptionHandler {
     }
 
     // 401: 컨트롤러/서비스 단에서 발생하는 JWT 관련 예외 처리
-    // (주로 토큰 재발급 시 만료된 토큰을 파싱하려 할 때 발생)
+    // (주로 토큰 재발급 시 Refresh Token을 파싱하려 할 때 발생)
     @ExceptionHandler(JwtException.class)
     public ProblemDetail handleJwtExceptionInController(JwtException e, HttpServletRequest req) {
         log.warn("[401 UNAUTHORIZED] JWT exception: {}", e.toString(), e);

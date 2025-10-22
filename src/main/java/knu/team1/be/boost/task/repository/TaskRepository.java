@@ -18,9 +18,11 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     boolean existsByIdAndAssigneesId(UUID taskId, UUID memberId);
 
     @Query("""
-            SELECT t FROM Task t
+            SELECT DISTINCT t FROM Task t
+            LEFT JOIN t.tags tag
             WHERE t.project = :project
               AND t.status = :status
+              AND (:tagId IS NULL OR tag.id = :tagId)
               AND (:cursorCreatedAtKey IS NULL
                    OR t.createdAt > :cursorCreatedAtKey
                    OR (t.createdAt = :cursorCreatedAtKey AND t.id > :cursorId))
@@ -28,6 +30,7 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
         """)
     List<Task> findByStatusOrderByCreatedAtAsc(
         @Param("project") Project project,
+        @Param("tagId") UUID tagId,
         @Param("status") TaskStatus status,
         @Param("cursorCreatedAtKey") LocalDateTime cursorCreatedAtKey,
         @Param("cursorId") UUID cursorId,
@@ -35,9 +38,11 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     );
 
     @Query("""
-            SELECT t FROM Task t
+            SELECT DISTINCT t FROM Task t
+            LEFT JOIN t.tags tag
             WHERE t.project = :project
               AND t.status = :status
+              AND (:tagId IS NULL OR tag.id = :tagId)
               AND (:cursorCreatedAtKey IS NULL
                    OR t.createdAt < :cursorCreatedAtKey
                    OR (t.createdAt = :cursorCreatedAtKey AND t.id < :cursorId))
@@ -45,6 +50,7 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
         """)
     List<Task> findByStatusOrderByCreatedAtDesc(
         @Param("project") Project project,
+        @Param("tagId") UUID tagId,
         @Param("status") TaskStatus status,
         @Param("cursorCreatedAtKey") LocalDateTime cursorCreatedAtKey,
         @Param("cursorId") UUID cursorId,
@@ -52,9 +58,11 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     );
 
     @Query("""
-            SELECT t FROM Task t
+            SELECT DISTINCT t FROM Task t
+            LEFT JOIN t.tags tag
             WHERE t.project = :project
               AND t.status = :status
+              AND (:tagId IS NULL OR tag.id = :tagId)
               AND (:cursorDueDateKey IS NULL
                    OR t.dueDate > :cursorDueDateKey
                    OR (t.dueDate = :cursorDueDateKey AND t.id > :cursorId))
@@ -62,6 +70,7 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
         """)
     List<Task> findByStatusOrderByDueDateAsc(
         @Param("project") Project project,
+        @Param("tagId") UUID tagId,
         @Param("status") TaskStatus status,
         @Param("cursorDueDateKey") LocalDate cursorDueDateKey,
         @Param("cursorId") UUID cursorId,
@@ -69,9 +78,11 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     );
 
     @Query("""
-            SELECT t FROM Task t
+            SELECT DISTINCT t FROM Task t
+            LEFT JOIN t.tags tag
             WHERE t.project = :project
               AND t.status = :status
+              AND (:tagId IS NULL OR tag.id = :tagId)
               AND (:cursorDueDateKey IS NULL
                    OR t.dueDate < :cursorDueDateKey
                    OR (t.dueDate = :cursorDueDateKey AND t.id < :cursorId))
@@ -79,6 +90,7 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
         """)
     List<Task> findByStatusOrderByDueDateDesc(
         @Param("project") Project project,
+        @Param("tagId") UUID tagId,
         @Param("status") TaskStatus status,
         @Param("cursorDueDateKey") LocalDate cursorDueDateKey,
         @Param("cursorId") UUID cursorId,

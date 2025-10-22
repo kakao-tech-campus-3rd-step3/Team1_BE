@@ -30,6 +30,11 @@ public enum ErrorCode {
     INVALID_APPROVER(HttpStatus.FORBIDDEN, "Invalid approver", "담당자는 승인할 수 없습니다."),
     ALREADY_APPROVED(HttpStatus.CONFLICT, "Already approved", "이미 승인한 사용자입니다."),
 
+    // Tag 관련
+    TAG_NOT_FOUND(HttpStatus.NOT_FOUND, "Tag not found", "해당 태그를 찾을 수 없습니다."),
+    TAG_NOT_IN_PROJECT(HttpStatus.CONFLICT, "Tag not in project", "해당 태그가 프로젝트에 속하지 않습니다."),
+    DUPLICATED_TAG_NAME(HttpStatus.CONFLICT, "Duplicated tag name", "이미 존재하는 태그 이름입니다."),
+
     // File 관련
     FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "File not found", "파일을 찾을 수 없습니다."),
     FILE_TOO_LARGE(HttpStatus.PAYLOAD_TOO_LARGE, "File too large", "파일 크기가 너무 큽니다."),
@@ -43,6 +48,10 @@ public enum ErrorCode {
     COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "Comment not found", "댓글을 찾을 수 없습니다."),
     COMMENT_AUTHOR_ONLY(HttpStatus.FORBIDDEN, "Comment author only", "댓글 작성자만 수행할 수 있습니다."),
 
+    // Memo 관련
+    MEMO_NOT_FOUND(HttpStatus.NOT_FOUND, "Memo not found", "메모를 찾을 수 없습니다."),
+    PROJECT_MEMO_ONLY(HttpStatus.CONFLICT, "Memo not in project", "해당 메모가 프로젝트에 속하지 않습니다."),
+
     // Auth 관련
     INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "Invalid refresh token", "유효하지 않은 리프레시 토큰입니다."),
     REFRESH_TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "Refresh token not found", "리프레시 토큰을 찾을 수 없습니다."),
@@ -50,6 +59,8 @@ public enum ErrorCode {
         "리프레시 토큰이 일치하지 않습니다."),
     KAKAO_INVALID_AUTH_CODE(HttpStatus.BAD_REQUEST, "Kakao invalid auth code",
         "카카오 인가 코드가 유효하지 않습니다."),
+    INVALID_REDIRECT_URI(HttpStatus.BAD_REQUEST, "Invalid redirect URI",
+        "허용되지 않은 redirect URI입니다."),
 
     // JWT 관련
     TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "Token expired", "만료된 토큰입니다."),
