@@ -76,7 +76,12 @@ public enum ErrorCode {
     AI_SERVICE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "AI service error",
         "AI 서비스 처리 중 오류가 발생했습니다."),
     AI_SERVICE_TIMEOUT(HttpStatus.REQUEST_TIMEOUT, "AI service timeout",
-        "AI 서비스 응답이 지연되고 있습니다. 잠시 후 다시 시도해주세요.");
+        "AI 서비스 응답이 지연되고 있습니다. 잠시 후 다시 시도해주세요."),
+
+    // WEB Push 관련
+    INVALID_WEB_PUSH_TOKEN(HttpStatus.BAD_REQUEST, "Invalid WebPush token",
+        "유효하지 않은 WebPush 세션 토큰입니다.");
+
     private final HttpStatus httpStatus;
     private final String errorMessage;
     private final String clientMessage;
