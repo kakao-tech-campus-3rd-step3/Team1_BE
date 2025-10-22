@@ -389,7 +389,8 @@ public class TaskService {
 
         CursorInfo cursorInfo = extractCursorInfo(cursorId);
 
-        Integer cursorStatusOrder = cursorInfo.taskStatus().getOrder();
+        Integer cursorStatusOrder =
+            cursorInfo.taskStatus() != null ? cursorInfo.taskStatus().getOrder() : null;
         LocalDateTime cursorCreatedAt = cursorInfo.createdAt();
         UUID cursorTaskId = cursorInfo.taskId();
 

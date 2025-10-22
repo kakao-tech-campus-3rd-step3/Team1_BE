@@ -11,8 +11,9 @@ import java.util.Optional;
 import java.util.UUID;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
+import knu.team1.be.boost.member.dto.MemberAvatarUpdateRequestDto;
+import knu.team1.be.boost.member.dto.MemberNameUpdateRequestDto;
 import knu.team1.be.boost.member.dto.MemberResponseDto;
-import knu.team1.be.boost.member.dto.MemberUpdateRequestDto;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.entity.vo.OauthInfo;
 import knu.team1.be.boost.member.repository.MemberRepository;
@@ -73,32 +74,64 @@ public class MemberServiceTest {
     }
 
     @Test
-    @DisplayName("회원 정보 수정 성공")
-    void updateMember_Success() {
+    @DisplayName("회원 이름 수정 성공")
+    void updateMemberName_Success() {
         // given
-        MemberUpdateRequestDto requestDto = new MemberUpdateRequestDto("수정된 이름", "1112");
+        MemberNameUpdateRequestDto requestDto = new MemberNameUpdateRequestDto("수정된 이름");
         given(memberRepository.findById(testUserId)).willReturn(Optional.of(testMember));
 
         // when
-        MemberResponseDto responseDto = userService.updateMember(testUserId, requestDto);
+        MemberResponseDto responseDto = userService.updateMemberName(testUserId, requestDto);
 
         // then
         assertNotNull(responseDto);
         assertEquals("수정된 이름", responseDto.name());
-        assertEquals("1112", responseDto.avatar());
+        assertEquals("1111", responseDto.avatar());
     }
 
     @Test
-    @DisplayName("회원 정보 수정 실패 - 존재하지 않는 회원")
-    void updateMemberInfo_Fail_MemberNotFound() {
+    @DisplayName("회원 이름 수정 실패 - 존재하지 않는 회원")
+    void updateMemberName_Fail_MemberNotFound() {
         // given
         UUID nonExistentUserId = UUID.randomUUID();
-        MemberUpdateRequestDto requestDto = new MemberUpdateRequestDto("수정된 이름", "1112");
+        MemberNameUpdateRequestDto requestDto = new MemberNameUpdateRequestDto("수정된 이름");
         given(memberRepository.findById(nonExistentUserId)).willReturn(Optional.empty());
 
         // when & then
         BusinessException exception = assertThrows(BusinessException.class, () -> {
-            userService.updateMember(nonExistentUserId, requestDto);
+            userService.updateMemberName(nonExistentUserId, requestDto);
+        });
+
+        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.MEMBER_NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("회원 아바타 수정 성공")
+    void updateMemberAvatar_Success() {
+        // given
+        MemberAvatarUpdateRequestDto requestDto = new MemberAvatarUpdateRequestDto("1112");
+        given(memberRepository.findById(testUserId)).willReturn(Optional.of(testMember));
+
+        // when
+        MemberResponseDto responseDto = userService.updateMemberAvatar(testUserId, requestDto);
+
+        // then
+        assertNotNull(responseDto);
+        assertEquals("테스트 유저", responseDto.name());
+        assertEquals("1112", responseDto.avatar());
+    }
+
+    @Test
+    @DisplayName("회원 아바타 수정 실패 - 존재하지 않는 회원")
+    void updateMemberAvatar_Fail_MemberNotFound() {
+        // given
+        UUID nonExistentUserId = UUID.randomUUID();
+        MemberAvatarUpdateRequestDto requestDto = new MemberAvatarUpdateRequestDto("1112");
+        given(memberRepository.findById(nonExistentUserId)).willReturn(Optional.empty());
+
+        // when & then
+        BusinessException exception = assertThrows(BusinessException.class, () -> {
+            userService.updateMemberAvatar(nonExistentUserId, requestDto);
         });
 
         assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.MEMBER_NOT_FOUND);

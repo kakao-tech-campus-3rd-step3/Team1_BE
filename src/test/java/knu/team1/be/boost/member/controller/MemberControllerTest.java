@@ -15,8 +15,9 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
+import knu.team1.be.boost.member.dto.MemberAvatarUpdateRequestDto;
+import knu.team1.be.boost.member.dto.MemberNameUpdateRequestDto;
 import knu.team1.be.boost.member.dto.MemberResponseDto;
-import knu.team1.be.boost.member.dto.MemberUpdateRequestDto;
 import knu.team1.be.boost.member.service.MemberService;
 import knu.team1.be.boost.security.filter.JwtAuthFilter;
 import org.junit.jupiter.api.DisplayName;
@@ -94,44 +95,88 @@ public class MemberControllerTest {
     }
 
     @Test
-    @DisplayName("내 정보 수정 API 성공")
-    void updateMyInfo_Success() throws Exception {
+    @DisplayName("내 이름 수정 API 성공")
+    void updateMyName_Success() throws Exception {
         // given
-        MemberUpdateRequestDto requestDto = new MemberUpdateRequestDto("수정된 이름", "1111");
+        MemberNameUpdateRequestDto requestDto = new MemberNameUpdateRequestDto("수정된 이름");
         MemberResponseDto responseDto = new MemberResponseDto(
             testMemberId,
             "수정된 이름",
-            "1112",
+            "1111",
             LocalDateTime.now(),
             LocalDateTime.now()
         );
-        given(memberService.updateMember(any(),
-            any(MemberUpdateRequestDto.class))).willReturn(responseDto);
+        given(memberService.updateMemberName(any(),
+            any(MemberNameUpdateRequestDto.class))).willReturn(responseDto);
 
         // when & then
-        mockMvc.perform(put("/api/members/me")
+        mockMvc.perform(put("/api/members/me/name")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
             .andDo(print())
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.name").value("수정된 이름"))
-            .andExpect(jsonPath("$.avatar").value("1112"));
+            .andExpect(jsonPath("$.name").value("수정된 이름"));
     }
 
     @Test
-    @DisplayName("내 정보 수정 API 실패 - 존재하지 않는 회원")
-    void updateMyInfo_Fail_MemberNotFound() throws Exception {
+    @DisplayName("내 이름 수정 API 실패 - 존재하지 않는 회원")
+    void updateMyName_Fail_MemberNotFound() throws Exception {
         // given
-        MemberUpdateRequestDto requestDto = new MemberUpdateRequestDto("수정된 이름", "1112");
-        given(memberService.updateMember(any(),
-            any(MemberUpdateRequestDto.class)))
+        MemberNameUpdateRequestDto requestDto = new MemberNameUpdateRequestDto("수정된 이름");
+        given(memberService.updateMemberName(any(),
+            any(MemberNameUpdateRequestDto.class)))
             .willThrow(new BusinessException(
                 ErrorCode.MEMBER_NOT_FOUND,
                 "memberId: " + testMemberId
             ));
 
         // when & then
-        mockMvc.perform(put("/api/members/me")
+        mockMvc.perform(put("/api/members/me/name")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+            .andDo(print())
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("내 아바타 수정 API 성공")
+    void updateMyAvatar_Success() throws Exception {
+        // given
+        MemberAvatarUpdateRequestDto requestDto = new MemberAvatarUpdateRequestDto("1111");
+        MemberResponseDto responseDto = new MemberResponseDto(
+            testMemberId,
+            "원래 이름",
+            "1112",
+            LocalDateTime.now(),
+            LocalDateTime.now()
+        );
+        given(memberService.updateMemberAvatar(any(),
+            any(MemberAvatarUpdateRequestDto.class))).willReturn(responseDto);
+
+        // when & then
+        mockMvc.perform(put("/api/members/me/avatar")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.name").value("원래 이름"))
+            .andExpect(jsonPath("$.avatar").value("1112"));
+    }
+
+    @Test
+    @DisplayName("내 아바타 수정 API 실패 - 존재하지 않는 회원")
+    void updateMyAvatar_Fail_MemberNotFound() throws Exception {
+        // given
+        MemberAvatarUpdateRequestDto requestDto = new MemberAvatarUpdateRequestDto("1112");
+        given(memberService.updateMemberAvatar(any(),
+            any(MemberAvatarUpdateRequestDto.class)))
+            .willThrow(new BusinessException(
+                ErrorCode.MEMBER_NOT_FOUND,
+                "memberId: " + testMemberId
+            ));
+
+        // when & then
+        mockMvc.perform(put("/api/members/me/avatar")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
             .andDo(print())

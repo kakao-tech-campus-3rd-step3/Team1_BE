@@ -98,6 +98,14 @@ class ProjectParticipantService {
                 "projectId: " + projectId + ", memberId: " + memberId
             ));
 
+        // 프로젝트 소유자는 프로젝트를 나갈 수 없음
+        if (projectMembership.getRole() == ProjectRole.OWNER) {
+            throw new BusinessException(
+                ErrorCode.PROJECT_OWNER_CANNOT_LEAVE,
+                "projectId: " + projectId + ", memberId: " + memberId
+            );
+        }
+
         projectMembershipRepository.delete(projectMembership);
     }
 

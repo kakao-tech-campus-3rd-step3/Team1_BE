@@ -3,8 +3,9 @@ package knu.team1.be.boost.member.service;
 import java.util.UUID;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
+import knu.team1.be.boost.member.dto.MemberAvatarUpdateRequestDto;
+import knu.team1.be.boost.member.dto.MemberNameUpdateRequestDto;
 import knu.team1.be.boost.member.dto.MemberResponseDto;
-import knu.team1.be.boost.member.dto.MemberUpdateRequestDto;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,13 +29,30 @@ public class MemberService {
     }
 
     @Transactional
-    public MemberResponseDto updateMember(UUID memberId, MemberUpdateRequestDto requestDto) {
+    public MemberResponseDto updateMemberName(
+        UUID memberId,
+        MemberNameUpdateRequestDto requestDto
+    ) {
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new BusinessException(
                 ErrorCode.MEMBER_NOT_FOUND,
                 "memberId: " + memberId
             ));
-        member.updateMember(requestDto.name(), requestDto.avatar());
+        member.updateName(requestDto.name());
+        return MemberResponseDto.from(member);
+    }
+
+    @Transactional
+    public MemberResponseDto updateMemberAvatar(
+        UUID memberId,
+        MemberAvatarUpdateRequestDto requestDto
+    ) {
+        Member member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.MEMBER_NOT_FOUND,
+                "memberId: " + memberId
+            ));
+        member.updateAvatar(requestDto.avatar());
         return MemberResponseDto.from(member);
     }
 

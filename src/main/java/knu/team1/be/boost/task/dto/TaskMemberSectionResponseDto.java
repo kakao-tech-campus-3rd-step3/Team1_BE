@@ -1,5 +1,6 @@
 package knu.team1.be.boost.task.dto;
 
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +15,10 @@ public record TaskMemberSectionResponseDto(
     @Schema(description = "팀원 정보")
     MemberResponseDto member,
 
-    @Schema(description = "Task 목록")
+    @ArraySchema(
+        schema = @Schema(implementation = TaskResponseDto.class),
+        arraySchema = @Schema(description = "Task 목록")
+    )
     List<TaskResponseDto> tasks,
 
     @Schema(description = "현재 응답에 포함된 Task 개수", example = "20")
