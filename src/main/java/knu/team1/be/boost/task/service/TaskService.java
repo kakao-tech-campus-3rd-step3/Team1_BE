@@ -2,8 +2,10 @@ package knu.team1.be.boost.task.service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -24,7 +26,11 @@ import knu.team1.be.boost.projectMembership.repository.ProjectMembershipReposito
 import knu.team1.be.boost.tag.entity.Tag;
 import knu.team1.be.boost.tag.repository.TagRepository;
 import knu.team1.be.boost.task.dto.CursorInfo;
-import knu.team1.be.boost.task.dto.TaskApproveResponse;
+import knu.team1.be.boost.task.dto.MemberTaskStatusCount;
+import knu.team1.be.boost.task.dto.MemberTaskStatusCountResponseDto;
+import knu.team1.be.boost.task.dto.ProjectTaskStatusCount;
+import knu.team1.be.boost.task.dto.ProjectTaskStatusCountResponseDto;
+import knu.team1.be.boost.task.dto.TaskApproveResponseDto;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
 import knu.team1.be.boost.task.dto.TaskDetailResponseDto;
 import knu.team1.be.boost.task.dto.TaskMemberSectionResponseDto;
@@ -220,6 +226,55 @@ public class TaskService {
     }
 
     @Transactional(readOnly = true)
+    public ProjectTaskStatusCountResponseDto countTasksByStatusForProject(
+        UUID projectId,
+        UserPrincipalDto user
+    ) {
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
+            ));
+
+        accessPolicy.ensureProjectMember(project.getId(), user.id());
+
+        ProjectTaskStatusCount count = taskRepository.countByProjectGrouped(project.getId());
+
+        return ProjectTaskStatusCountResponseDto.from(
+            project.getId(),
+            count.todo(),
+            count.progress(),
+            count.review(),
+            count.done()
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public List<MemberTaskStatusCountResponseDto> countTasksByStatusForAllMembers(
+        UUID projectId,
+        UserPrincipalDto user
+    ) {
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
+            ));
+
+        accessPolicy.ensureProjectMember(project.getId(), user.id());
+
+        List<MemberTaskStatusCount> counts = taskRepository
+            .countTasksByStatusForAllMembersGrouped(project.getId());
+
+        return counts.stream()
+            .map(c -> MemberTaskStatusCountResponseDto.from(
+                project.getId(),
+                c.memberId(),
+                c.todo(),
+                c.progress(),
+                c.review()
+            ))
+            .toList();
+    }
+
+    @Transactional(readOnly = true)
     public TaskStatusSectionDto listByStatus(
         UUID projectId,
         UUID tagId,
@@ -257,7 +312,10 @@ public class TaskService {
             pageable
         );
 
-        return TaskStatusSectionDto.from(tasks, limit);
+        Map<UUID, Integer> fileCountMap = getFileCounts(tasks);
+        Map<UUID, Integer> commentCountMap = getCommentCounts(tasks);
+
+        return TaskStatusSectionDto.from(tasks, limit, fileCountMap, commentCountMap);
     }
 
     @Transactional(readOnly = true)
@@ -299,7 +357,10 @@ public class TaskService {
             pageable
         );
 
-        return TaskStatusSectionDto.from(tasks, limit);
+        Map<UUID, Integer> fileCountMap = getFileCounts(tasks);
+        Map<UUID, Integer> commentCountMap = getCommentCounts(tasks);
+
+        return TaskStatusSectionDto.from(tasks, safeLimit, fileCountMap, commentCountMap);
     }
 
     @Transactional(readOnly = true)
@@ -345,11 +406,20 @@ public class TaskService {
             pageable
         );
 
-        return TaskMemberSectionResponseDto.from(member, tasks, safeLimit);
+        Map<UUID, Integer> fileCountMap = getFileCounts(tasks);
+        Map<UUID, Integer> commentCountMap = getCommentCounts(tasks);
+
+        return TaskMemberSectionResponseDto.from(
+            member,
+            tasks,
+            safeLimit,
+            fileCountMap,
+            commentCountMap
+        );
     }
 
     @Transactional
-    public TaskApproveResponse approveTask(
+    public TaskApproveResponseDto approveTask(
         UUID projectId,
         UUID taskId,
         UserPrincipalDto user
@@ -381,8 +451,33 @@ public class TaskService {
 
         task.approve(member, projectMembers);
 
-        return TaskApproveResponse.from(task, projectMembers);
+        return TaskApproveResponseDto.from(task, projectMembers);
     }
+
+    private Map<UUID, Integer> getFileCounts(List<Task> tasks) {
+        if (tasks.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        List<UUID> taskIds = tasks.stream()
+            .map(Task::getId)
+            .toList();
+
+        return fileRepository.countByTaskIds(taskIds);
+    }
+
+    private Map<UUID, Integer> getCommentCounts(List<Task> tasks) {
+        if (tasks.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        List<UUID> taskIds = tasks.stream()
+            .map(Task::getId)
+            .toList();
+
+        return commentRepository.countByTaskIds(taskIds);
+    }
+
 
     private List<Tag> findTagsByIds(List<UUID> tagIds) {
         if (tagIds == null || tagIds.isEmpty()) {

@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.UUID;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.project.entity.Project;
+import knu.team1.be.boost.task.dto.MemberTaskStatusCount;
+import knu.team1.be.boost.task.dto.ProjectTaskStatusCount;
 import knu.team1.be.boost.task.entity.Task;
 import knu.team1.be.boost.task.entity.TaskStatus;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +18,34 @@ import org.springframework.data.repository.query.Param;
 public interface TaskRepository extends JpaRepository<Task, UUID> {
 
     boolean existsByIdAndAssigneesId(UUID taskId, UUID memberId);
+
+    @Query("""
+            SELECT new knu.team1.be.boost.task.dto.ProjectTaskStatusCount(
+                sum(case when t.status = 'TODO' then 1 else 0 end),
+                sum(case when t.status = 'PROGRESS' then 1 else 0 end),
+                sum(case when t.status = 'REVIEW' then 1 else 0 end),
+                sum(case when t.status = 'DONE' then 1 else 0 end)
+            )
+            FROM Task t
+            WHERE t.project.id = :projectId
+        """)
+    ProjectTaskStatusCount countByProjectGrouped(@Param("projectId") UUID projectId);
+
+    @Query("""
+            SELECT new knu.team1.be.boost.task.dto.MemberTaskStatusCount(
+                a.id,
+                sum(case when t.status = 'TODO' then 1 else 0 end),
+                sum(case when t.status = 'PROGRESS' then 1 else 0 end),
+                sum(case when t.status = 'REVIEW' then 1 else 0 end)
+            )
+            FROM Task t
+            JOIN t.assignees a
+            WHERE t.project.id = :projectId
+            GROUP BY a.id
+        """)
+    List<MemberTaskStatusCount> countTasksByStatusForAllMembersGrouped(
+        @Param("projectId") UUID projectId
+    );
 
     @Query("""
             SELECT DISTINCT t FROM Task t

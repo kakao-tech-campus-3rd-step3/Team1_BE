@@ -38,6 +38,12 @@ public record TaskResponseDto(
     @Schema(description = "필요 리뷰어 수 (0 이상)", example = "2")
     Integer requiredReviewerCount,
 
+    @Schema(description = "첨부 파일 수", example = "3")
+    Integer fileCount,
+
+    @Schema(description = "댓글 수", example = "7")
+    Integer commentCount,
+
     @ArraySchema(
         schema = @Schema(implementation = TagResponseDto.class),
         arraySchema = @Schema(description = "태그 목록")
@@ -58,6 +64,10 @@ public record TaskResponseDto(
 ) {
 
     public static TaskResponseDto from(Task task) {
+        return from(task, 0, 0);
+    }
+
+    public static TaskResponseDto from(Task task, int fileCount, int commentCount) {
         return new TaskResponseDto(
             task.getId(),
             task.getProject().getId(),
@@ -67,6 +77,8 @@ public record TaskResponseDto(
             task.getDueDate(),
             task.getUrgent(),
             task.getRequiredReviewerCount(),
+            fileCount,
+            commentCount,
             task.getTags().stream()
                 .map(TagResponseDto::from)
                 .toList(),

@@ -1,6 +1,7 @@
 package knu.team1.be.boost.task.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -10,9 +11,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import java.util.List;
 import java.util.UUID;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
-import knu.team1.be.boost.task.dto.TaskApproveResponse;
+import knu.team1.be.boost.task.dto.MemberTaskStatusCountResponseDto;
+import knu.team1.be.boost.task.dto.ProjectTaskStatusCountResponseDto;
+import knu.team1.be.boost.task.dto.TaskApproveResponseDto;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
 import knu.team1.be.boost.task.dto.TaskDetailResponseDto;
 import knu.team1.be.boost.task.dto.TaskMemberSectionResponseDto;
@@ -233,7 +237,7 @@ public interface TaskApi {
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "승인 성공",
-            content = @Content(schema = @Schema(implementation = TaskApproveResponse.class))
+            content = @Content(schema = @Schema(implementation = TaskApproveResponseDto.class))
         ),
         @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
         @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
@@ -241,10 +245,47 @@ public interface TaskApi {
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
     @PatchMapping("/projects/{projectId}/tasks/{taskId}/approve")
-    ResponseEntity<TaskApproveResponse> approveTask(
+    ResponseEntity<TaskApproveResponseDto> approveTask(
         @PathVariable UUID projectId,
         @PathVariable UUID taskId,
         @AuthenticationPrincipal UserPrincipalDto user
     );
 
+    @Operation(
+        summary = "프로젝트 상태별 할 일 개수 조회 (전체)",
+        description = "프로젝트 전체 Task 상태별 개수를 반환합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "조회 성공",
+            content = @Content(schema = @Schema(implementation = ProjectTaskStatusCountResponseDto.class))
+        ),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
+        @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
+        @ApiResponse(responseCode = "404", description = "프로젝트 없음", content = @Content),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
+    })
+    @GetMapping("/projects/{projectId}/tasks/status-count")
+    ResponseEntity<ProjectTaskStatusCountResponseDto> getProjectTaskStatusCount(
+        @PathVariable UUID projectId,
+        @AuthenticationPrincipal UserPrincipalDto user
+    );
+
+    @Operation(
+        summary = "프로젝트 멤버별 상태별 할 일 개수 조회",
+        description = "프로젝트의 각 멤버별 Task 상태별 개수를 반환합니다. DONE은 제외됩니다."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "조회 성공",
+            content = @Content(array = @ArraySchema(schema = @Schema(implementation = MemberTaskStatusCountResponseDto.class)))
+        ),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
+        @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
+        @ApiResponse(responseCode = "404", description = "프로젝트 없음", content = @Content),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
+    })
+    @GetMapping("/projects/{projectId}/tasks/members/status-count")
+    ResponseEntity<List<MemberTaskStatusCountResponseDto>> getMemberTaskStatusCount(
+        @PathVariable UUID projectId,
+        @AuthenticationPrincipal UserPrincipalDto user
+    );
 }

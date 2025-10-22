@@ -1,12 +1,18 @@
 package knu.team1.be.boost.file.repository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import knu.team1.be.boost.file.entity.File;
 import knu.team1.be.boost.task.entity.Task;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface FileRepository extends JpaRepository<File, UUID> {
 
     List<File> findAllByTask(Task task);
+
+    @Query("SELECT f.task.id, COUNT(f) FROM File f WHERE f.task.id IN :taskIds AND f.deleted = false GROUP BY f.task.id")
+    Map<UUID, Integer> countByTaskIds(@Param("taskIds") List<UUID> taskIds);
 }
