@@ -2,6 +2,7 @@ package knu.team1.be.boost.task.dto;
 
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -38,14 +39,19 @@ public record TaskMemberSectionResponseDto(
         Map<UUID, Integer> fileCountMap,
         Map<UUID, Integer> commentCountMap
     ) {
+        Map<UUID, Integer> safeFileCountMap =
+            fileCountMap == null ? Collections.emptyMap() : fileCountMap;
+        Map<UUID, Integer> safeCommentCountMap =
+            commentCountMap == null ? Collections.emptyMap() : commentCountMap;
+
         boolean hasNext = tasks.size() > limit;
         UUID nextCursor = null;
 
         List<TaskResponseDto> taskResponseDtos = tasks.stream()
             .limit(limit)
             .map(task -> {
-                int fileCount = fileCountMap.getOrDefault(task.getId(), 0);
-                int commentCount = commentCountMap.getOrDefault(task.getId(), 0);
+                int fileCount = safeFileCountMap.getOrDefault(task.getId(), 0);
+                int commentCount = safeCommentCountMap.getOrDefault(task.getId(), 0);
                 return TaskResponseDto.from(task, fileCount, commentCount);
             })
             .toList();
