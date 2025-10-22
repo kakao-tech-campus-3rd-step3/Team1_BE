@@ -30,7 +30,7 @@ import knu.team1.be.boost.task.dto.MemberTaskStatusCount;
 import knu.team1.be.boost.task.dto.MemberTaskStatusCountResponseDto;
 import knu.team1.be.boost.task.dto.ProjectTaskStatusCount;
 import knu.team1.be.boost.task.dto.ProjectTaskStatusCountResponseDto;
-import knu.team1.be.boost.task.dto.TaskApproveResponse;
+import knu.team1.be.boost.task.dto.TaskApproveResponseDto;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
 import knu.team1.be.boost.task.dto.TaskDetailResponseDto;
 import knu.team1.be.boost.task.dto.TaskMemberSectionResponseDto;
@@ -418,7 +418,7 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskApproveResponse approveTask(
+    public TaskApproveResponseDto approveTask(
         UUID projectId,
         UUID taskId,
         UserPrincipalDto user
@@ -450,7 +450,7 @@ public class TaskService {
 
         task.approve(member, projectMembers);
 
-        return TaskApproveResponse.from(task, projectMembers);
+        return TaskApproveResponseDto.from(task, projectMembers);
     }
 
     private Map<UUID, Integer> getFileCounts(List<Task> tasks) {

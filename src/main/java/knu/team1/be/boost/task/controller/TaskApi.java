@@ -16,7 +16,7 @@ import java.util.UUID;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.task.dto.MemberTaskStatusCountResponseDto;
 import knu.team1.be.boost.task.dto.ProjectTaskStatusCountResponseDto;
-import knu.team1.be.boost.task.dto.TaskApproveResponse;
+import knu.team1.be.boost.task.dto.TaskApproveResponseDto;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
 import knu.team1.be.boost.task.dto.TaskDetailResponseDto;
 import knu.team1.be.boost.task.dto.TaskMemberSectionResponseDto;
@@ -237,7 +237,7 @@ public interface TaskApi {
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "승인 성공",
-            content = @Content(schema = @Schema(implementation = TaskApproveResponse.class))
+            content = @Content(schema = @Schema(implementation = TaskApproveResponseDto.class))
         ),
         @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
         @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
@@ -245,7 +245,7 @@ public interface TaskApi {
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
     @PatchMapping("/projects/{projectId}/tasks/{taskId}/approve")
-    ResponseEntity<TaskApproveResponse> approveTask(
+    ResponseEntity<TaskApproveResponseDto> approveTask(
         @PathVariable UUID projectId,
         @PathVariable UUID taskId,
         @AuthenticationPrincipal UserPrincipalDto user

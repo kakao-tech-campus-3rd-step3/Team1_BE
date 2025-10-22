@@ -9,7 +9,7 @@ import java.util.UUID;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.task.dto.MemberTaskStatusCountResponseDto;
 import knu.team1.be.boost.task.dto.ProjectTaskStatusCountResponseDto;
-import knu.team1.be.boost.task.dto.TaskApproveResponse;
+import knu.team1.be.boost.task.dto.TaskApproveResponseDto;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
 import knu.team1.be.boost.task.dto.TaskDetailResponseDto;
 import knu.team1.be.boost.task.dto.TaskMemberSectionResponseDto;
@@ -152,12 +152,12 @@ public class TaskController implements TaskApi {
     }
 
     @Override
-    public ResponseEntity<TaskApproveResponse> approveTask(
+    public ResponseEntity<TaskApproveResponseDto> approveTask(
         @PathVariable UUID projectId,
         @PathVariable UUID taskId,
         @AuthenticationPrincipal UserPrincipalDto user
     ) {
-        TaskApproveResponse response = taskService.approveTask(projectId, taskId, user);
+        TaskApproveResponseDto response = taskService.approveTask(projectId, taskId, user);
         return ResponseEntity.ok(response);
     }
 
