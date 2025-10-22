@@ -64,26 +64,7 @@ public record TaskResponseDto(
 ) {
 
     public static TaskResponseDto from(Task task) {
-        return new TaskResponseDto(
-            task.getId(),
-            task.getProject().getId(),
-            task.getTitle(),
-            task.getDescription(),
-            task.getStatus(),
-            task.getDueDate(),
-            task.getUrgent(),
-            task.getRequiredReviewerCount(),
-            0,
-            0,
-            task.getTags().stream()
-                .map(TagResponseDto::from)
-                .toList(),
-            task.getAssignees().stream()
-                .map(MemberResponseDto::from)
-                .toList(),
-            task.getCreatedAt(),
-            LocalDateTime.now()
-        );
+        return from(task, 0, 0);
     }
 
     public static TaskResponseDto from(Task task, int fileCount, int commentCount) {
