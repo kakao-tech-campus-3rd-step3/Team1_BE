@@ -12,11 +12,13 @@ import java.util.stream.Collectors;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.comment.entity.Comment;
 import knu.team1.be.boost.comment.repository.CommentRepository;
+import knu.team1.be.boost.comment.repository.CommentRepository.CommentCount;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.common.policy.AccessPolicy;
 import knu.team1.be.boost.file.entity.File;
 import knu.team1.be.boost.file.repository.FileRepository;
+import knu.team1.be.boost.file.repository.FileRepository.FileCount;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
 import knu.team1.be.boost.project.entity.Project;
@@ -463,7 +465,9 @@ public class TaskService {
             .map(Task::getId)
             .toList();
 
-        return fileRepository.countByTaskIds(taskIds);
+        return fileRepository.countByTaskIds(taskIds)
+            .stream()
+            .collect(Collectors.toMap(FileCount::getTaskId, p -> (int) p.getCount()));
     }
 
     private Map<UUID, Integer> getCommentCounts(List<Task> tasks) {
@@ -475,9 +479,10 @@ public class TaskService {
             .map(Task::getId)
             .toList();
 
-        return commentRepository.countByTaskIds(taskIds);
+        return commentRepository.countByTaskIds(taskIds)
+            .stream()
+            .collect(Collectors.toMap(CommentCount::getTaskId, p -> (int) p.getCount()));
     }
-
 
     private List<Tag> findTagsByIds(List<UUID> tagIds) {
         if (tagIds == null || tagIds.isEmpty()) {
