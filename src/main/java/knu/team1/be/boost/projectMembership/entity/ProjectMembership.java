@@ -45,6 +45,9 @@ public class ProjectMembership extends SoftDeletableEntity {
     @Column(name = "role", nullable = false)
     private ProjectRole role;
 
+    @Column(name = "notification_enabled", nullable = false)
+    private boolean notificationEnabled = true;
+
     /**
      * 프로젝트와 멤버 간의 연관관계를 나타내는 ProjectMembership 엔티티를 생성합니다. 생성된 엔티티는 프로젝트와 멤버의 컬렉션에 자동으로 추가됩니다.
      *
@@ -56,11 +59,13 @@ public class ProjectMembership extends SoftDeletableEntity {
     public static ProjectMembership createProjectMembership(
         Project project,
         Member member,
+        boolean notificationEnabled,
         ProjectRole role
     ) {
         ProjectMembership projectMembership = ProjectMembership.builder()
             .project(project)
             .member(member)
+            .notificationEnabled(notificationEnabled)
             .role(role)
             .build();
 

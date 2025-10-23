@@ -25,6 +25,7 @@ import knu.team1.be.boost.common.policy.AccessPolicy;
 import knu.team1.be.boost.file.repository.FileRepository;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
+import knu.team1.be.boost.notification.service.NotificationService;
 import knu.team1.be.boost.project.entity.Project;
 import knu.team1.be.boost.project.repository.ProjectRepository;
 import knu.team1.be.boost.projectMembership.repository.ProjectMembershipRepository;
@@ -62,6 +63,8 @@ class TaskServiceTest {
     @Mock
     ProjectRepository projectRepository;
     @Mock
+    NotificationService notificationService;
+    @Mock
     ProjectMembershipRepository projectMembershipRepository;
     @Mock
     AccessPolicy accessPolicy;
@@ -90,6 +93,7 @@ class TaskServiceTest {
             commentRepository,
             projectRepository,
             projectMembershipRepository,
+            notificationService,
             accessPolicy
         );
     }
@@ -117,7 +121,8 @@ class TaskServiceTest {
             UUID t1 = UUID.randomUUID();
             UUID t2 = UUID.randomUUID();
             given(tagRepository.findAllById(anyList()))
-                .willReturn(List.of(Fixtures.tag(t1, "태그1", project), Fixtures.tag(t2, "태그2", project)));
+                .willReturn(
+                    List.of(Fixtures.tag(t1, "태그1", project), Fixtures.tag(t2, "태그2", project)));
 
             TaskCreateRequestDto request = Fixtures.reqCreate(
                 "1회차 기술 멘토링 피드백 반영",

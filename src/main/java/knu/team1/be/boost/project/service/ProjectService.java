@@ -50,6 +50,7 @@ public class ProjectService {
         ProjectMembership projectMembership = ProjectMembership.createProjectMembership(
             savedProject,
             member,
+            true,
             ProjectRole.OWNER
         );
         projectMembershipRepository.save(projectMembership);
