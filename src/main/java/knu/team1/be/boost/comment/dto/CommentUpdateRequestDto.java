@@ -1,6 +1,7 @@
 package knu.team1.be.boost.comment.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 
 @Schema(description = "댓글 수정 요청 DTO (PUT)")
@@ -13,6 +14,7 @@ public record CommentUpdateRequestDto(
     Boolean isAnonymous,
 
     @Schema(description = "첨부 파일 정보")
+    @Valid
     FileInfoRequestDto fileInfo
 ) {
 
