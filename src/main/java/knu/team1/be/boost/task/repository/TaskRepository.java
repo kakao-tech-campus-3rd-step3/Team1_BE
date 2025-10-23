@@ -234,4 +234,26 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
         Pageable pageable
     );
 
+    @Query("""
+            SELECT
+                pm.member.id,
+                p.name,
+                t.title
+            FROM Task t
+            JOIN t.assignees a
+            JOIN a.projectMemberships pm
+            JOIN pm.project p
+            WHERE t.dueDate = :targetDate
+              AND pm.notificationEnabled = true
+        """)
+    List<DueTask> findDueTasksByMember(@Param("targetDate") LocalDate targetDate);
+
+    interface DueTask {
+
+        UUID getMemberId();
+
+        String getProjectName();
+
+        String getTaskTitle();
+    }
 }
