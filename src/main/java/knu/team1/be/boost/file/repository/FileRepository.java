@@ -19,6 +19,6 @@ public interface FileRepository extends JpaRepository<File, UUID> {
 
         UUID getTaskId();
 
-        long getCount();
+        Long getCount();
     }
 }

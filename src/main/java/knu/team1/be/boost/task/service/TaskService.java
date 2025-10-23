@@ -314,8 +314,8 @@ public class TaskService {
             pageable
         );
 
-        Map<UUID, Integer> fileCountMap = getFileCounts(tasks);
-        Map<UUID, Integer> commentCountMap = getCommentCounts(tasks);
+        Map<UUID, Long> fileCountMap = getFileCounts(tasks);
+        Map<UUID, Long> commentCountMap = getCommentCounts(tasks);
 
         return TaskStatusSectionDto.from(tasks, limit, fileCountMap, commentCountMap);
     }
@@ -359,8 +359,8 @@ public class TaskService {
             pageable
         );
 
-        Map<UUID, Integer> fileCountMap = getFileCounts(tasks);
-        Map<UUID, Integer> commentCountMap = getCommentCounts(tasks);
+        Map<UUID, Long> fileCountMap = getFileCounts(tasks);
+        Map<UUID, Long> commentCountMap = getCommentCounts(tasks);
 
         return TaskStatusSectionDto.from(tasks, safeLimit, fileCountMap, commentCountMap);
     }
@@ -408,8 +408,8 @@ public class TaskService {
             pageable
         );
 
-        Map<UUID, Integer> fileCountMap = getFileCounts(tasks);
-        Map<UUID, Integer> commentCountMap = getCommentCounts(tasks);
+        Map<UUID, Long> fileCountMap = getFileCounts(tasks);
+        Map<UUID, Long> commentCountMap = getCommentCounts(tasks);
 
         return TaskMemberSectionResponseDto.from(
             member,
@@ -456,7 +456,7 @@ public class TaskService {
         return TaskApproveResponseDto.from(task, projectMembers);
     }
 
-    private Map<UUID, Integer> getFileCounts(List<Task> tasks) {
+    private Map<UUID, Long> getFileCounts(List<Task> tasks) {
         if (tasks.isEmpty()) {
             return Collections.emptyMap();
         }
@@ -467,10 +467,10 @@ public class TaskService {
 
         return fileRepository.countByTaskIds(taskIds)
             .stream()
-            .collect(Collectors.toMap(FileCount::getTaskId, p -> (int) p.getCount()));
+            .collect(Collectors.toMap(FileCount::getTaskId, FileCount::getCount));
     }
 
-    private Map<UUID, Integer> getCommentCounts(List<Task> tasks) {
+    private Map<UUID, Long> getCommentCounts(List<Task> tasks) {
         if (tasks.isEmpty()) {
             return Collections.emptyMap();
         }
@@ -481,7 +481,7 @@ public class TaskService {
 
         return commentRepository.countByTaskIds(taskIds)
             .stream()
-            .collect(Collectors.toMap(CommentCount::getTaskId, p -> (int) p.getCount()));
+            .collect(Collectors.toMap(CommentCount::getTaskId, CommentCount::getCount));
     }
 
     private List<Tag> findTagsByIds(List<UUID> tagIds) {

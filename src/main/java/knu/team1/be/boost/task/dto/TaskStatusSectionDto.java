@@ -29,12 +29,12 @@ public record TaskStatusSectionDto(
     public static TaskStatusSectionDto from(
         List<Task> tasks,
         int limit,
-        Map<UUID, Integer> fileCountMap,
-        Map<UUID, Integer> commentCountMap
+        Map<UUID, Long> fileCountMap,
+        Map<UUID, Long> commentCountMap
     ) {
-        Map<UUID, Integer> safeFileCountMap =
+        Map<UUID, Long> safeFileCountMap =
             fileCountMap == null ? Collections.emptyMap() : fileCountMap;
-        Map<UUID, Integer> safeCommentCountMap =
+        Map<UUID, Long> safeCommentCountMap =
             commentCountMap == null ? Collections.emptyMap() : commentCountMap;
 
         boolean hasNext = tasks.size() > limit;
@@ -43,8 +43,8 @@ public record TaskStatusSectionDto(
         List<TaskResponseDto> taskResponseDtos = tasks.stream()
             .limit(limit)
             .map(task -> {
-                int fileCount = safeFileCountMap.getOrDefault(task.getId(), 0);
-                int commentCount = safeCommentCountMap.getOrDefault(task.getId(), 0);
+                int fileCount = safeFileCountMap.getOrDefault(task.getId(), 0L).intValue();
+                int commentCount = safeCommentCountMap.getOrDefault(task.getId(), 0L).intValue();
                 return TaskResponseDto.from(task, fileCount, commentCount);
             })
             .toList();

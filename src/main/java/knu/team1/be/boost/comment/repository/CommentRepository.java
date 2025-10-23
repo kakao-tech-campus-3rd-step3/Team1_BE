@@ -18,6 +18,6 @@ public interface CommentRepository extends JpaRepository<Comment, UUID> {
 
         UUID getTaskId();
 
-        long getCount();
+        Long getCount();
     }
 }
