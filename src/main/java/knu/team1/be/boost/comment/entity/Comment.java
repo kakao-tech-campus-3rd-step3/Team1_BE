@@ -24,7 +24,7 @@ import org.hibernate.annotations.SQLRestriction;
 @SuperBuilder
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@SQLDelete(sql = "UPDATE tasks SET deleted = true, deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
+@SQLDelete(sql = "UPDATE comments SET deleted = true, deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
 @SQLRestriction("deleted = false")
 @Table(name = "comments")
 public class Comment extends SoftDeletableEntity {
