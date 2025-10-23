@@ -21,6 +21,7 @@ import knu.team1.be.boost.file.repository.FileRepository;
 import knu.team1.be.boost.file.repository.FileRepository.FileCount;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
+import knu.team1.be.boost.notification.service.NotificationService;
 import knu.team1.be.boost.project.entity.Project;
 import knu.team1.be.boost.project.repository.ProjectRepository;
 import knu.team1.be.boost.projectMembership.entity.ProjectMembership;
@@ -62,6 +63,8 @@ public class TaskService {
     private final CommentRepository commentRepository;
     private final ProjectRepository projectRepository;
     private final ProjectMembershipRepository projectMembershipRepository;
+
+    private final NotificationService notificationService;
 
     private final AccessPolicy accessPolicy;
 
@@ -192,6 +195,10 @@ public class TaskService {
         accessPolicy.ensureTaskAssignee(task.getId(), user.id());
 
         task.changeStatus(request.status());
+
+        if (request.status() == TaskStatus.REVIEW) {
+            notificationService.notifyTaskReview(project, task);
+        }
 
         return TaskResponseDto.from(task);
     }
@@ -452,6 +459,10 @@ public class TaskService {
             ));
 
         task.approve(member, projectMembers);
+
+        if (task.getStatus() == TaskStatus.DONE) {
+            notificationService.notifyTaskApprove(project, task);
+        }
 
         return TaskApproveResponseDto.from(task, projectMembers);
     }
