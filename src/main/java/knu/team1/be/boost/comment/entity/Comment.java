@@ -53,4 +53,12 @@ public class Comment extends SoftDeletableEntity {
     public void updateContent(String content) {
         this.content = content;
     }
+
+    public void updateIsAnonymous(Boolean isAnonymous) {
+        this.isAnonymous = isAnonymous;
+    }
+
+    public void updateFileInfo(FileInfo fileInfo) {
+        this.fileInfo = fileInfo;
+    }
 }
