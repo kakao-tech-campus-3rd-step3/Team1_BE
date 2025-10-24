@@ -11,4 +11,6 @@ public interface WebPushRepository extends JpaRepository<WebPushSubscription, UU
     Optional<WebPushSubscription> findByMemberIdAndDeviceInfo(UUID memberId, String deviceInfo);
 
     List<WebPushSubscription> findByMemberId(UUID memberId);
+
+    Optional<WebPushSubscription> findByWebPushUrl(String webPushUrl);
 }
