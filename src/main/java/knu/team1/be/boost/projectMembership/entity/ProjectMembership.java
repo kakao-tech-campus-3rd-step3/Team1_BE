@@ -13,6 +13,7 @@ import knu.team1.be.boost.common.entity.SoftDeletableEntity;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.project.entity.Project;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -46,6 +47,7 @@ public class ProjectMembership extends SoftDeletableEntity {
     private ProjectRole role;
 
     @Column(name = "notification_enabled", nullable = false)
+    @Builder.Default
     private boolean notificationEnabled = true;
 
     /**

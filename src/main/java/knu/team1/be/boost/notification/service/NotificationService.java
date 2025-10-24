@@ -19,6 +19,7 @@ import knu.team1.be.boost.projectMembership.entity.ProjectMembership;
 import knu.team1.be.boost.task.entity.Task;
 import knu.team1.be.boost.task.repository.TaskRepository;
 import knu.team1.be.boost.task.repository.TaskRepository.DueTask;
+import knu.team1.be.boost.webPush.service.WebPushClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,8 @@ public class NotificationService {
     private final MemberRepository memberRepository;
     private final TaskRepository taskRepository;
     private final NotificationRepository notificationRepository;
+
+    private final WebPushClient webPushClient;
 
     @Transactional
     public void notifyTaskReview(Project project, Task task) {
@@ -113,6 +116,8 @@ public class NotificationService {
             .build();
 
         notificationRepository.save(notification);
+
+        webPushClient.sendNotification(member, title, message);
     }
 
 }
