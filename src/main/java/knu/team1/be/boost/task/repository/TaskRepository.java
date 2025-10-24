@@ -236,9 +236,9 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
 
     @Query("""
             SELECT
-                pm.member.id,
-                p.name,
-                t.title
+                pm.member.id AS memberId,
+                p.name AS projectName,
+                t.title AS taskTitle
             FROM Task t
             JOIN t.assignees a
             JOIN a.projectMemberships pm
