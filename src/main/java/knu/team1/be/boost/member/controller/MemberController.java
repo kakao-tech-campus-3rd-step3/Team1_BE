@@ -2,8 +2,9 @@ package knu.team1.be.boost.member.controller;
 
 import jakarta.validation.Valid;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
+import knu.team1.be.boost.member.dto.MemberAvatarUpdateRequestDto;
+import knu.team1.be.boost.member.dto.MemberNameUpdateRequestDto;
 import knu.team1.be.boost.member.dto.MemberResponseDto;
-import knu.team1.be.boost.member.dto.MemberUpdateRequestDto;
 import knu.team1.be.boost.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -26,11 +27,21 @@ public class MemberController implements MemberApi {
     }
 
     @Override
-    public ResponseEntity<MemberResponseDto> updateMyInfo(
-        @Valid @RequestBody MemberUpdateRequestDto requestDto,
+    public ResponseEntity<MemberResponseDto> updateMyName(
+        @Valid @RequestBody MemberNameUpdateRequestDto requestDto,
         @AuthenticationPrincipal UserPrincipalDto user
     ) {
-        MemberResponseDto updatedMemberInfo = memberService.updateMember(user.id(), requestDto);
+        MemberResponseDto updatedMemberInfo = memberService.updateMemberName(user.id(), requestDto);
+        return ResponseEntity.ok(updatedMemberInfo);
+    }
+
+    @Override
+    public ResponseEntity<MemberResponseDto> updateMyAvatar(
+        @Valid @RequestBody MemberAvatarUpdateRequestDto requestDto,
+        @AuthenticationPrincipal UserPrincipalDto user
+    ) {
+        MemberResponseDto updatedMemberInfo = memberService.updateMemberAvatar(user.id(),
+            requestDto);
         return ResponseEntity.ok(updatedMemberInfo);
     }
 

@@ -1,6 +1,7 @@
 package knu.team1.be.boost.comment.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -34,7 +35,9 @@ public interface CommentApi {
         @ApiResponse(
             responseCode = "200",
             description = "댓글 목록 조회 성공",
-            content = @Content(schema = @Schema(implementation = List.class))
+            content = @Content(
+                array = @ArraySchema(schema = @Schema(implementation = CommentResponseDto.class))
+            )
         ),
         @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
         @ApiResponse(responseCode = "403", description = "프로젝트에 접근할 권한이 없음", content = @Content),

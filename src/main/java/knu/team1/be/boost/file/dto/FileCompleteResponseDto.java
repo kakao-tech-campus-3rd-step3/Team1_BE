@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import knu.team1.be.boost.file.entity.File;
+import knu.team1.be.boost.file.entity.FileStatus;
 
 @Schema(description = "파일 업로드 완료 응답 DTO")
 public record FileCompleteResponseDto(
@@ -14,8 +15,8 @@ public record FileCompleteResponseDto(
     @Schema(description = "업로드 작업 ID (UUID)", example = "c8b0a2a7-1a89-4c5c-b4d2-3c9c6c59a1d4")
     UUID taskId,
 
-    @Schema(description = "파일 상태", example = "completed")
-    String status,
+    @Schema(description = "파일 상태", example = "COMPLETED")
+    FileStatus status,
 
     @Schema(description = "완료 시각", type = "string", format = "date-time", example = "2025-09-05T12:34:56")
     LocalDateTime completedAt
@@ -25,7 +26,7 @@ public record FileCompleteResponseDto(
         return new FileCompleteResponseDto(
             file.getId(),
             taskId,
-            file.getStatus().name().toLowerCase(),
+            file.getStatus(),
             file.getCompletedAt()
         );
     }

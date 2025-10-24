@@ -15,11 +15,15 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     show-sql: false
     properties:
       hibernate:
         format_sql: true
+
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
 
   security:
     oauth2:

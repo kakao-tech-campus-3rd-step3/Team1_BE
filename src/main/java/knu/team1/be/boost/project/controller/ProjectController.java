@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
+import knu.team1.be.boost.member.dto.MemberResponseDto;
 import knu.team1.be.boost.project.dto.ProjectCreateRequestDto;
 import knu.team1.be.boost.project.dto.ProjectResponseDto;
 import knu.team1.be.boost.project.dto.ProjectUpdateRequestDto;
@@ -67,5 +68,17 @@ public class ProjectController implements ProjectApi {
     ) {
         projectService.deleteProject(projectId, user.id());
         return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    public ResponseEntity<List<MemberResponseDto>> getProjectMembers(
+        UUID projectId,
+        @AuthenticationPrincipal UserPrincipalDto user
+    ) {
+        List<MemberResponseDto> memberResponseDtos = projectService.getProjectMembers(
+            projectId,
+            user.id()
+        );
+        return ResponseEntity.ok(memberResponseDtos);
     }
 }

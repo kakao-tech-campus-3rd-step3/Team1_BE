@@ -7,7 +7,7 @@ import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.task.entity.Task;
 
 @Schema(description = "할 일 승인 응답 DTO")
-public record TaskApproveResponse(
+public record TaskApproveResponseDto(
 
     @Schema(description = "할 일 ID", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
     UUID taskId,
@@ -23,8 +23,8 @@ public record TaskApproveResponse(
 
 ) {
 
-    public static TaskApproveResponse from(Task task, List<Member> projectMembers) {
-        return new TaskApproveResponse(
+    public static TaskApproveResponseDto from(Task task, List<Member> projectMembers) {
+        return new TaskApproveResponseDto(
             task.getId(),
             task.getStatus().name(),
             task.getApprovers().size(),

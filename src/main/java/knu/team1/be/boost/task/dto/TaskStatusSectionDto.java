@@ -1,13 +1,19 @@
 package knu.team1.be.boost.task.dto;
 
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import knu.team1.be.boost.task.entity.Task;
 
 @Schema(description = "커서 기반 상태 리스트 응답")
 public record TaskStatusSectionDto(
-    @Schema(description = "Task 목록")
+    @ArraySchema(
+        schema = @Schema(implementation = TaskResponseDto.class),
+        arraySchema = @Schema(description = "Task 목록")
+    )
     List<TaskResponseDto> tasks,
 
     @Schema(description = "현재 응답에 포함된 Task 개수", example = "20")
@@ -20,13 +26,27 @@ public record TaskStatusSectionDto(
     Boolean hasNext
 ) {
 
-    public static TaskStatusSectionDto from(List<Task> tasks, int limit) {
+    public static TaskStatusSectionDto from(
+        List<Task> tasks,
+        int limit,
+        Map<UUID, Long> fileCountMap,
+        Map<UUID, Long> commentCountMap
+    ) {
+        Map<UUID, Long> safeFileCountMap =
+            fileCountMap == null ? Collections.emptyMap() : fileCountMap;
+        Map<UUID, Long> safeCommentCountMap =
+            commentCountMap == null ? Collections.emptyMap() : commentCountMap;
+
         boolean hasNext = tasks.size() > limit;
         UUID nextCursor = null;
 
         List<TaskResponseDto> taskResponseDtos = tasks.stream()
             .limit(limit)
-            .map(TaskResponseDto::from)
+            .map(task -> {
+                int fileCount = safeFileCountMap.getOrDefault(task.getId(), 0L).intValue();
+                int commentCount = safeCommentCountMap.getOrDefault(task.getId(), 0L).intValue();
+                return TaskResponseDto.from(task, fileCount, commentCount);
+            })
             .toList();
 
         if (hasNext && !taskResponseDtos.isEmpty()) {

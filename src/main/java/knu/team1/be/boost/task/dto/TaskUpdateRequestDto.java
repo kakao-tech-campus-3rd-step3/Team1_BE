@@ -1,5 +1,6 @@
 package knu.team1.be.boost.task.dto;
 
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -39,10 +40,16 @@ public record TaskUpdateRequestDto(
     @Min(value = 0, message = "필요 리뷰어 수는 0 이상이어야 합니다.")
     Integer requiredReviewerCount,
 
-    @Schema(description = "태그 UUID 목록", example = "[\"770e8400-e29b-41d4-a716-446655440000\", \"770e8400-e29b-41d4-a716-446655440111\"]")
+    @ArraySchema(
+        schema = @Schema(implementation = UUID.class),
+        arraySchema = @Schema(description = "태그 UUID 목록")
+    )
     List<UUID> tags,
 
-    @Schema(description = "담당자 UUID 목록", example = "[\"550e8400-e29b-41d4-a716-446655440000\"]")
+    @ArraySchema(
+        schema = @Schema(implementation = UUID.class),
+        arraySchema = @Schema(description = "담당자 UUID 목록")
+    )
     List<UUID> assignees
 ) {
 

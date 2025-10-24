@@ -1,5 +1,6 @@
 package knu.team1.be.boost.task.dto;
 
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -42,20 +43,28 @@ public record TaskDetailResponseDto(
     @Schema(description = "필요 리뷰어 수", example = "2")
     Integer requiredReviewerCount,
 
-    @Schema(
-        description = "태그 목록",
-        example = "[{\"tagId\":\"770e8400-e29b-41d4-a716-446655440000\",\"name\":\"피드백\"}," +
-            "{\"tagId\":\"770e8400-e29b-41d4-a716-446655440111\",\"name\":\"버그\"}]"
+    @ArraySchema(
+        schema = @Schema(implementation = TagResponseDto.class),
+        arraySchema = @Schema(description = "태그 목록")
     )
     List<TagResponseDto> tags,
 
-    @Schema(description = "담당자 목록", example = "[{\"id\":\"550e8400-e29b-41d4-a716-446655440000\",\"name\":\"홍길동\"}]")
+    @ArraySchema(
+        schema = @Schema(implementation = MemberResponseDto.class),
+        arraySchema = @Schema(description = "담당자 목록")
+    )
     List<MemberResponseDto> assignees,
 
-    @Schema(description = "댓글 목록", example = "[{\"id\":\"e2f8c7d0-4b0a-4b6f-9e4a-1c2d3f4a5b6c\",\"content\":\"좋습니다.\",\"authorName\":\"홍길동\"}]")
+    @ArraySchema(
+        schema = @Schema(implementation = CommentResponseDto.class),
+        arraySchema = @Schema(description = "댓글 목록")
+    )
     List<CommentResponseDto> comments,
 
-    @Schema(description = "첨부 파일 목록", example = "[{\"id\":\"2f8f2a2e-4a63-4f3a-8d1b-2a4de6d6f8aa\",\"filename\":\"피드백.pdf\",\"contentType\":\"application/pdf\",\"sizeBytes\":102400,\"type\":\"PDF\"}]")
+    @ArraySchema(
+        schema = @Schema(implementation = FileResponseDto.class),
+        arraySchema = @Schema(description = "첨부 파일 목록")
+    )
     List<FileResponseDto> files,
 
     @Schema(description = "할 일 생성일", example = "2025-10-01T15:30:00")

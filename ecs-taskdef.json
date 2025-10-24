@@ -68,6 +68,10 @@
         {
           "name": "AWS_S3_BUCKET",
           "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:876253814177:secret:boost-secrets-Zbelb3:AWS_S3_BUCKET::"
+        },
+        {
+          "name": "OPENAI_API_KEY",
+          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:876253814177:secret:boost-secrets-Zbelb3:OPENAI_API_KEY::"
         }
       ],
       "memoryReservation": 512,

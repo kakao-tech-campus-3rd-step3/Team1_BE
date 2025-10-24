@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
+import knu.team1.be.boost.member.dto.MemberResponseDto;
 import knu.team1.be.boost.project.dto.ProjectCreateRequestDto;
 import knu.team1.be.boost.project.dto.ProjectResponseDto;
 import knu.team1.be.boost.project.dto.ProjectUpdateRequestDto;
@@ -122,6 +123,26 @@ public interface ProjectApi {
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
     ResponseEntity<Void> deleteProject(
+        @PathVariable UUID projectId,
+        @AuthenticationPrincipal UserPrincipalDto user
+    );
+
+    @GetMapping("/{projectId}/members")
+    @Operation(summary = "프로젝트 멤버 조회", description = "프로젝트에 참여하고 있는 "
+        + "멤버 리스트를 조회합니다. 프로젝트에 참여하고 있는 사람만 조회가 가능합니다.")
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "프로젝트 멤버 리스트 조회 성공",
+            content = @Content(array = @ArraySchema(schema = @Schema(implementation = MemberResponseDto.class)))
+        ),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
+        @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
+        @ApiResponse(responseCode = "404", description = "프로젝트 없음", content = @Content),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
+    })
+    ResponseEntity<List<MemberResponseDto>> getProjectMembers(
         @PathVariable UUID projectId,
         @AuthenticationPrincipal UserPrincipalDto user
     );
