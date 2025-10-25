@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web Push 테스트</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+
+    .status {
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+
+    .status.info {
+      background: #e3f2fd;
+      color: #1976d2;
+    }
+
+    .status.success {
+      background: #e8f5e9;
+      color: #388e3c;
+    }
+
+    .status.error {
+      background: #ffebee;
+      color: #c62828;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+    }
+
+    button {
+      flex: 1;
+      padding: 15px 25px;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    #subscribeBtn {
+      background: #4CAF50;
+      color: white;
+    }
+
+    #subscribeBtn:hover:not(:disabled) {
+      background: #45a049;
+    }
+
+    .push-form {
+      background: #f5f5f5;
+      padding: 25px;
+      border-radius: 10px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #333;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    input[type="text"],
+    textarea {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.3s ease;
+    }
+
+    input[type="text"]:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    #sendPushBtn {
+      width: 100%;
+      background: #667eea;
+      color: white;
+    }
+
+    #sendPushBtn:hover:not(:disabled) {
+      background: #5568d3;
+    }
+
+    .info-box {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 15px;
+      margin-top: 20px;
+      border-radius: 5px;
+      font-size: 13px;
+      color: #856404;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>🔔 Web Push 테스트</h1>
+  <p class="subtitle">Spring Boot + Web Push API 테스트 페이지</p>
+
+  <div id="status" class="status info">
+    Service Worker를 등록하는 중...
+  </div>
+
+  <div class="button-group">
+    <button id="subscribeBtn" disabled>🔔 알림 구독하기</button>
+  </div>
+
+  <div class="push-form">
+    <h2 style="margin-bottom: 20px; color: #333; font-size: 20px;">푸시 알림 보내기</h2>
+
+    <div class="form-group">
+      <label for="title">제목</label>
+      <input type="text" id="title" placeholder="알림 제목을 입력하세요" value="테스트 알림">
+    </div>
+
+    <div class="form-group">
+      <label for="body">내용</label>
+      <textarea id="body" placeholder="알림 내용을 입력하세요">Web Push 테스트 메시지입니다!</textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="icon">아이콘 URL (선택사항)</label>
+      <input type="text" id="icon" placeholder="https://example.com/icon.png (비워두거나 유효한 URL 입력)"
+             value="">
+    </div>
+
+    <button id="sendPushBtn">📤 푸시 알림 전송</button>
+  </div>
+
+  <div class="info-box">
+    <strong>💡 사용 방법:</strong><br>
+    1. "알림 구독하기" 버튼을 클릭하여 푸시 알림을 허용하세요<br>
+    2. 제목과 내용을 입력하세요<br>
+    3. "푸시 알림 전송" 버튼을 클릭하세요<br>
+    4. 푸시 알림을 받으실 수 있습니다!
+  </div>
+</div>
+
+<script>
+  const statusDiv = document.getElementById('status');
+  const subscribeBtn = document.getElementById('subscribeBtn');
+  const sendPushBtn = document.getElementById('sendPushBtn');
+  const titleInput = document.getElementById('title');
+  const bodyInput = document.getElementById('body');
+  const iconInput = document.getElementById('icon');
+
+  let isSubscribed = false;
+
+  // Service Worker 등록
+  if ('serviceWorker' in navigator && 'PushManager' in window) {
+    navigator.serviceWorker.register('/sw.js')
+    .then(function (registration) {
+      console.log('Service Worker 등록 성공:', registration);
+      statusDiv.textContent = '✅ Service Worker 등록 완료! 알림 구독을 진행하세요.';
+      statusDiv.className = 'status success';
+      subscribeBtn.disabled = false;
+    })
+    .catch(function (error) {
+      console.error('Service Worker 등록 실패:', error);
+      statusDiv.textContent = '❌ Service Worker 등록 실패: ' + error.message;
+      statusDiv.className = 'status error';
+    });
+  } else {
+    statusDiv.textContent = '❌ 이 브라우저는 Push API를 지원하지 않습니다.';
+    statusDiv.className = 'status error';
+  }
+
+  // URL Base64를 Uint8Array로 변환
+  function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding)
+    .replace(/\-/g, '+')
+    .replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+  }
+
+  // 알림 구독
+  subscribeBtn.addEventListener('click', async function () {
+    if (isSubscribed) {
+      statusDiv.textContent = '이미 구독되어 있습니다.';
+      statusDiv.className = 'status info';
+      return;
+    }
+
+    try {
+      // Public Key 가져오기
+      const keyResponse = await fetch('/api/publicKey');
+      const keyData = await keyResponse.json();
+      const publicKey = keyData.publicKey;
+
+      // Service Worker 구독
+      const registration = await navigator.serviceWorker.ready;
+      const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(publicKey)
+      });
+
+      // 서버에 구독 정보 전송
+      const response = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(subscription)
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        isSubscribed = true;
+        subscribeBtn.textContent = '✅ 구독 완료';
+        subscribeBtn.disabled = true;
+        statusDiv.textContent = '✅ ' + result.message + ' (구독자 수: ' + result.subscriberCount + ')';
+        statusDiv.className = 'status success';
+      } else {
+        throw new Error(result.error || '구독 실패');
+      }
+    } catch (error) {
+      console.error('구독 실패:', error);
+      statusDiv.textContent = '❌ 구독 실패: ' + error.message;
+      statusDiv.className = 'status error';
+    }
+  });
+
+  // 푸시 알림 전송
+  sendPushBtn.addEventListener('click', async function () {
+    const title = titleInput.value.trim();
+    const body = bodyInput.value.trim();
+    const icon = iconInput.value.trim();
+
+    if (!title || !body) {
+      alert('제목과 내용을 입력해주세요!');
+      return;
+    }
+
+    // 알림 메시지 구성 (icon은 유효한 URL인 경우만 포함)
+    const message = {
+      title: title,
+      body: body,
+      icon: icon || '' // 빈 문자열로 보냄
+    };
+
+    try {
+      const response = await fetch('/api/push', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(message)
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        statusDiv.textContent = '✅ ' + result.message +
+            (result.sentTo ? ' (전송 대상: ' + result.sentTo + '명)' : '');
+        statusDiv.className = 'status success';
+      } else {
+        throw new Error(result.error || '전송 실패');
+      }
+    } catch (error) {
+      console.error('푸시 전송 실패:', error);
+      statusDiv.textContent = '❌ 푸시 전송 실패: ' + error.message;
+      statusDiv.className = 'status error';
+    }
+  });
+</script>
+</body>
+</html>
+
