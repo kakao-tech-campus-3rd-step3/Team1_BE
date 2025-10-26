@@ -16,6 +16,9 @@ public record MemberResponseDto(
     @Schema(description = "회원 아바타", example = "1111")
     String avatar,
 
+    @Schema(description = "회원 배경색", example = "#FF5733")
+    String backgroundColor,
+
     @Schema(description = "계정 생성일", example = "2025-09-05T15:00:00")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
     LocalDateTime createdAt,
@@ -30,6 +33,7 @@ public record MemberResponseDto(
             member.getId(),
             member.getName(),
             member.getAvatar(),
+            member.getBackgroundColor(),
             member.getCreatedAt(),
             member.getUpdatedAt()
         );

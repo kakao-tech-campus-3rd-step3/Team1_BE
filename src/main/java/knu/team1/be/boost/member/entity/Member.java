@@ -43,6 +43,9 @@ public class Member extends SoftDeletableEntity {
     @Column(name = "avatar", nullable = false)
     private String avatar;
 
+    @Column(name = "background_color", nullable = false)
+    private String backgroundColor;
+
     @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
     @Builder.Default
     private List<ProjectMembership> projectMemberships = new ArrayList<>();
@@ -53,5 +56,9 @@ public class Member extends SoftDeletableEntity {
 
     public void updateAvatar(String avatar) {
         this.avatar = avatar;
+    }
+
+    public void updateBackgroundColor(String backgroundColor) {
+        this.backgroundColor = backgroundColor;
     }
 }

@@ -64,13 +64,13 @@ public interface MemberApi {
     );
 
     @Operation(
-        summary = "내 아바타 수정",
-        description = "로그인한 회원의 아바타를 수정합니다."
+        summary = "내 아바타 및 배경색 수정",
+        description = "로그인한 회원의 아바타와 배경색을 수정합니다."
     )
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "아바타 수정 성공",
+            description = "아바타 및 배경색 수정 성공",
             content = @Content(schema = @Schema(implementation = MemberResponseDto.class))
         ),
         @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
