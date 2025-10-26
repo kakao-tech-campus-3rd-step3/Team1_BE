@@ -44,8 +44,8 @@ public class AuthService {
 
     private final KakaoClientService kakaoClientService;
 
-    private final String DEFAULT_AVATAR = "1111";
-    private final String DEFAULT_BACKGROUND_COLOR = "#FFFFFF";
+    private static final String DEFAULT_AVATAR = "1111";
+    private static final String DEFAULT_BACKGROUND_COLOR = "#FFFFFF";
 
     private record RegisterResult(Member member, boolean isNewUser) {
 
