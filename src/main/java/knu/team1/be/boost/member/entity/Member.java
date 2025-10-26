@@ -43,7 +43,7 @@ public class Member extends SoftDeletableEntity {
     @Column(name = "avatar", nullable = false)
     private String avatar;
 
-    @Column(name = "background_color", nullable = false)
+    @Column(name = "background_color", nullable = false, length = 7)
     private String backgroundColor;
 
     @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
