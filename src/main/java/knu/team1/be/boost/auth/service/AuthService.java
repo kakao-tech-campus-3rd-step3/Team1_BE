@@ -45,6 +45,7 @@ public class AuthService {
     private final KakaoClientService kakaoClientService;
 
     private final String DEFAULT_AVATAR = "1111";
+    private final String DEFAULT_BACKGROUND_COLOR = "#FFFFFF";
 
     private record RegisterResult(Member member, boolean isNewUser) {
 
@@ -150,6 +151,7 @@ public class AuthService {
             Member newMember = Member.builder()
                 .name(userInfo.kakaoAccount().profile().nickname())
                 .avatar(DEFAULT_AVATAR)
+                .backgroundColor(DEFAULT_BACKGROUND_COLOR)
                 .oauthInfo(oauthInfo)
                 .build();
             Member savedMember = memberRepository.save(newMember);
