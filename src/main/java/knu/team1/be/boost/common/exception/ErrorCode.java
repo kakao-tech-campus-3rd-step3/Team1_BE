@@ -87,7 +87,9 @@ public enum ErrorCode {
     INVALID_WEB_PUSH_TOKEN(HttpStatus.BAD_REQUEST, "Invalid WebPush token",
         "유효하지 않은 WebPush 세션 토큰입니다."),
     WEB_PUSH_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Web-Push service error",
-        "웹 푸시 전송 중 오류가 발생했습니다.");
+        "웹 푸시 전송 중 오류가 발생했습니다."),
+    INVALID_WEB_PUSH_STATE_TRANSITION(HttpStatus.CONFLICT, "Invalid WebPush session transition",
+        "웹 푸시 세션 상태 전환이 올바르지 않습니다.");
 
     private final HttpStatus httpStatus;
     private final String errorMessage;
