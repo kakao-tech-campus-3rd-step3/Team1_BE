@@ -56,7 +56,6 @@ public class WebPushService {
             .build();
 
         cacheService.saveSession(updated);
-
         return WebPushSessionResponseDto.from(updated.token(), updated.status());
     }
 
@@ -86,8 +85,6 @@ public class WebPushService {
             .authKey(registerDto.authKey())
             .build();
 
-        cacheService.saveSession(updated);
-
         Member member = memberRepository.findById(session.userId())
             .orElseThrow(() -> new BusinessException(
                 ErrorCode.MEMBER_NOT_FOUND, "memberId: " + session.userId()
@@ -116,6 +113,7 @@ public class WebPushService {
             webPushRepository.save(subscription);
         }
 
+        cacheService.saveSession(updated);
         return WebPushSessionResponseDto.from(updated.token(), updated.status());
     }
 
