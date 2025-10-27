@@ -1,6 +1,7 @@
 package knu.team1.be.boost.webPush.service;
 
 import jakarta.annotation.PostConstruct;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.Security;
 import java.util.List;
@@ -55,7 +56,7 @@ public class WebPushClient {
                     sub.getWebPushUrl(),
                     sub.getPublicKey(),
                     sub.getAuthKey(),
-                    payload.toString().getBytes()
+                    payload.toString().getBytes(StandardCharsets.UTF_8)
                 );
                 pushService.send(notification);
             } catch (InterruptedException e) {
