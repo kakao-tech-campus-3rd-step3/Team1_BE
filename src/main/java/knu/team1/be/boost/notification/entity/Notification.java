@@ -41,6 +41,15 @@ public class Notification extends SoftDeletableEntity {
     @Column(nullable = false)
     private boolean read = false;
 
+    public static Notification create(Member member, String title, String message) {
+        return Notification.builder()
+            .member(member)
+            .title(title)
+            .message(message)
+            .read(false)
+            .build();
+    }
+
     public void markAsRead() {
         this.read = true;
     }

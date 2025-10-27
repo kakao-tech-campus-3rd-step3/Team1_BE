@@ -73,7 +73,7 @@ public class NotificationService {
             .toList();
 
         for (Member member : members) {
-            sendNotification(
+            saveAndSendNotification(
                 member,
                 "작업 검토 요청",
                 String.format("[%s] 작업이 검토 중 상태로 변경되었습니다.", task.getTitle())
@@ -90,7 +90,7 @@ public class NotificationService {
             .toList();
 
         for (Member assignee : assignees) {
-            sendNotification(
+            saveAndSendNotification(
                 assignee,
                 "작업 승인 완료",
                 String.format("[%s] 작업이 모든 승인자를 통해 승인되었습니다.", task.getTitle())
@@ -115,16 +115,12 @@ public class NotificationService {
             Member member = findMember(memberId);
             String message = buildNotificationMessage(projectTasks);
             String title = formattedDate + " 마감 임박 작업";
-            sendNotification(member, title, message);
+            saveAndSendNotification(member, title, message);
         });
     }
 
-    private void sendNotification(Member member, String title, String message) {
-        Notification notification = Notification.builder()
-            .member(member)
-            .title(title)
-            .message(message)
-            .build();
+    private void saveAndSendNotification(Member member, String title, String message) {
+        Notification notification = Notification.create(member, title, message);
 
         notificationRepository.save(notification);
 
