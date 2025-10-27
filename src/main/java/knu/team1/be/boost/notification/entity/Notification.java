@@ -6,7 +6,10 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.util.UUID;
 import knu.team1.be.boost.common.entity.SoftDeletableEntity;
+import knu.team1.be.boost.common.exception.BusinessException;
+import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.member.entity.Member;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -38,4 +41,16 @@ public class Notification extends SoftDeletableEntity {
     @Column(nullable = false)
     private boolean read = false;
 
+    public void markAsRead() {
+        this.read = true;
+    }
+
+    public void ensureOwner(UUID memberId) {
+        if (this.member == null || !this.member.getId().equals(memberId)) {
+            throw new BusinessException(
+                ErrorCode.NOTIFICATION_FORBIDDEN_ACCESS,
+                "notificationId=" + this.getId() + ", memberId=" + memberId
+            );
+        }
+    }
 }

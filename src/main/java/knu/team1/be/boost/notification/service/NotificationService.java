@@ -7,10 +7,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
+import knu.team1.be.boost.notification.dto.NotificationReadResponseDto;
+import knu.team1.be.boost.notification.dto.NotificationResponseDto;
 import knu.team1.be.boost.notification.entity.Notification;
 import knu.team1.be.boost.notification.repository.NotificationRepository;
 import knu.team1.be.boost.project.entity.Project;
@@ -33,6 +36,31 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
 
     private final WebPushClient webPushClient;
+
+    @Transactional(readOnly = true)
+    public List<NotificationResponseDto> getNotifications(UserPrincipalDto user) {
+        Member member = memberRepository.findById(user.id())
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.MEMBER_NOT_FOUND, "memberId: " + user.id()
+            ));
+
+        return notificationRepository.findAllByMemberOrderByCreatedAtDesc(member).stream()
+            .map(NotificationResponseDto::from)
+            .toList();
+    }
+
+    @Transactional
+    public NotificationReadResponseDto markAsRead(UUID notificationId, UserPrincipalDto user) {
+        Notification notification = notificationRepository.findById(notificationId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.NOTIFICATION_NOT_FOUND, "notificationId: " + notificationId
+            ));
+
+        notification.ensureOwner(user.id());
+        notification.markAsRead();
+
+        return NotificationReadResponseDto.from(notification);
+    }
 
     @Transactional
     public void notifyTaskReview(Project project, Task task) {
