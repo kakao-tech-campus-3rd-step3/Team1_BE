@@ -82,8 +82,9 @@ public class NotificationService {
 
         tasksByMember.forEach((memberId, projectTasks) -> {
             Member member = findMember(memberId);
-            String message = buildNotificationMessage(formattedDate, projectTasks);
-            sendNotification(member, "마감 임박 작업 알림", message);
+            String message = buildNotificationMessage(projectTasks);
+            String title = formattedDate + " 마감 임박 작업";
+            sendNotification(member, title, message);
         });
     }
 
@@ -125,9 +126,8 @@ public class NotificationService {
         return tasksByMember;
     }
 
-    private String buildNotificationMessage(String formattedDate,
-        Map<String, List<String>> projectTasks) {
-        StringBuilder message = new StringBuilder(formattedDate + " 마감 임박 작업\n");
+    private String buildNotificationMessage(Map<String, List<String>> projectTasks) {
+        StringBuilder message = new StringBuilder();
 
         projectTasks.forEach((projectName, tasks) ->
             message.append("[")
@@ -137,7 +137,7 @@ public class NotificationService {
                 .append("\n")
         );
 
-        return message.toString();
+        return message.toString().trim();
     }
 
     private Member findMember(UUID memberId) {
@@ -147,5 +147,5 @@ public class NotificationService {
                 "memberId: " + memberId
             ));
     }
-    
+
 }
