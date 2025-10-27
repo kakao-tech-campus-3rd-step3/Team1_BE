@@ -77,35 +77,14 @@ public class NotificationService {
         LocalDate tomorrow = LocalDate.now().plusDays(1);
         List<DueTask> dueTasks = taskRepository.findDueTasksByMember(tomorrow);
 
-        Map<UUID, Map<String, List<String>>> tasksByMember = new HashMap<>();
-
-        for (DueTask dueTask : dueTasks) {
-            tasksByMember
-                .computeIfAbsent(dueTask.getMemberId(), k -> new HashMap<>())
-                .computeIfAbsent(dueTask.getProjectName(), k -> new ArrayList<>())
-                .add(dueTask.getTaskTitle());
-        }
-
+        Map<UUID, Map<String, List<String>>> tasksByMember = groupTasksByMember(dueTasks);
         String formattedDate = tomorrow.format(DateTimeFormatter.ofPattern("MM월 dd일"));
 
-        for (Map.Entry<UUID, Map<String, List<String>>> memberEntry : tasksByMember.entrySet()) {
-            Member member = memberRepository.findById(memberEntry.getKey())
-                .orElseThrow(() -> new BusinessException(
-                        ErrorCode.MEMBER_NOT_FOUND, "memberId: " + memberEntry.getKey()
-                    )
-                );
-
-            StringBuilder message = new StringBuilder(formattedDate + "마감 임박 작업\n");
-
-            for (Map.Entry<String, List<String>> projectEntry : memberEntry.getValue().entrySet()) {
-                String projectName = projectEntry.getKey();
-                String taskTitles = String.join(", ", projectEntry.getValue());
-                message.append("[").append(projectName).append("] ").append(taskTitles)
-                    .append("\n");
-            }
-
-            sendNotification(member, "마감 임박 작업 알림", message.toString());
-        }
+        tasksByMember.forEach((memberId, projectTasks) -> {
+            Member member = findMember(memberId);
+            String message = buildNotificationMessage(formattedDate, projectTasks);
+            sendNotification(member, "마감 임박 작업 알림", message);
+        });
     }
 
     private void sendNotification(Member member, String title, String message) {
@@ -120,4 +99,53 @@ public class NotificationService {
         webPushClient.sendNotification(member, title, message);
     }
 
+    private Map<UUID, Map<String, List<String>>> groupTasksByMember(List<DueTask> dueTasks) {
+        Map<UUID, Map<String, List<String>>> tasksByMember = new HashMap<>();
+
+        for (DueTask dueTask : dueTasks) {
+            UUID memberId = dueTask.getMemberId();
+            String projectName = dueTask.getProjectName();
+            String taskTitle = dueTask.getTaskTitle();
+
+            Map<String, List<String>> projectMap = tasksByMember.get(memberId);
+            if (projectMap == null) {
+                projectMap = new HashMap<>();
+                tasksByMember.put(memberId, projectMap);
+            }
+
+            List<String> taskTitles = projectMap.get(projectName);
+            if (taskTitles == null) {
+                taskTitles = new ArrayList<>();
+                projectMap.put(projectName, taskTitles);
+            }
+
+            taskTitles.add(taskTitle);
+        }
+
+        return tasksByMember;
+    }
+
+    private String buildNotificationMessage(String formattedDate,
+        Map<String, List<String>> projectTasks) {
+        StringBuilder message = new StringBuilder(formattedDate + " 마감 임박 작업\n");
+
+        projectTasks.forEach((projectName, tasks) ->
+            message.append("[")
+                .append(projectName)
+                .append("] ")
+                .append(String.join(", ", tasks))
+                .append("\n")
+        );
+
+        return message.toString();
+    }
+
+    private Member findMember(UUID memberId) {
+        return memberRepository.findById(memberId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.MEMBER_NOT_FOUND,
+                "memberId: " + memberId
+            ));
+    }
+    
 }
