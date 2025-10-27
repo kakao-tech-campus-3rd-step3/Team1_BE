@@ -57,7 +57,7 @@ public class Notification extends SoftDeletableEntity {
     }
 
     public void ensureOwner(UUID memberId) {
-        if (this.member == null || !this.member.getId().equals(memberId)) {
+        if (!this.member.getId().equals(memberId)) {
             throw new BusinessException(
                 ErrorCode.NOTIFICATION_FORBIDDEN_ACCESS,
                 "notificationId=" + this.getId() + ", memberId=" + memberId
