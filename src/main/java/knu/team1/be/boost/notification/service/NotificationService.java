@@ -18,14 +18,19 @@ import knu.team1.be.boost.notification.entity.Notification;
 import knu.team1.be.boost.notification.repository.NotificationRepository;
 import knu.team1.be.boost.project.entity.Project;
 import knu.team1.be.boost.projectMembership.entity.ProjectMembership;
+import knu.team1.be.boost.task.dto.TaskApproveEvent;
+import knu.team1.be.boost.task.dto.TaskReviewEvent;
 import knu.team1.be.boost.task.entity.Task;
 import knu.team1.be.boost.task.repository.TaskRepository;
 import knu.team1.be.boost.task.repository.TaskRepository.DueTask;
 import knu.team1.be.boost.webPush.service.WebPushClient;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 @Service
 @RequiredArgsConstructor
@@ -117,6 +122,18 @@ public class NotificationService {
             String title = formattedDate + " 마감 임박 작업";
             saveAndSendNotification(member, title, message);
         });
+    }
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleTaskReviewEvent(TaskReviewEvent event) {
+        notifyTaskReview(event.project(), event.task());
+    }
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleTaskApproveEvent(TaskApproveEvent event) {
+        notifyTaskApprove(event.project(), event.task());
     }
 
     private void saveAndSendNotification(Member member, String title, String message) {
