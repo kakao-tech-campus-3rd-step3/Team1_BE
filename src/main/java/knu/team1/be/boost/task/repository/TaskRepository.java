@@ -485,6 +485,7 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
             JOIN a.projectMemberships pm
                 ON pm.project = t.project
             WHERE t.dueDate = :targetDate
+              AND t.status <> knu.team1.be.boost.task.entity.TaskStatus.DONE
               AND pm.notificationEnabled = true
         """)
     List<DueTask> findDueTasksByMember(@Param("targetDate") LocalDate targetDate);
