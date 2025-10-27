@@ -14,6 +14,7 @@ import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
 import knu.team1.be.boost.notification.dto.NotificationReadResponseDto;
 import knu.team1.be.boost.notification.dto.NotificationResponseDto;
+import knu.team1.be.boost.notification.dto.NotificationSavedEvent;
 import knu.team1.be.boost.notification.entity.Notification;
 import knu.team1.be.boost.notification.repository.NotificationRepository;
 import knu.team1.be.boost.project.entity.Project;
@@ -25,6 +26,7 @@ import knu.team1.be.boost.task.repository.TaskRepository;
 import knu.team1.be.boost.task.repository.TaskRepository.DueTask;
 import knu.team1.be.boost.webPush.service.WebPushClient;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -41,6 +43,8 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
 
     private final WebPushClient webPushClient;
+
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional(readOnly = true)
     public List<NotificationResponseDto> getNotifications(UserPrincipalDto user) {
@@ -136,12 +140,18 @@ public class NotificationService {
         notifyTaskApprove(event.project(), event.task());
     }
 
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleNotificationSavedEvent(NotificationSavedEvent event) {
+        webPushClient.sendNotification(event.member(), event.title(), event.message());
+    }
+
     private void saveAndSendNotification(Member member, String title, String message) {
         Notification notification = Notification.create(member, title, message);
 
         notificationRepository.save(notification);
 
-        webPushClient.sendNotification(member, title, message);
+        eventPublisher.publishEvent(new NotificationSavedEvent(member, title, message));
     }
 
     private String buildNotificationMessage(Map<UUID, List<DueTask>> projectTasks) {
