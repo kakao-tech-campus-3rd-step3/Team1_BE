@@ -69,6 +69,13 @@ public class WebPushService {
     public WebPushSessionResponseDto registerSubscription(WebPushRegisterDto registerDto) {
         WebPushSession session = validateAndGetSession(registerDto.token());
 
+        if (session.status() != WebPushSessionStatus.CONNECTED) {
+            throw new BusinessException(
+                ErrorCode.INVALID_WEB_PUSH_STATE_TRANSITION,
+                "memberId: " + session.userId() + " current status: " + session.status()
+            );
+        }
+
         WebPushSession updated = WebPushSession.builder()
             .token(registerDto.token())
             .userId(session.userId())
