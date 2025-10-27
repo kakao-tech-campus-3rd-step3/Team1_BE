@@ -90,7 +90,6 @@ public class WebPushClient {
                     sub.getId(),
                     e
                 );
-                return;
             } catch (Exception e) {
                 log.error(
                     "[500 {}] WebPush 전송 중 예외 발생 | memberId={}, subId={}, msg={}",
