@@ -25,7 +25,6 @@ import knu.team1.be.boost.common.policy.AccessPolicy;
 import knu.team1.be.boost.file.repository.FileRepository;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
-import knu.team1.be.boost.notification.service.NotificationService;
 import knu.team1.be.boost.project.entity.Project;
 import knu.team1.be.boost.project.repository.ProjectRepository;
 import knu.team1.be.boost.projectMembership.repository.ProjectMembershipRepository;
@@ -46,6 +45,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 class TaskServiceTest {
@@ -63,9 +63,9 @@ class TaskServiceTest {
     @Mock
     ProjectRepository projectRepository;
     @Mock
-    NotificationService notificationService;
-    @Mock
     ProjectMembershipRepository projectMembershipRepository;
+    @Mock
+    ApplicationEventPublisher eventPublisher;
     @Mock
     AccessPolicy accessPolicy;
 
@@ -93,7 +93,7 @@ class TaskServiceTest {
             commentRepository,
             projectRepository,
             projectMembershipRepository,
-            notificationService,
+            eventPublisher,
             accessPolicy
         );
     }
