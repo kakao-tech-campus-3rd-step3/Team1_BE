@@ -151,7 +151,7 @@ public class NotificationService {
 
         notificationRepository.save(notification);
 
-        eventPublisher.publishEvent(new NotificationSavedEvent(member, title, message));
+        eventPublisher.publishEvent(NotificationSavedEvent.from(member, title, message));
     }
 
     private String buildNotificationMessage(Map<UUID, List<DueTask>> projectTasks) {
