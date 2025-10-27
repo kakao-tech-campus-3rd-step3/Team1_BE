@@ -152,7 +152,8 @@ public interface TaskApi {
         summary = "프로젝트별 할 일 목록 조회 - 상태 기준 (커서 페이지네이션)",
         description = """
             특정 상태(TaskStatus)에 해당하는 프로젝트의 할 일 목록을 반환합니다.<br>
-            정렬(sortBy/direction) 가능
+            정렬(sortBy/direction) 가능<br>
+            검색어를 입력하면 제목(title)과 설명(description)에서 검색합니다.
             """
     )
     @ApiResponses({
@@ -172,6 +173,7 @@ public interface TaskApi {
         @RequestParam(required = false, defaultValue = "TODO") TaskStatus status,
         @RequestParam(required = false, defaultValue = "CREATED_AT") TaskSortBy sortBy,
         @RequestParam(required = false, defaultValue = "ASC") TaskSortDirection direction,
+        @RequestParam(required = false) String search,
         @RequestParam(required = false) UUID cursor,
         @RequestParam(defaultValue = "20") @Min(1) @Max(50) int limit,
         @AuthenticationPrincipal UserPrincipalDto user
@@ -181,7 +183,8 @@ public interface TaskApi {
         summary = "내 할 일 목록 조회 - 상태 기준 (커서 페이지네이션)",
         description = """
             로그인한 사용자가 속한 프로젝트들의 특정 상태(TaskStatus)에 해당하는 자신의 할 일 목록을 반환합니다.<br>
-            정렬(sortBy/direction) 가능
+            정렬(sortBy/direction) 가능<br>
+            검색어를 입력하면 제목(title)과 설명(description)에서 검색합니다.
             """
     )
     @ApiResponses({
@@ -199,6 +202,7 @@ public interface TaskApi {
         @RequestParam(required = false, defaultValue = "TODO") TaskStatus status,
         @RequestParam(required = false, defaultValue = "CREATED_AT") TaskSortBy sortBy,
         @RequestParam(required = false, defaultValue = "ASC") TaskSortDirection direction,
+        @RequestParam(required = false) String search,
         @RequestParam(required = false) UUID cursor,
         @RequestParam(defaultValue = "20") @Min(1) @Max(50) int limit,
         @AuthenticationPrincipal UserPrincipalDto user
@@ -209,7 +213,8 @@ public interface TaskApi {
         description = """
             특정 팀원의 프로젝트의 할 일 목록을 상태별 섹션으로 반환합니다.<br>
             정렬은 지원하지 않으며, 기본 정렬만 제공됩니다.(생성일자 오름차순 + REVIEW -> PROGRESS -> TODO 순)<br>
-            DONE 상태는 제공되지 않으며  TODO, PROGRESS, REVIEW로 제공됩니다.
+            DONE 상태는 제공되지 않으며  TODO, PROGRESS, REVIEW로 제공됩니다.<br>
+            검색어를 입력하면 제목(title)과 설명(description)에서 검색합니다.
             """
     )
     @ApiResponses({
@@ -226,6 +231,7 @@ public interface TaskApi {
     ResponseEntity<TaskMemberSectionResponseDto> listTasksByMember(
         @PathVariable UUID projectId,
         @PathVariable UUID memberId,
+        @RequestParam(required = false) String search,
         @RequestParam(required = false) UUID cursor,
         @RequestParam(defaultValue = "20") @Min(1) @Max(50) int limit,
         @AuthenticationPrincipal UserPrincipalDto user
@@ -253,7 +259,10 @@ public interface TaskApi {
 
     @Operation(
         summary = "프로젝트 상태별 할 일 개수 조회 (전체)",
-        description = "프로젝트 전체 Task 상태별 개수를 반환합니다."
+        description = """
+            프로젝트 전체 Task 상태별 개수를 반환합니다.<br>
+            검색어를 입력하면 제목(title)과 설명(description)에서 검색합니다.
+            """
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "조회 성공",
@@ -267,12 +276,16 @@ public interface TaskApi {
     @GetMapping("/projects/{projectId}/tasks/status-count")
     ResponseEntity<ProjectTaskStatusCountResponseDto> getProjectTaskStatusCount(
         @PathVariable UUID projectId,
+        @RequestParam(required = false) String search,
         @AuthenticationPrincipal UserPrincipalDto user
     );
 
     @Operation(
         summary = "프로젝트 멤버별 상태별 할 일 개수 조회",
-        description = "프로젝트의 각 멤버별 Task 상태별 개수를 반환합니다. DONE은 제외됩니다."
+        description = """
+            프로젝트의 각 멤버별 Task 상태별 개수를 반환합니다. DONE은 제외됩니다.<br>
+            검색어를 입력하면 제목(title)과 설명(description)에서 검색합니다.
+            """
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "조회 성공",
@@ -286,6 +299,7 @@ public interface TaskApi {
     @GetMapping("/projects/{projectId}/tasks/members/status-count")
     ResponseEntity<List<MemberTaskStatusCountResponseDto>> getMemberTaskStatusCount(
         @PathVariable UUID projectId,
+        @RequestParam(required = false) String search,
         @AuthenticationPrincipal UserPrincipalDto user
     );
 }

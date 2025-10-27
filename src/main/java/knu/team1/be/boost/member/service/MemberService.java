@@ -53,6 +53,8 @@ public class MemberService {
                 "memberId: " + memberId
             ));
         member.updateAvatar(requestDto.avatar());
+        member.updateBackgroundColor(requestDto.backgroundColor());
+
         return MemberResponseDto.from(member);
     }
 
