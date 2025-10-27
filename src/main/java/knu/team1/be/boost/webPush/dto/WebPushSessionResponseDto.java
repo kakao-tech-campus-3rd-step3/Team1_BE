@@ -1,4 +1,3 @@
-// DTO 정의
 package knu.team1.be.boost.webPush.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
