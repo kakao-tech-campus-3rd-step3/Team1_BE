@@ -3,7 +3,9 @@ package knu.team1.be.boost.webPush.service;
 import jakarta.annotation.PostConstruct;
 import java.security.GeneralSecurityException;
 import java.security.Security;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.member.entity.Member;
@@ -39,7 +41,6 @@ public class WebPushClient {
         pushService = new PushService();
         pushService.setPublicKey(Utils.loadPublicKey(publicKey));
         pushService.setPrivateKey(Utils.loadPrivateKey(privateKey));
-        pushService.setSubject("mailto:admin@boost.com");
     }
 
     public void sendNotification(Member member, String title, String message) {
@@ -47,13 +48,15 @@ public class WebPushClient {
 
         for (WebPushSubscription sub : subscriptions) {
             try {
-                String payload = String.format("{\"title\":\"%s\",\"body\":\"%s\"}", title,
-                    message);
+                Map<String, Object> payload = new HashMap<>();
+                payload.put("title", title);
+                payload.put("body", message);
+
                 Notification notification = new Notification(
                     sub.getWebPushUrl(),
                     sub.getPublicKey(),
                     sub.getAuthKey(),
-                    payload.getBytes()
+                    payload.toString().getBytes()
                 );
                 pushService.send(notification);
             } catch (InterruptedException e) {
