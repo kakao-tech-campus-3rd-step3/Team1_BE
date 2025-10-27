@@ -3,9 +3,7 @@ package knu.team1.be.boost.webPush.service;
 import jakarta.annotation.PostConstruct;
 import java.security.GeneralSecurityException;
 import java.security.Security;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.member.entity.Member;
@@ -16,6 +14,7 @@ import nl.martijndwars.webpush.Notification;
 import nl.martijndwars.webpush.PushService;
 import nl.martijndwars.webpush.Utils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.jose4j.json.internal.json_simple.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -48,7 +47,7 @@ public class WebPushClient {
 
         for (WebPushSubscription sub : subscriptions) {
             try {
-                Map<String, Object> payload = new HashMap<>();
+                JSONObject payload = new JSONObject();
                 payload.put("title", title);
                 payload.put("body", message);
 
