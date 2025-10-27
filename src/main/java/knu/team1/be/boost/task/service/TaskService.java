@@ -21,7 +21,6 @@ import knu.team1.be.boost.file.repository.FileRepository;
 import knu.team1.be.boost.file.repository.FileRepository.FileCount;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
-import knu.team1.be.boost.notification.service.NotificationService;
 import knu.team1.be.boost.project.entity.Project;
 import knu.team1.be.boost.project.repository.ProjectRepository;
 import knu.team1.be.boost.projectMembership.entity.ProjectMembership;
@@ -66,8 +65,6 @@ public class TaskService {
     private final CommentRepository commentRepository;
     private final ProjectRepository projectRepository;
     private final ProjectMembershipRepository projectMembershipRepository;
-
-    private final NotificationService notificationService;
 
     private final ApplicationEventPublisher eventPublisher;
     private final AccessPolicy accessPolicy;
