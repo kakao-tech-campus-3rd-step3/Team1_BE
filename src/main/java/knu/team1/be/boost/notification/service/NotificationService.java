@@ -2,12 +2,11 @@ package knu.team1.be.boost.notification.service;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.member.entity.Member;
@@ -77,10 +76,14 @@ public class NotificationService {
         LocalDate tomorrow = LocalDate.now().plusDays(1);
         List<DueTask> dueTasks = taskRepository.findDueTasksByMember(tomorrow);
 
-        Map<UUID, Map<String, List<String>>> tasksByMember = groupTasksByMember(dueTasks);
+        Map<UUID, Map<UUID, List<DueTask>>> groupedDueTask = dueTasks.stream()
+            .collect(Collectors.groupingBy(
+                DueTask::getMemberId,
+                Collectors.groupingBy(DueTask::getProjectId)
+            ));
         String formattedDate = tomorrow.format(DateTimeFormatter.ofPattern("MM월 dd일"));
 
-        tasksByMember.forEach((memberId, projectTasks) -> {
+        groupedDueTask.forEach((memberId, projectTasks) -> {
             Member member = findMember(memberId);
             String message = buildNotificationMessage(projectTasks);
             String title = formattedDate + " 마감 임박 작업";
@@ -100,42 +103,21 @@ public class NotificationService {
         webPushClient.sendNotification(member, title, message);
     }
 
-    private Map<UUID, Map<String, List<String>>> groupTasksByMember(List<DueTask> dueTasks) {
-        Map<UUID, Map<String, List<String>>> tasksByMember = new HashMap<>();
-
-        for (DueTask dueTask : dueTasks) {
-            UUID memberId = dueTask.getMemberId();
-            String projectName = dueTask.getProjectName();
-            String taskTitle = dueTask.getTaskTitle();
-
-            Map<String, List<String>> projectMap = tasksByMember.get(memberId);
-            if (projectMap == null) {
-                projectMap = new HashMap<>();
-                tasksByMember.put(memberId, projectMap);
-            }
-
-            List<String> taskTitles = projectMap.get(projectName);
-            if (taskTitles == null) {
-                taskTitles = new ArrayList<>();
-                projectMap.put(projectName, taskTitles);
-            }
-
-            taskTitles.add(taskTitle);
-        }
-
-        return tasksByMember;
-    }
-
-    private String buildNotificationMessage(Map<String, List<String>> projectTasks) {
+    private String buildNotificationMessage(Map<UUID, List<DueTask>> projectTasks) {
         StringBuilder message = new StringBuilder();
 
-        projectTasks.forEach((projectName, tasks) ->
+        projectTasks.forEach((projectId, tasks) -> {
+            String projectName = tasks.getFirst().getProjectName();
+            String taskTitles = tasks.stream()
+                .map(DueTask::getTaskTitle)
+                .collect(Collectors.joining(", "));
+
             message.append("[")
                 .append(projectName)
                 .append("] ")
-                .append(String.join(", ", tasks))
-                .append("\n")
-        );
+                .append(taskTitles)
+                .append("\n");
+        });
 
         return message.toString().trim();
     }

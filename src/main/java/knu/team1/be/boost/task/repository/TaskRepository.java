@@ -235,14 +235,16 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     );
 
     @Query("""
-            SELECT
+            SELECT DISTINCT
                 pm.member.id AS memberId,
+                p.id AS projectId,
                 p.name AS projectName,
                 t.title AS taskTitle
             FROM Task t
+            JOIN t.project p
             JOIN t.assignees a
             JOIN a.projectMemberships pm
-            JOIN pm.project p
+                ON pm.project = t.project
             WHERE t.dueDate = :targetDate
               AND pm.notificationEnabled = true
         """)
@@ -251,6 +253,8 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     interface DueTask {
 
         UUID getMemberId();
+
+        UUID getProjectId();
 
         String getProjectName();
 
