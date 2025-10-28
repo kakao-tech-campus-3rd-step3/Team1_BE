@@ -30,6 +30,7 @@ import knu.team1.be.boost.tag.repository.TagRepository;
 import knu.team1.be.boost.task.dto.CursorInfo;
 import knu.team1.be.boost.task.dto.MemberTaskStatusCount;
 import knu.team1.be.boost.task.dto.MemberTaskStatusCountResponseDto;
+import knu.team1.be.boost.task.dto.MyTaskStatusCountResponseDto;
 import knu.team1.be.boost.task.dto.ProjectTaskStatusCount;
 import knu.team1.be.boost.task.dto.ProjectTaskStatusCountResponseDto;
 import knu.team1.be.boost.task.dto.TaskApproveResponseDto;
@@ -226,6 +227,34 @@ public class TaskService {
 
         return TaskDetailResponseDto.from(task, comments, files, projectMembers);
     }
+
+    @Transactional(readOnly = true)
+    public MyTaskStatusCountResponseDto countMyTasksByStatus(
+        String search,
+        UserPrincipalDto user
+    ) {
+        Member member = memberRepository.findById(user.id())
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.MEMBER_NOT_FOUND, "memberId: " + user.id()
+            ));
+
+        ProjectTaskStatusCount count;
+        if (search != null && !search.trim().isEmpty()) {
+            String searchPattern = "%" + search.trim() + "%";
+            count = taskRepository.countMyTasksWithSearchGrouped(member.getId(), searchPattern);
+        } else {
+            count = taskRepository.countMyTasksGrouped(member.getId());
+        }
+
+        return MyTaskStatusCountResponseDto.from(
+            member.getId(),
+            count.todo(),
+            count.progress(),
+            count.review(),
+            count.done()
+        );
+    }
+
 
     @Transactional(readOnly = true)
     public ProjectTaskStatusCountResponseDto countTasksByStatusForProject(

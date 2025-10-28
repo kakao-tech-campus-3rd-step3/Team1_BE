@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.UUID;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.task.dto.MemberTaskStatusCountResponseDto;
+import knu.team1.be.boost.task.dto.MyTaskStatusCountResponseDto;
 import knu.team1.be.boost.task.dto.ProjectTaskStatusCountResponseDto;
 import knu.team1.be.boost.task.dto.TaskApproveResponseDto;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
@@ -163,6 +164,15 @@ public class TaskController implements TaskApi {
         @AuthenticationPrincipal UserPrincipalDto user
     ) {
         TaskApproveResponseDto response = taskService.approveTask(projectId, taskId, user);
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<MyTaskStatusCountResponseDto> getMyTaskStatusCount(
+        @RequestParam(required = false) String search,
+        @AuthenticationPrincipal UserPrincipalDto user
+    ) {
+        MyTaskStatusCountResponseDto response = taskService.countMyTasksByStatus(search, user);
         return ResponseEntity.ok(response);
     }
 

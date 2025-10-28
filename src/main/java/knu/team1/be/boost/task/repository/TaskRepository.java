@@ -21,6 +21,19 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
 
     @Query("""
             SELECT new knu.team1.be.boost.task.dto.ProjectTaskStatusCount(
+                SUM(CASE WHEN t.status = 'TODO' THEN 1 ELSE 0 END),
+                SUM(CASE WHEN t.status = 'PROGRESS' THEN 1 ELSE 0 END),
+                SUM(CASE WHEN t.status = 'REVIEW' THEN 1 ELSE 0 END),
+                SUM(CASE WHEN t.status = 'DONE' THEN 1 ELSE 0 END)
+            )
+            FROM Task t
+            JOIN t.assignees a
+            WHERE a.id = :memberId
+        """)
+    ProjectTaskStatusCount countMyTasksGrouped(@Param("memberId") UUID memberId);
+
+    @Query("""
+            SELECT new knu.team1.be.boost.task.dto.ProjectTaskStatusCount(
                 sum(case when t.status = 'TODO' then 1 else 0 end),
                 sum(case when t.status = 'PROGRESS' then 1 else 0 end),
                 sum(case when t.status = 'REVIEW' then 1 else 0 end),
@@ -45,6 +58,23 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
         """)
     List<MemberTaskStatusCount> countTasksByStatusForAllMembersGrouped(
         @Param("projectId") UUID projectId
+    );
+
+    @Query("""
+            SELECT new knu.team1.be.boost.task.dto.ProjectTaskStatusCount(
+                SUM(CASE WHEN t.status = 'TODO' THEN 1 ELSE 0 END),
+                SUM(CASE WHEN t.status = 'PROGRESS' THEN 1 ELSE 0 END),
+                SUM(CASE WHEN t.status = 'REVIEW' THEN 1 ELSE 0 END),
+                SUM(CASE WHEN t.status = 'DONE' THEN 1 ELSE 0 END)
+            )
+            FROM Task t
+            JOIN t.assignees a
+            WHERE a.id = :memberId
+              AND (LOWER(t.title) LIKE LOWER(:searchPattern) OR LOWER(t.description) LIKE LOWER(:searchPattern))
+        """)
+    ProjectTaskStatusCount countMyTasksWithSearchGrouped(
+        @Param("memberId") UUID memberId,
+        @Param("searchPattern") String searchPattern
     );
 
     @Query("""

@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.UUID;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.task.dto.MemberTaskStatusCountResponseDto;
+import knu.team1.be.boost.task.dto.MyTaskStatusCountResponseDto;
 import knu.team1.be.boost.task.dto.ProjectTaskStatusCountResponseDto;
 import knu.team1.be.boost.task.dto.TaskApproveResponseDto;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
@@ -254,6 +255,27 @@ public interface TaskApi {
     ResponseEntity<TaskApproveResponseDto> approveTask(
         @PathVariable UUID projectId,
         @PathVariable UUID taskId,
+        @AuthenticationPrincipal UserPrincipalDto user
+    );
+
+    @Operation(
+        summary = "내 할 일 상태별 개수 조회",
+        description = """
+            로그인한 사용자가 속한 프로젝트의 전체 Task 상태별 개수를 반환합니다.<br>
+            검색어를 입력하면 제목(title)과 설명(description)에서 검색합니다.
+            """
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "조회 성공",
+            content = @Content(schema = @Schema(implementation = MyTaskStatusCountResponseDto.class))
+        ),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
+        @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
+    })
+    @GetMapping("/me/tasks/status-count")
+    ResponseEntity<MyTaskStatusCountResponseDto> getMyTaskStatusCount(
+        @RequestParam(required = false) String search,
         @AuthenticationPrincipal UserPrincipalDto user
     );
 
