@@ -61,9 +61,15 @@ public class NotificationService {
 
         LocalDateTime cursorCreatedAt = null;
         if (cursorId != null) {
-            cursorCreatedAt = notificationRepository.findById(cursorId)
-                .map(Notification::getCreatedAt)
-                .orElse(null);
+            Notification cursor = notificationRepository.findById(cursorId).orElse(null);
+
+            if (cursor != null && isCursorNotMine(cursor, member)) {
+                throw new BusinessException(ErrorCode.INVALID_CURSOR, "cursorId: " + cursorId);
+            }
+
+            if (cursor != null) {
+                cursorCreatedAt = cursor.getCreatedAt();
+            }
         }
 
         int safeLimit = Math.max(1, Math.min(limit, 50));
@@ -203,6 +209,10 @@ public class NotificationService {
                 ErrorCode.MEMBER_NOT_FOUND,
                 "memberId: " + memberId
             ));
+    }
+
+    private boolean isCursorNotMine(Notification cursor, Member member) {
+        return !cursor.getMember().equals(member);
     }
 
 }

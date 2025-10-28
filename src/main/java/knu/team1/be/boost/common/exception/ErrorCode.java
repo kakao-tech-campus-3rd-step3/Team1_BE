@@ -54,10 +54,13 @@ public enum ErrorCode {
     MEMO_NOT_FOUND(HttpStatus.NOT_FOUND, "Memo not found", "메모를 찾을 수 없습니다."),
     PROJECT_MEMO_ONLY(HttpStatus.CONFLICT, "Memo not in project", "해당 메모가 프로젝트에 속하지 않습니다."),
 
-    // 알림 관련
+    // Notification 관련
     NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "Notification not found", "해당 알림을 찾을 수 없습니다."),
     NOTIFICATION_FORBIDDEN_ACCESS(HttpStatus.FORBIDDEN, "Notification forbidden access",
         "해당 알림에 접근할 수 없습니다."),
+
+    // Cursor 관련
+    INVALID_CURSOR(HttpStatus.FORBIDDEN, "Invalid cursor", "현재 지정된 커서가 사용자가 접근 불가능합니다."),
 
     // Auth 관련
     INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "Invalid refresh token", "유효하지 않은 리프레시 토큰입니다."),
