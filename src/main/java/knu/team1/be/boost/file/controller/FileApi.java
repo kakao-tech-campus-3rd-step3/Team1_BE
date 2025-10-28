@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Files", description = "파일 관련 API")
-@RequestMapping("/api/files")
+@RequestMapping("/api")
 @SecurityRequirement(name = "bearerAuth")
 @Validated
 public interface FileApi {
@@ -51,7 +51,7 @@ public interface FileApi {
         @ApiResponse(responseCode = "500", description = "S3 오류", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
-    @PostMapping("/upload-url")
+    @PostMapping("/files/upload-url")
     ResponseEntity<FilePresignedUrlResponseDto> uploadFile(
         @Valid @RequestBody FileRequestDto request,
         @AuthenticationPrincipal UserPrincipalDto user
@@ -75,7 +75,7 @@ public interface FileApi {
         @ApiResponse(responseCode = "500", description = "S3 오류", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
-    @GetMapping("/{fileId}/download-url")
+    @GetMapping("/files/{fileId}/download-url")
     ResponseEntity<FilePresignedUrlResponseDto> downloadFile(
         @PathVariable UUID fileId,
         @AuthenticationPrincipal UserPrincipalDto user
@@ -98,7 +98,7 @@ public interface FileApi {
         @ApiResponse(responseCode = "409", description = "이미 업로드 완료 처리된 파일", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
-    @PatchMapping("/{fileId}/complete")
+    @PatchMapping("/files/{fileId}/complete")
     ResponseEntity<FileCompleteResponseDto> completeUpload(
         @PathVariable UUID fileId,
         @Valid @RequestBody FileCompleteRequestDto request,
@@ -124,7 +124,7 @@ public interface FileApi {
         @ApiResponse(responseCode = "404", description = "프로젝트를 찾을 수 없음", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
-    @GetMapping("/project/{projectId}")
+    @GetMapping("/project/{projectId}/files")
     ResponseEntity<ProjectFileListResponseDto> getFilesByProject(
         @PathVariable UUID projectId,
         @RequestParam(required = false) UUID cursor,
@@ -144,7 +144,7 @@ public interface FileApi {
         @ApiResponse(responseCode = "404", description = "파일을 찾을 수 없음", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
-    @DeleteMapping("/{fileId}")
+    @DeleteMapping("/files/{fileId}")
     ResponseEntity<Void> deleteFile(
         @PathVariable UUID fileId,
         @AuthenticationPrincipal UserPrincipalDto user
