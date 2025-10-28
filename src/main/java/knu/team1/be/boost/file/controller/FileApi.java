@@ -124,7 +124,7 @@ public interface FileApi {
         @ApiResponse(responseCode = "404", description = "프로젝트를 찾을 수 없음", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
-    @GetMapping("/project/{projectId}/files")
+    @GetMapping("/projects/{projectId}/files")
     ResponseEntity<ProjectFileListResponseDto> getFilesByProject(
         @PathVariable UUID projectId,
         @RequestParam(required = false) UUID cursor,
