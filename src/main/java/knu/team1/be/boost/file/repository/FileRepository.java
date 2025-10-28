@@ -19,6 +19,7 @@ public interface FileRepository extends JpaRepository<File, UUID> {
             SELECT f FROM File f
             JOIN f.task t
             WHERE t.project = :project
+              AND f.status = knu.team1.be.boost.file.entity.FileStatus.COMPLETED
               AND (
                 :cursorCreatedAt IS NULL
                 OR (f.createdAt < :cursorCreatedAt)
@@ -36,7 +37,8 @@ public interface FileRepository extends JpaRepository<File, UUID> {
     @Query("""
             SELECT f.task.id AS taskId, COUNT(f) AS count
             FROM File f
-            WHERE f.task.id IN :taskIds AND f.deleted = false
+            WHERE f.task.id IN :taskIds
+              AND f.status = knu.team1.be.boost.file.entity.FileStatus.COMPLETED
             GROUP BY f.task.id
         """)
     List<FileCount> countByTaskIds(@Param("taskIds") List<UUID> taskIds);
