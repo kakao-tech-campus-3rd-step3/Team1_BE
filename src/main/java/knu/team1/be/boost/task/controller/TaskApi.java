@@ -261,7 +261,7 @@ public interface TaskApi {
     @Operation(
         summary = "내 할 일 상태별 개수 조회",
         description = """
-            로그인한 사용자가 속한 프로젝트의 전체 Task 상태별 개수를 반환합니다.<br>
+            로그인한 사용자에게 할당된 전체 Task 상태별 개수를 반환합니다.<br>
             검색어를 입력하면 제목(title)과 설명(description)에서 검색합니다.
             """
     )
