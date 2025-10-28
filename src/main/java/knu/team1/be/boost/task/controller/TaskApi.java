@@ -29,6 +29,7 @@ import knu.team1.be.boost.task.dto.TaskUpdateRequestDto;
 import knu.team1.be.boost.task.entity.TaskStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -42,6 +43,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Tag(name = "Tasks", description = "할 일 관련 API")
 @RequestMapping("/api")
 @SecurityRequirement(name = "bearerAuth")
+@Validated
 public interface TaskApi {
 
     @Operation(

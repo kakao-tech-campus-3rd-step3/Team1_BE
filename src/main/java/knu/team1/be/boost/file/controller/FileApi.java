@@ -19,6 +19,7 @@ import knu.team1.be.boost.file.dto.FileRequestDto;
 import knu.team1.be.boost.file.dto.ProjectFileListResponseDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -31,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Tag(name = "Files", description = "파일 관련 API")
 @RequestMapping("/api/files")
 @SecurityRequirement(name = "bearerAuth")
+@Validated
 public interface FileApi {
 
     @Operation(
