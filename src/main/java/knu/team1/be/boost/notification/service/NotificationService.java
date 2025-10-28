@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.member.entity.Member;
@@ -53,11 +52,11 @@ public class NotificationService {
     public NotificationListResponseDto getNotifications(
         UUID cursorId,
         int limit,
-        UserPrincipalDto user
+        UUID userId
     ) {
-        Member member = memberRepository.findById(user.id())
+        Member member = memberRepository.findById(userId)
             .orElseThrow(() -> new BusinessException(
-                ErrorCode.MEMBER_NOT_FOUND, "memberId: " + user.id()
+                ErrorCode.MEMBER_NOT_FOUND, "memberId: " + userId
             ));
 
         LocalDateTime cursorCreatedAt = null;
@@ -78,13 +77,16 @@ public class NotificationService {
     }
 
     @Transactional
-    public NotificationReadResponseDto markAsRead(UUID notificationId, UserPrincipalDto user) {
+    public NotificationReadResponseDto markAsRead(
+        UUID notificationId,
+        UUID userId
+    ) {
         Notification notification = notificationRepository.findById(notificationId)
             .orElseThrow(() -> new BusinessException(
                 ErrorCode.NOTIFICATION_NOT_FOUND, "notificationId: " + notificationId
             ));
 
-        notification.ensureOwner(user.id());
+        notification.ensureOwner(userId);
         notification.markAsRead();
 
         return NotificationReadResponseDto.from(notification);

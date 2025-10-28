@@ -29,7 +29,7 @@ public class NotificationController implements NotificationApi {
         NotificationListResponseDto response = notificationService.getNotifications(
             cursor,
             limit,
-            user
+            user.id()
         );
         return ResponseEntity.ok(response);
     }
@@ -39,7 +39,10 @@ public class NotificationController implements NotificationApi {
         @PathVariable UUID notificationId,
         @AuthenticationPrincipal UserPrincipalDto user
     ) {
-        NotificationReadResponseDto response = notificationService.markAsRead(notificationId, user);
+        NotificationReadResponseDto response = notificationService.markAsRead(
+            notificationId,
+            user.id()
+        );
         return ResponseEntity.ok(response);
     }
 }
