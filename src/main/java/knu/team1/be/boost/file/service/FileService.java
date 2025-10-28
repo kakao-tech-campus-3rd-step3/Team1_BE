@@ -26,6 +26,8 @@ import knu.team1.be.boost.task.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.unit.DataSize;
@@ -160,6 +162,8 @@ public class FileService {
     @Transactional(readOnly = true)
     public ProjectFileListResponseDto getFilesByProject(
         UUID projectId,
+        UUID cursorId,
+        int limit,
         UUID userId
     ) {
         Project project = projectRepository.findById(projectId)
@@ -169,9 +173,24 @@ public class FileService {
 
         accessPolicy.ensureProjectMember(project.getId(), userId);
 
-        List<File> files = fileRepository.findAllByProjectId(project.getId());
+        LocalDateTime cursorCreatedAt = null;
+        if (cursorId != null) {
+            cursorCreatedAt = fileRepository.findById(cursorId)
+                .map(File::getCreatedAt)
+                .orElse(null);
+        }
 
-        return ProjectFileListResponseDto.from(project.getId(), files);
+        int safeLimit = Math.max(1, Math.min(limit, 50));
+        Pageable pageable = PageRequest.of(0, safeLimit + 1);
+
+        List<File> files = fileRepository.findByProjectWithCursor(
+            project,
+            cursorCreatedAt,
+            cursorId,
+            pageable
+        );
+
+        return ProjectFileListResponseDto.from(project.getId(), files, safeLimit);
     }
 
     @Transactional
