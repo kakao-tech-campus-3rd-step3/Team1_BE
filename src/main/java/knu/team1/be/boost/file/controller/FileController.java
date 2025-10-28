@@ -57,7 +57,7 @@ public class FileController implements FileApi {
         @PathVariable UUID projectId,
         @AuthenticationPrincipal UserPrincipalDto user
     ) {
-        ProjectFileListResponseDto response = fileService.getFilesByProject(projectId, user);
+        ProjectFileListResponseDto response = fileService.getFilesByProject(projectId, user.id());
         return ResponseEntity.ok(response);
     }
 

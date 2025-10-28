@@ -160,14 +160,14 @@ public class FileService {
     @Transactional(readOnly = true)
     public ProjectFileListResponseDto getFilesByProject(
         UUID projectId,
-        UserPrincipalDto user
+        UUID userId
     ) {
         Project project = projectRepository.findById(projectId)
             .orElseThrow(() -> new BusinessException(
                 ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
             ));
 
-        accessPolicy.ensureProjectMember(project.getId(), user.id());
+        accessPolicy.ensureProjectMember(project.getId(), userId);
 
         List<File> files = fileRepository.findAllByProjectId(project.getId());
 
