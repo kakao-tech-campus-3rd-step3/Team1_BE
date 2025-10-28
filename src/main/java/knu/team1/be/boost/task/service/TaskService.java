@@ -254,7 +254,7 @@ public class TaskService {
             count.done()
         );
     }
-    
+
     @Transactional(readOnly = true)
     public ProjectTaskStatusCountResponseDto countTasksByStatusForProject(
         UUID projectId,
