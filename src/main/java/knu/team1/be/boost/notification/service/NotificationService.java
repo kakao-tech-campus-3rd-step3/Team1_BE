@@ -1,6 +1,7 @@
 package knu.team1.be.boost.notification.service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
@@ -12,8 +13,8 @@ import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
+import knu.team1.be.boost.notification.dto.NotificationListResponseDto;
 import knu.team1.be.boost.notification.dto.NotificationReadResponseDto;
-import knu.team1.be.boost.notification.dto.NotificationResponseDto;
 import knu.team1.be.boost.notification.dto.NotificationSavedEvent;
 import knu.team1.be.boost.notification.entity.Notification;
 import knu.team1.be.boost.notification.repository.NotificationRepository;
@@ -27,6 +28,8 @@ import knu.team1.be.boost.task.repository.TaskRepository.DueTask;
 import knu.team1.be.boost.webPush.service.WebPushClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -47,15 +50,31 @@ public class NotificationService {
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional(readOnly = true)
-    public List<NotificationResponseDto> getNotifications(UserPrincipalDto user) {
+    public NotificationListResponseDto getNotifications(
+        UUID cursorId,
+        int limit,
+        UserPrincipalDto user
+    ) {
         Member member = memberRepository.findById(user.id())
             .orElseThrow(() -> new BusinessException(
                 ErrorCode.MEMBER_NOT_FOUND, "memberId: " + user.id()
             ));
 
-        return notificationRepository.findAllByMemberOrderByCreatedAtDesc(member).stream()
-            .map(NotificationResponseDto::from)
-            .toList();
+        LocalDateTime cursorCreatedAt = null;
+        if (cursorId != null) {
+            cursorCreatedAt = notificationRepository.findById(cursorId)
+                .map(Notification::getCreatedAt)
+                .orElse(null);
+        }
+
+        int safeLimit = Math.max(1, Math.min(limit, 50));
+        Pageable pageable = PageRequest.of(0, safeLimit + 1);
+
+        List<Notification> notifications = notificationRepository.findByMemberWithCursor(
+            member, cursorCreatedAt, pageable
+        );
+
+        return NotificationListResponseDto.from(notifications, safeLimit);
     }
 
     @Transactional
