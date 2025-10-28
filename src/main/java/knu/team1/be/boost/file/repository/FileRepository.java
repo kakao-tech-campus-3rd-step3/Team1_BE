@@ -13,6 +13,14 @@ public interface FileRepository extends JpaRepository<File, UUID> {
     List<File> findAllByTask(Task task);
 
     @Query("""
+            SELECT f
+            FROM File f
+            JOIN f.task t
+            WHERE t.project.id = :projectId
+        """)
+    List<File> findAllByProjectId(@Param("projectId") UUID projectId);
+
+    @Query("""
             SELECT f.task.id AS taskId, COUNT(f) AS count
             FROM File f
             WHERE f.task.id IN :taskIds AND f.deleted = false

@@ -14,6 +14,7 @@ import knu.team1.be.boost.file.dto.FileCompleteRequestDto;
 import knu.team1.be.boost.file.dto.FileCompleteResponseDto;
 import knu.team1.be.boost.file.dto.FilePresignedUrlResponseDto;
 import knu.team1.be.boost.file.dto.FileRequestDto;
+import knu.team1.be.boost.file.dto.ProjectFileListResponseDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -96,6 +97,28 @@ public interface FileApi {
     ResponseEntity<FileCompleteResponseDto> completeUpload(
         @PathVariable UUID fileId,
         @Valid @RequestBody FileCompleteRequestDto request,
+        @AuthenticationPrincipal UserPrincipalDto user
+    );
+
+    @Operation(
+        summary = "프로젝트 파일 목록 조회",
+        description = "특정 프로젝트에 속한 모든 파일 목록을 조회합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200",
+            description = "프로젝트 파일 목록 조회 성공",
+            content = @Content(schema = @Schema(implementation = ProjectFileListResponseDto.class))
+        ),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
+        @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
+        @ApiResponse(responseCode = "404", description = "프로젝트를 찾을 수 없음", content = @Content),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
+    })
+    @GetMapping("/project/{projectId}")
+    ResponseEntity<ProjectFileListResponseDto> getFilesByProject(
+        @PathVariable UUID projectId,
         @AuthenticationPrincipal UserPrincipalDto user
     );
 

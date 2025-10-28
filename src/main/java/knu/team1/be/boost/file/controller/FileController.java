@@ -8,6 +8,7 @@ import knu.team1.be.boost.file.dto.FileCompleteRequestDto;
 import knu.team1.be.boost.file.dto.FileCompleteResponseDto;
 import knu.team1.be.boost.file.dto.FilePresignedUrlResponseDto;
 import knu.team1.be.boost.file.dto.FileRequestDto;
+import knu.team1.be.boost.file.dto.ProjectFileListResponseDto;
 import knu.team1.be.boost.file.service.FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -48,6 +49,15 @@ public class FileController implements FileApi {
         @AuthenticationPrincipal UserPrincipalDto user
     ) {
         FileCompleteResponseDto response = fileService.completeUpload(fileId, request, user);
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<ProjectFileListResponseDto> getFilesByProject(
+        @PathVariable UUID projectId,
+        @AuthenticationPrincipal UserPrincipalDto user
+    ) {
+        ProjectFileListResponseDto response = fileService.getFilesByProject(projectId, user);
         return ResponseEntity.ok(response);
     }
 

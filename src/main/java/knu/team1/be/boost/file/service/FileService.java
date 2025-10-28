@@ -1,6 +1,7 @@
 package knu.team1.be.boost.file.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.common.exception.BusinessException;
@@ -10,6 +11,7 @@ import knu.team1.be.boost.file.dto.FileCompleteRequestDto;
 import knu.team1.be.boost.file.dto.FileCompleteResponseDto;
 import knu.team1.be.boost.file.dto.FilePresignedUrlResponseDto;
 import knu.team1.be.boost.file.dto.FileRequestDto;
+import knu.team1.be.boost.file.dto.ProjectFileListResponseDto;
 import knu.team1.be.boost.file.entity.File;
 import knu.team1.be.boost.file.entity.FileType;
 import knu.team1.be.boost.file.entity.vo.StorageKey;
@@ -18,6 +20,7 @@ import knu.team1.be.boost.file.repository.FileRepository;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
 import knu.team1.be.boost.project.entity.Project;
+import knu.team1.be.boost.project.repository.ProjectRepository;
 import knu.team1.be.boost.task.entity.Task;
 import knu.team1.be.boost.task.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +40,7 @@ public class FileService {
     private final FileRepository fileRepository;
     private final TaskRepository taskRepository;
     private final MemberRepository memberRepository;
+    private final ProjectRepository projectRepository;
 
     private final AccessPolicy accessPolicy;
     private final PresignedUrlFactory presignedUrlFactory;
@@ -151,6 +155,23 @@ public class FileService {
         log.info("파일 업로드 완료 처리 성공 - fileId={}, taskId={}, filename={}",
             fileId, taskId, request.filename());
         return FileCompleteResponseDto.from(file, taskId);
+    }
+
+    @Transactional(readOnly = true)
+    public ProjectFileListResponseDto getFilesByProject(
+        UUID projectId,
+        UserPrincipalDto user
+    ) {
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
+            ));
+
+        accessPolicy.ensureProjectMember(project.getId(), user.id());
+
+        List<File> files = fileRepository.findAllByProjectId(project.getId());
+
+        return ProjectFileListResponseDto.from(project.getId(), files);
     }
 
     @Transactional
