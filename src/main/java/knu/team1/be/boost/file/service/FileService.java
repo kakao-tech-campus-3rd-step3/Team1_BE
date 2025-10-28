@@ -175,9 +175,11 @@ public class FileService {
 
         LocalDateTime cursorCreatedAt = null;
         if (cursorId != null) {
-            cursorCreatedAt = fileRepository.findById(cursorId)
-                .map(File::getCreatedAt)
-                .orElse(null);
+            File cursor = fileRepository.findById(cursorId).orElse(null);
+
+            if (cursor != null) {
+                cursorCreatedAt = cursor.getCreatedAt();
+            }
         }
 
         int safeLimit = Math.max(1, Math.min(limit, 50));
