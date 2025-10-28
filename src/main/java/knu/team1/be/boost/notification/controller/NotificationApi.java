@@ -1,7 +1,6 @@
 package knu.team1.be.boost.notification.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -14,7 +13,6 @@ import java.util.UUID;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.notification.dto.NotificationListResponseDto;
 import knu.team1.be.boost.notification.dto.NotificationReadResponseDto;
-import knu.team1.be.boost.notification.dto.NotificationResponseDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,7 +34,7 @@ public interface NotificationApi {
         @ApiResponse(
             responseCode = "200",
             description = "조회 성공",
-            content = @Content(array = @ArraySchema(schema = @Schema(implementation = NotificationResponseDto.class)))
+            content = @Content(schema = @Schema(implementation = NotificationListResponseDto.class))
         ),
         @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
         @ApiResponse(responseCode = "404", description = "존재하지 않는 멤버", content = @Content),
