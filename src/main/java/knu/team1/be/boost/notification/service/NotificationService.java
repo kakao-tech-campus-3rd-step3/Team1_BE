@@ -70,7 +70,10 @@ public class NotificationService {
         Pageable pageable = PageRequest.of(0, safeLimit + 1);
 
         List<Notification> notifications = notificationRepository.findByMemberWithCursor(
-            member, cursorCreatedAt, pageable
+            member,
+            cursorCreatedAt,
+            cursorId,
+            pageable
         );
 
         return NotificationListResponseDto.from(notifications, safeLimit);

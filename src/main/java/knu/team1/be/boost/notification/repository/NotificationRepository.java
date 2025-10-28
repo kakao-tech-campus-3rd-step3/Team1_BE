@@ -24,6 +24,7 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
     List<Notification> findByMemberWithCursor(
         @Param("member") Member member,
         @Param("cursorCreatedAt") LocalDateTime cursorCreatedAt,
+        @Param("cursorId") UUID cursorId,
         Pageable pageable
     );
 }
