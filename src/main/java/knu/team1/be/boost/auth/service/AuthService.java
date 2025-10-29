@@ -135,15 +135,13 @@ public class AuthService {
     }
 
     private RegisterResult registerOrLogin(KakaoDto.UserInfo userInfo) {
-        Optional<Member> foundMember = memberRepository.findByOauthInfoProviderAndOauthInfoProviderId(
-            "kakao", userInfo.id()
-        );
+        Optional<Member> existingMember = memberRepository
+            .findByOauthInfoProviderAndOauthInfoProviderIdIncludingDeleted(
+                "kakao", userInfo.id()
+            );
 
-        if (foundMember.isPresent()) {
-            // 기존 회원일 경우
-            return new RegisterResult(foundMember.get(), false);
-        } else {
-            // 신규 회원일 경우
+        // 회원 기록이 없다면 새로 생성해서 저장
+        if (existingMember.isEmpty()) {
             OauthInfo oauthInfo = OauthInfo.builder()
                 .provider("kakao")
                 .providerId(userInfo.id())
@@ -157,6 +155,20 @@ public class AuthService {
             Member savedMember = memberRepository.save(newMember);
             return new RegisterResult(savedMember, true);
         }
+
+        Member member = existingMember.get();
+
+        // 탈퇴했던 기록이 있으나 비활성화 상태면 재활성화
+        if (member.isDeleted()) {
+            member.reactivate();
+            // 재가입 시 최신 정보로 업데이트
+            member.updateName(userInfo.kakaoAccount().profile().nickname());
+            memberRepository.save(member);
+            return new RegisterResult(member, true);
+        }
+
+        // 이미 활성화된 회원일 경우
+        return new RegisterResult(member, false);
     }
 
     private Authentication createUserAuthentication(Member member) {
