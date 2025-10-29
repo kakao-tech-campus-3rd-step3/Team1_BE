@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.UUID;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.project.entity.Project;
+import knu.team1.be.boost.tag.entity.Tag;
 import knu.team1.be.boost.task.dto.MemberTaskStatusCount;
 import knu.team1.be.boost.task.dto.ProjectTaskStatusCount;
 import knu.team1.be.boost.task.entity.Task;
@@ -18,6 +19,9 @@ import org.springframework.data.repository.query.Param;
 public interface TaskRepository extends JpaRepository<Task, UUID> {
 
     boolean existsByIdAndAssigneesId(UUID taskId, UUID memberId);
+
+    @Query("SELECT t FROM Task t JOIN t.tags tag WHERE tag = :tag")
+    List<Task> findAllByTagsContains(@Param("tag") Tag tag);
 
     @Query("""
             SELECT new knu.team1.be.boost.task.dto.ProjectTaskStatusCount(
