@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -78,7 +79,7 @@ public class TaskService {
 
         accessPolicy.ensureProjectMember(project.getId(), user.id());
 
-        List<Tag> tags = findTagsByIds(request.tags());
+        Set<Tag> tags = findTagsByIds(request.tags());
         tags.forEach(tag -> tag.ensureTagInProject(project.getId()));
 
         Set<Member> assignees = findAssignees(request.assignees());
@@ -124,7 +125,7 @@ public class TaskService {
         accessPolicy.ensureProjectMember(project.getId(), user.id());
         accessPolicy.ensureTaskAssignee(task.getId(), user.id());
 
-        List<Tag> tags = findTagsByIds(request.tags());
+        Set<Tag> tags = findTagsByIds(request.tags());
         tags.forEach(tag -> tag.ensureTagInProject(project.getId()));
 
         Set<Member> assignees = findAssignees(request.assignees());
@@ -518,9 +519,9 @@ public class TaskService {
             .collect(Collectors.toMap(CommentCount::getTaskId, CommentCount::getCount));
     }
 
-    private List<Tag> findTagsByIds(List<UUID> tagIds) {
+    private Set<Tag> findTagsByIds(List<UUID> tagIds) {
         if (tagIds == null || tagIds.isEmpty()) {
-            return List.of();
+            return Set.of();
         }
 
         List<Tag> foundTags = tagRepository.findAllById(tagIds);
@@ -538,7 +539,7 @@ public class TaskService {
             );
         }
 
-        return foundTags;
+        return new LinkedHashSet<>(foundTags);
     }
 
     private Set<Member> findAssignees(List<UUID> assigneeIds) {
