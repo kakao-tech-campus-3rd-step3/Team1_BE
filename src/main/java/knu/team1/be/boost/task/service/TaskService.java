@@ -33,11 +33,13 @@ import knu.team1.be.boost.task.dto.MemberTaskStatusCountResponseDto;
 import knu.team1.be.boost.task.dto.MyTaskStatusCountResponseDto;
 import knu.team1.be.boost.task.dto.ProjectTaskStatusCount;
 import knu.team1.be.boost.task.dto.ProjectTaskStatusCountResponseDto;
+import knu.team1.be.boost.task.dto.TaskApproveEvent;
 import knu.team1.be.boost.task.dto.TaskApproveResponseDto;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
 import knu.team1.be.boost.task.dto.TaskDetailResponseDto;
 import knu.team1.be.boost.task.dto.TaskMemberSectionResponseDto;
 import knu.team1.be.boost.task.dto.TaskResponseDto;
+import knu.team1.be.boost.task.dto.TaskReviewEvent;
 import knu.team1.be.boost.task.dto.TaskSortBy;
 import knu.team1.be.boost.task.dto.TaskSortDirection;
 import knu.team1.be.boost.task.dto.TaskStatusRequestDto;
@@ -47,6 +49,7 @@ import knu.team1.be.boost.task.entity.Task;
 import knu.team1.be.boost.task.entity.TaskStatus;
 import knu.team1.be.boost.task.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -64,6 +67,7 @@ public class TaskService {
     private final ProjectRepository projectRepository;
     private final ProjectMembershipRepository projectMembershipRepository;
 
+    private final ApplicationEventPublisher eventPublisher;
     private final AccessPolicy accessPolicy;
 
     @Transactional
@@ -193,6 +197,10 @@ public class TaskService {
         accessPolicy.ensureTaskAssignee(task.getId(), user.id());
 
         task.changeStatus(request.status());
+
+        if (request.status() == TaskStatus.REVIEW) {
+            eventPublisher.publishEvent(TaskReviewEvent.from(project, task));
+        }
 
         return TaskResponseDto.from(task);
     }
@@ -514,6 +522,10 @@ public class TaskService {
             ));
 
         task.approve(member, projectMembers);
+
+        if (task.getStatus() == TaskStatus.DONE) {
+            eventPublisher.publishEvent(TaskApproveEvent.from(project, task));
+        }
 
         return TaskApproveResponseDto.from(task, projectMembers);
     }

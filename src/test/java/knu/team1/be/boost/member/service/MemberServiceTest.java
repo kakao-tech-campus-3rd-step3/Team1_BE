@@ -109,7 +109,8 @@ public class MemberServiceTest {
     @DisplayName("회원 아바타 수정 성공")
     void updateMemberAvatar_Success() {
         // given
-        MemberAvatarUpdateRequestDto requestDto = new MemberAvatarUpdateRequestDto("1112");
+        MemberAvatarUpdateRequestDto requestDto = new MemberAvatarUpdateRequestDto("1112",
+            "#FF5733");
         given(memberRepository.findById(testUserId)).willReturn(Optional.of(testMember));
 
         // when
@@ -126,7 +127,8 @@ public class MemberServiceTest {
     void updateMemberAvatar_Fail_MemberNotFound() {
         // given
         UUID nonExistentUserId = UUID.randomUUID();
-        MemberAvatarUpdateRequestDto requestDto = new MemberAvatarUpdateRequestDto("1112");
+        MemberAvatarUpdateRequestDto requestDto = new MemberAvatarUpdateRequestDto("1112",
+            "#FF5733");
         given(memberRepository.findById(nonExistentUserId)).willReturn(Optional.empty());
 
         // when & then

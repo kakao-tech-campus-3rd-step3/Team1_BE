@@ -13,6 +13,7 @@ import knu.team1.be.boost.common.entity.SoftDeletableEntity;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.project.entity.Project;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -45,22 +46,29 @@ public class ProjectMembership extends SoftDeletableEntity {
     @Column(name = "role", nullable = false)
     private ProjectRole role;
 
+    @Column(name = "notification_enabled", nullable = false)
+    @Builder.Default
+    private boolean notificationEnabled = true;
+
     /**
      * 프로젝트와 멤버 간의 연관관계를 나타내는 ProjectMembership 엔티티를 생성합니다. 생성된 엔티티는 프로젝트와 멤버의 컬렉션에 자동으로 추가됩니다.
      *
-     * @param project 연관 지을 프로젝트
-     * @param member  연관 지을 멤버
-     * @param role    프로젝트 내에서의 멤버 역할
+     * @param project             연관 지을 프로젝트
+     * @param member              연관 지을 멤버
+     * @param notificationEnabled 알림 수신 여부
+     * @param role                프로젝트 내에서의 멤버 역할
      * @return 생성된 ProjectMembership 엔티티
      */
     public static ProjectMembership createProjectMembership(
         Project project,
         Member member,
+        boolean notificationEnabled,
         ProjectRole role
     ) {
         ProjectMembership projectMembership = ProjectMembership.builder()
             .project(project)
             .member(member)
+            .notificationEnabled(notificationEnabled)
             .role(role)
             .build();
 
@@ -68,6 +76,14 @@ public class ProjectMembership extends SoftDeletableEntity {
         member.getProjectMemberships().add(projectMembership);
 
         return projectMembership;
+    }
+
+    public static ProjectMembership createProjectMembership(
+        Project project,
+        Member member,
+        ProjectRole role
+    ) {
+        return createProjectMembership(project, member, true, role);
     }
 
     public void updateRole(ProjectRole role) {
