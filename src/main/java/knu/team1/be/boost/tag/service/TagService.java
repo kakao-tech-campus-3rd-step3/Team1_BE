@@ -14,7 +14,6 @@ import knu.team1.be.boost.tag.dto.TagResponseDto;
 import knu.team1.be.boost.tag.dto.TagUpdateRequestDto;
 import knu.team1.be.boost.tag.entity.Tag;
 import knu.team1.be.boost.tag.repository.TagRepository;
-import knu.team1.be.boost.task.entity.Task;
 import knu.team1.be.boost.task.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -129,17 +128,8 @@ public class TagService {
                 ErrorCode.TAG_NOT_FOUND, "tagId=" + tagId
             ));
 
-        tag.ensureTagInProject(projectId);
-
-        detachTagFromTasks(tag);
+        taskRepository.detachTagFromAllTasks(tag.getId());
 
         tagRepository.delete(tag);
-    }
-
-    private void detachTagFromTasks(Tag tag) {
-        List<Task> tasks = taskRepository.findAllByTagsContains(tag);
-        for (Task task : tasks) {
-            task.getTags().remove(tag);
-        }
     }
 }
