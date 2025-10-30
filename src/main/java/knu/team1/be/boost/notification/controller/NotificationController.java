@@ -45,4 +45,15 @@ public class NotificationController implements NotificationApi {
         );
         return ResponseEntity.ok(response);
     }
+
+    @Override
+    public ResponseEntity<Void> setProjectNotification(
+        @PathVariable UUID projectId,
+        @RequestParam boolean enabled,
+        @AuthenticationPrincipal UserPrincipalDto user
+    ) {
+        notificationService.setProjectNotification(projectId, enabled, user.id());
+        return ResponseEntity.ok().build();
+    }
+
 }

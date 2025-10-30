@@ -10,6 +10,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
+import knu.team1.be.boost.common.policy.AccessPolicy;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
 import knu.team1.be.boost.notification.dto.NotificationListResponseDto;
@@ -18,7 +19,9 @@ import knu.team1.be.boost.notification.dto.NotificationSavedEvent;
 import knu.team1.be.boost.notification.entity.Notification;
 import knu.team1.be.boost.notification.repository.NotificationRepository;
 import knu.team1.be.boost.project.entity.Project;
+import knu.team1.be.boost.project.repository.ProjectRepository;
 import knu.team1.be.boost.projectMembership.entity.ProjectMembership;
+import knu.team1.be.boost.projectMembership.repository.ProjectMembershipRepository;
 import knu.team1.be.boost.task.dto.TaskApproveEvent;
 import knu.team1.be.boost.task.dto.TaskReviewEvent;
 import knu.team1.be.boost.task.entity.Task;
@@ -40,9 +43,13 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @RequiredArgsConstructor
 public class NotificationService {
 
-    private final MemberRepository memberRepository;
     private final TaskRepository taskRepository;
+    private final MemberRepository memberRepository;
+    private final ProjectRepository projectRepository;
     private final NotificationRepository notificationRepository;
+    private final ProjectMembershipRepository projectMembershipRepository;
+
+    private final AccessPolicy accessPolicy;
 
     private final WebPushClient webPushClient;
 
@@ -99,6 +106,30 @@ public class NotificationService {
         notification.markAsRead();
 
         return NotificationReadResponseDto.from(notification);
+    }
+
+    @Transactional
+    public void setProjectNotification(
+        UUID projectId,
+        boolean enabled,
+        UUID userId
+    ) {
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND,
+                "projectId: " + projectId
+            ));
+
+        accessPolicy.ensureProjectMember(project.getId(), userId);
+
+        ProjectMembership membership = projectMembershipRepository.findByProjectIdAndMemberId(
+                project.getId(), userId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_MEMBER_NOT_FOUND,
+                "projectId: " + project.getId() + ", memberId: " + userId
+            ));
+
+        membership.updateNotificationEnabled(enabled);
     }
 
     @Transactional
