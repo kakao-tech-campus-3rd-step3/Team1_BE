@@ -7,6 +7,15 @@ spring:
     console:
       enabled: false
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
   datasource:
     url: ${RDS_URL}
     driver-class-name: com.mysql.cj.jdbc.Driver

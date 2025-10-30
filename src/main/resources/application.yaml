@@ -6,6 +6,15 @@ spring:
   profiles:
     active: dev
 
+management:
+  endpoints:
+    web:
+      base-path: /
+      path-mapping:
+        health: health
+        info: actuator/info
+        metrics: actuator/metrics
+
   ai:
     openai:
       chat:
