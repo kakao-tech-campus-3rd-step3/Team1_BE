@@ -129,6 +129,8 @@ public class TagService {
                 ErrorCode.TAG_NOT_FOUND, "tagId=" + tagId
             ));
 
+        tag.ensureTagInProject(projectId);
+
         taskRepository.detachTagFromAllTasks(tag.getId());
 
         tagRepository.delete(tag);
