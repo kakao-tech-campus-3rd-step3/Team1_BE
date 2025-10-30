@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.member.dto.MemberAvatarUpdateRequestDto;
 import knu.team1.be.boost.member.dto.MemberNameUpdateRequestDto;
+import knu.team1.be.boost.member.dto.MemberNotificationResponseDto;
 import knu.team1.be.boost.member.dto.MemberResponseDto;
 import knu.team1.be.boost.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
@@ -52,11 +53,14 @@ public class MemberController implements MemberApi {
     }
 
     @Override
-    public ResponseEntity<Void> setNotificationEnabled(
+    public ResponseEntity<MemberNotificationResponseDto> setNotificationEnabled(
         boolean enabled,
         UserPrincipalDto user
     ) {
-        memberService.setNotificationEnabled(user.id(), enabled);
-        return ResponseEntity.ok().build();
+        MemberNotificationResponseDto response = memberService.setNotificationEnabled(
+            user.id(),
+            enabled
+        );
+        return ResponseEntity.ok(response);
     }
 }

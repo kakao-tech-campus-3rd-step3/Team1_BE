@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.member.dto.MemberAvatarUpdateRequestDto;
 import knu.team1.be.boost.member.dto.MemberNameUpdateRequestDto;
+import knu.team1.be.boost.member.dto.MemberNotificationResponseDto;
 import knu.team1.be.boost.member.dto.MemberResponseDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -104,13 +105,17 @@ public interface MemberApi {
         description = "로그인한 사용자의 전체 서비스 알림 수신 여부를 켜거나 끕니다."
     )
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "알림 설정 변경 성공"),
+        @ApiResponse(
+            responseCode = "200",
+            description = "알림 설정 변경 성공",
+            content = @Content(schema = @Schema(implementation = MemberNotificationResponseDto.class))
+        ),
         @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
         @ApiResponse(responseCode = "404", description = "회원을 찾을 수 없음", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
     })
     @PatchMapping("/me/notifications")
-    ResponseEntity<Void> setNotificationEnabled(
+    ResponseEntity<MemberNotificationResponseDto> setNotificationEnabled(
         @RequestParam boolean enabled,
         @AuthenticationPrincipal UserPrincipalDto user
     );

@@ -5,6 +5,7 @@ import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.member.dto.MemberAvatarUpdateRequestDto;
 import knu.team1.be.boost.member.dto.MemberNameUpdateRequestDto;
+import knu.team1.be.boost.member.dto.MemberNotificationResponseDto;
 import knu.team1.be.boost.member.dto.MemberResponseDto;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
@@ -69,7 +70,7 @@ public class MemberService {
     }
 
     @Transactional
-    public void setNotificationEnabled(UUID memberId, boolean enabled) {
+    public MemberNotificationResponseDto setNotificationEnabled(UUID memberId, boolean enabled) {
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new BusinessException(
                 ErrorCode.MEMBER_NOT_FOUND,
@@ -77,6 +78,8 @@ public class MemberService {
             ));
 
         member.updateNotificationEnabled(enabled);
+
+        return MemberNotificationResponseDto.from(member.getId(), member.isNotificationEnabled());
     }
 
 }
