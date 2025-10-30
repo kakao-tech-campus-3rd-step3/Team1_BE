@@ -45,6 +45,15 @@ boost:
       access-key: ${AWS_ACCESS_KEY}
       secret-key: ${AWS_SECRET_KEY}
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+      
 webpush:
   vapid:
     public-key: ${VAPID_PUBLIC_KEY}
