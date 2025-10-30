@@ -66,6 +66,7 @@ public class MemberControllerTest {
             "테스트 유저",
             "1111",
             "#FF5733",
+            true,
             LocalDateTime.now(),
             LocalDateTime.now()
         );
@@ -105,6 +106,7 @@ public class MemberControllerTest {
             "수정된 이름",
             "1111",
             "#FF5733",
+            true,
             LocalDateTime.now(),
             LocalDateTime.now()
         );
@@ -151,6 +153,7 @@ public class MemberControllerTest {
             "원래 이름",
             "1112",
             "#FF5733",
+            true,
             LocalDateTime.now(),
             LocalDateTime.now()
         );
