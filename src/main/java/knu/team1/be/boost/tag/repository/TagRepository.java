@@ -14,7 +14,7 @@ public interface TagRepository extends JpaRepository<Tag, UUID> {
 
     List<Tag> findAllByProjectId(UUID projectId);
 
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query(
         "UPDATE Tag t SET t.deleted = true, t.deletedAt = CURRENT_TIMESTAMP WHERE t.project.id = :projectId"
     )
