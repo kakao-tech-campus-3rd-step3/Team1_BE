@@ -54,6 +54,14 @@ public enum ErrorCode {
     MEMO_NOT_FOUND(HttpStatus.NOT_FOUND, "Memo not found", "메모를 찾을 수 없습니다."),
     PROJECT_MEMO_ONLY(HttpStatus.CONFLICT, "Memo not in project", "해당 메모가 프로젝트에 속하지 않습니다."),
 
+    // Notification 관련
+    NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "Notification not found", "해당 알림을 찾을 수 없습니다."),
+    NOTIFICATION_FORBIDDEN_ACCESS(HttpStatus.FORBIDDEN, "Notification forbidden access",
+        "해당 알림에 접근할 수 없습니다."),
+
+    // Cursor 관련
+    INVALID_CURSOR(HttpStatus.FORBIDDEN, "Invalid cursor", "현재 지정된 커서가 사용자가 접근 불가능합니다."),
+
     // Auth 관련
     INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "Invalid refresh token", "유효하지 않은 리프레시 토큰입니다."),
     REFRESH_TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "Refresh token not found", "리프레시 토큰을 찾을 수 없습니다."),
@@ -76,7 +84,16 @@ public enum ErrorCode {
     AI_SERVICE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "AI service error",
         "AI 서비스 처리 중 오류가 발생했습니다."),
     AI_SERVICE_TIMEOUT(HttpStatus.REQUEST_TIMEOUT, "AI service timeout",
-        "AI 서비스 응답이 지연되고 있습니다. 잠시 후 다시 시도해주세요.");
+        "AI 서비스 응답이 지연되고 있습니다. 잠시 후 다시 시도해주세요."),
+
+    // WEB Push 관련
+    INVALID_WEB_PUSH_TOKEN(HttpStatus.BAD_REQUEST, "Invalid WebPush token",
+        "유효하지 않은 WebPush 세션 토큰입니다."),
+    WEB_PUSH_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Web-Push service error",
+        "웹 푸시 전송 중 오류가 발생했습니다."),
+    INVALID_WEB_PUSH_STATE_TRANSITION(HttpStatus.CONFLICT, "Invalid WebPush session transition",
+        "웹 푸시 세션 상태 전환이 올바르지 않습니다.");
+
     private final HttpStatus httpStatus;
     private final String errorMessage;
     private final String clientMessage;

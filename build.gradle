@@ -61,6 +61,12 @@ dependencies {
 
     // AI
     implementation 'org.springframework.ai:spring-ai-starter-model-openai'
+
+    // Web Push 관련 라이브러리
+    implementation 'nl.martijndwars:web-push:5.1.0'
+    implementation 'org.bitbucket.b_c:jose4j:0.9.6'
+    implementation 'org.bouncycastle:bcprov-jdk18on:1.82'
+    implementation 'com.github.ben-manes.caffeine:caffeine:3.2.2'
 }
 
 dependencyManagement {

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.UUID;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.task.dto.MemberTaskStatusCountResponseDto;
+import knu.team1.be.boost.task.dto.MyTaskStatusCountResponseDto;
 import knu.team1.be.boost.task.dto.ProjectTaskStatusCountResponseDto;
 import knu.team1.be.boost.task.dto.TaskApproveResponseDto;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
@@ -24,7 +25,6 @@ import knu.team1.be.boost.task.service.TaskService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -166,7 +166,15 @@ public class TaskController implements TaskApi {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/projects/{projectId}/tasks/status-count")
+    @Override
+    public ResponseEntity<MyTaskStatusCountResponseDto> getMyTaskStatusCount(
+        @RequestParam(required = false) String search,
+        @AuthenticationPrincipal UserPrincipalDto user
+    ) {
+        MyTaskStatusCountResponseDto response = taskService.countMyTasksByStatus(search, user);
+        return ResponseEntity.ok(response);
+    }
+
     public ResponseEntity<ProjectTaskStatusCountResponseDto> getProjectTaskStatusCount(
         @PathVariable UUID projectId,
         @RequestParam(required = false) String search,
@@ -180,7 +188,6 @@ public class TaskController implements TaskApi {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/projects/{projectId}/tasks/members/status-count")
     public ResponseEntity<List<MemberTaskStatusCountResponseDto>> getMemberTaskStatusCount(
         @PathVariable UUID projectId,
         @RequestParam(required = false) String search,

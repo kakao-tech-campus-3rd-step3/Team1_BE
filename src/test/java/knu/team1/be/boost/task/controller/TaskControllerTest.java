@@ -98,6 +98,8 @@ class TaskControllerTest {
                 LocalDate.of(2025, 9, 18),
                 true,
                 2,
+                0,
+                0,
                 List.of(
                     new TagResponseDto(TAG1_ID, "피드백"),
                     new TagResponseDto(TAG2_ID, "멘토링")
@@ -107,6 +109,7 @@ class TaskControllerTest {
                         UUID.fromString("550e8400-e29b-41d4-a716-446655440000"),
                         "김부스트",
                         "avatar1.png",
+                        "#FF5733",
                         LocalDateTime.of(2025, 9, 5, 15, 0, 0),
                         LocalDateTime.of(2025, 9, 5, 16, 0, 0)
                     ),
@@ -114,6 +117,7 @@ class TaskControllerTest {
                         UUID.fromString("550e8400-e29b-41d4-a716-446655440111"),
                         "이부스트",
                         "avatar2.png",
+                        "#FF5733",
                         LocalDateTime.of(2025, 9, 6, 10, 0, 0),
                         LocalDateTime.of(2025, 9, 6, 11, 0, 0)
                     )
@@ -268,6 +272,8 @@ class TaskControllerTest {
                 LocalDate.of(2025, 9, 18),
                 false,
                 1,
+                0,
+                0,
                 List.of(new TagResponseDto(TAG2_ID, "멘토링")),
                 List.of(),
                 LocalDateTime.of(2025, 9, 17, 12, 0, 0),
@@ -373,6 +379,8 @@ class TaskControllerTest {
                 TaskStatus.REVIEW,
                 LocalDate.of(2025, 9, 18),
                 true, 2,
+                0,
+                0,
                 List.of(new TagResponseDto(TAG1_ID, "피드백"), new TagResponseDto(TAG2_ID, "멘토링")),
                 List.of(),
                 LocalDateTime.of(2025, 9, 17, 12, 0, 0),

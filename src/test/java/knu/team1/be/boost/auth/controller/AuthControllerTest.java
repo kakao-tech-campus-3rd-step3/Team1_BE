@@ -73,6 +73,7 @@ class AuthControllerTest {
                 UUID.randomUUID(),
                 "수정된 이름",
                 "1112",
+                "#FF5733",
                 LocalDateTime.now(),
                 LocalDateTime.now()
             );

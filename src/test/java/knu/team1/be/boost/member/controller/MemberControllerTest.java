@@ -65,6 +65,7 @@ public class MemberControllerTest {
             testMemberId,
             "테스트 유저",
             "1111",
+            "#FF5733",
             LocalDateTime.now(),
             LocalDateTime.now()
         );
@@ -103,6 +104,7 @@ public class MemberControllerTest {
             testMemberId,
             "수정된 이름",
             "1111",
+            "#FF5733",
             LocalDateTime.now(),
             LocalDateTime.now()
         );
@@ -142,11 +144,13 @@ public class MemberControllerTest {
     @DisplayName("내 아바타 수정 API 성공")
     void updateMyAvatar_Success() throws Exception {
         // given
-        MemberAvatarUpdateRequestDto requestDto = new MemberAvatarUpdateRequestDto("1111");
+        MemberAvatarUpdateRequestDto requestDto = new MemberAvatarUpdateRequestDto("1111",
+            "#FF5733");
         MemberResponseDto responseDto = new MemberResponseDto(
             testMemberId,
             "원래 이름",
             "1112",
+            "#FF5733",
             LocalDateTime.now(),
             LocalDateTime.now()
         );
@@ -167,7 +171,8 @@ public class MemberControllerTest {
     @DisplayName("내 아바타 수정 API 실패 - 존재하지 않는 회원")
     void updateMyAvatar_Fail_MemberNotFound() throws Exception {
         // given
-        MemberAvatarUpdateRequestDto requestDto = new MemberAvatarUpdateRequestDto("1112");
+        MemberAvatarUpdateRequestDto requestDto = new MemberAvatarUpdateRequestDto("1112",
+            "#FF5733");
         given(memberService.updateMemberAvatar(any(),
             any(MemberAvatarUpdateRequestDto.class)))
             .willThrow(new BusinessException(
