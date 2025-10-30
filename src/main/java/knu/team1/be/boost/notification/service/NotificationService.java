@@ -3,6 +3,7 @@ package knu.team1.be.boost.notification.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -160,9 +161,10 @@ public class NotificationService {
 
     @Transactional
     public void notifyTaskApprove(Project project, Task task) {
+        Set<Member> taskAssigneeSet = new HashSet<>(task.getAssignees());
+
         List<Member> assignees = project.getProjectMemberships().stream()
-            .filter(
-                pm -> task.getAssignees().contains(pm.getMember()) && pm.isNotificationEnabled())
+            .filter(pm -> pm.isNotificationEnabled() && taskAssigneeSet.contains(pm.getMember()))
             .map(ProjectMembership::getMember)
             .toList();
 
@@ -219,7 +221,9 @@ public class NotificationService {
 
         notificationRepository.save(notification);
 
-        eventPublisher.publishEvent(NotificationSavedEvent.from(member, title, message));
+        if (member.isNotificationEnabled()) {
+            eventPublisher.publishEvent(NotificationSavedEvent.from(member, title, message));
+        }
     }
 
     private String buildNotificationMessage(Map<UUID, List<DueTask>> projectTasks) {
