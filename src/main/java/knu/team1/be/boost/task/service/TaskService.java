@@ -225,6 +225,14 @@ public class TaskService {
 
         accessPolicy.ensureProjectMember(project.getId(), user.id());
 
+        boolean approvedByMe = false;
+        for (Member approver : task.getApprovers()) {
+            if (approver.getId().equals(user.id())) {
+                approvedByMe = true;
+                break;
+            }
+        }
+
         List<Comment> comments = commentRepository.findAllByTaskId(task.getId());
         List<File> files = fileRepository.findAllByTask(task);
         List<Member> projectMembers = projectMembershipRepository.findAllByProjectId(
@@ -233,7 +241,13 @@ public class TaskService {
             .map(ProjectMembership::getMember)
             .toList();
 
-        return TaskDetailResponseDto.from(task, comments, files, projectMembers);
+        return TaskDetailResponseDto.from(
+            task,
+            approvedByMe,
+            comments,
+            files,
+            projectMembers
+        );
     }
 
     @Transactional(readOnly = true)
