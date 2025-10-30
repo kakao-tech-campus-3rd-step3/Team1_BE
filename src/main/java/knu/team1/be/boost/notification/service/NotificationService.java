@@ -16,6 +16,7 @@ import knu.team1.be.boost.member.repository.MemberRepository;
 import knu.team1.be.boost.notification.dto.NotificationListResponseDto;
 import knu.team1.be.boost.notification.dto.NotificationReadResponseDto;
 import knu.team1.be.boost.notification.dto.NotificationSavedEvent;
+import knu.team1.be.boost.notification.dto.ProjectNotificationResponseDto;
 import knu.team1.be.boost.notification.entity.Notification;
 import knu.team1.be.boost.notification.repository.NotificationRepository;
 import knu.team1.be.boost.project.entity.Project;
@@ -109,7 +110,7 @@ public class NotificationService {
     }
 
     @Transactional
-    public void setProjectNotification(
+    public ProjectNotificationResponseDto setProjectNotification(
         UUID projectId,
         boolean enabled,
         UUID userId
@@ -130,6 +131,12 @@ public class NotificationService {
             ));
 
         membership.updateNotificationEnabled(enabled);
+
+        return ProjectNotificationResponseDto.from(
+            project.getId(),
+            userId,
+            membership.isNotificationEnabled()
+        );
     }
 
     @Transactional
