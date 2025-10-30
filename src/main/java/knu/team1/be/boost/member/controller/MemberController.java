@@ -50,4 +50,13 @@ public class MemberController implements MemberApi {
         memberService.deleteMember(user.id());
         return ResponseEntity.noContent().build();
     }
+
+    @Override
+    public ResponseEntity<Void> setNotificationEnabled(
+        boolean enabled,
+        UserPrincipalDto user
+    ) {
+        memberService.setNotificationEnabled(user.id(), enabled);
+        return ResponseEntity.ok().build();
+    }
 }

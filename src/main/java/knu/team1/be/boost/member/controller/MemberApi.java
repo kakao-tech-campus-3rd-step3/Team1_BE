@@ -16,9 +16,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Members", description = "Member 관련 API")
 @RequestMapping("/api/members")
@@ -96,4 +98,21 @@ public interface MemberApi {
     })
     @DeleteMapping("/me")
     ResponseEntity<Void> deleteMyAccount(@AuthenticationPrincipal UserPrincipalDto user);
+
+    @Operation(
+        summary = "전체 서비스 알림 설정 변경",
+        description = "로그인한 사용자의 전체 서비스 알림 수신 여부를 켜거나 끕니다."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "알림 설정 변경 성공"),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
+        @ApiResponse(responseCode = "404", description = "회원을 찾을 수 없음", content = @Content),
+        @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
+    })
+    @PatchMapping("/me/notifications")
+    ResponseEntity<Void> setNotificationEnabled(
+        @RequestParam boolean enabled,
+        @AuthenticationPrincipal UserPrincipalDto user
+    );
+
 }

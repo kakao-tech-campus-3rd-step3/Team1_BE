@@ -67,4 +67,16 @@ public class MemberService {
             ));
         memberRepository.delete(member);
     }
+
+    @Transactional
+    public void setNotificationEnabled(UUID memberId, boolean enabled) {
+        Member member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.MEMBER_NOT_FOUND,
+                "memberId: " + memberId
+            ));
+
+        member.updateNotificationEnabled(enabled);
+    }
+
 }
