@@ -7,15 +7,6 @@ spring:
     console:
       enabled: false
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info
-  endpoint:
-    health:
-      show-details: never
-
   datasource:
     url: ${RDS_URL}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -53,3 +44,12 @@ boost:
     credentials:
       access-key: ${AWS_ACCESS_KEY}
       secret-key: ${AWS_SECRET_KEY}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
