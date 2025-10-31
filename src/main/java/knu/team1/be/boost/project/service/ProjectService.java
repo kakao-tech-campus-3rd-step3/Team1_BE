@@ -5,6 +5,7 @@ import java.util.UUID;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.common.policy.AccessPolicy;
+import knu.team1.be.boost.member.dto.MemberResponseDto;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
 import knu.team1.be.boost.project.dto.ProjectCreateRequestDto;
@@ -52,7 +53,7 @@ public class ProjectService {
             ProjectRole.OWNER
         );
         projectMembershipRepository.save(projectMembership);
-        return ProjectResponseDto.from(savedProject);
+        return ProjectResponseDto.from(savedProject, ProjectRole.OWNER);
     }
 
     public ProjectResponseDto getProject(UUID projectId, UUID memberId) {
@@ -65,7 +66,14 @@ public class ProjectService {
 
         accessPolicy.ensureProjectMember(projectId, memberId);
 
-        return ProjectResponseDto.from(project);
+        ProjectMembership membership = projectMembershipRepository.findByProjectIdAndMemberId(
+                projectId, memberId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_MEMBER_NOT_FOUND,
+                "projectId: " + projectId + ", memberId: " + memberId
+            ));
+
+        return ProjectResponseDto.from(project, membership.getRole());
     }
 
     public List<ProjectResponseDto> getMyProjects(UUID memberId) {
@@ -74,8 +82,10 @@ public class ProjectService {
             memberId);
 
         return projectMemberships.stream()
-            .map(ProjectMembership::getProject)
-            .map(ProjectResponseDto::from)
+            .map(membership -> ProjectResponseDto.from(
+                membership.getProject(),
+                membership.getRole()
+            ))
             .toList();
     }
 
@@ -96,7 +106,7 @@ public class ProjectService {
 
         oldProject.updateProject(requestDto.name(), requestDto.defaultReviewerCount());
 
-        return ProjectResponseDto.from(oldProject);
+        return ProjectResponseDto.from(oldProject, ProjectRole.OWNER);
     }
 
     @Transactional
@@ -112,5 +122,25 @@ public class ProjectService {
         tagRepository.deleteAllByProjectId(projectId);
         projectMembershipRepository.softDeleteAllByProjectId(projectId);
         projectRepository.delete(project);
+    }
+
+    public List<MemberResponseDto> getProjectMembers(UUID projectId, UUID memberId) {
+
+        if (!projectRepository.existsById(projectId)) {
+            throw new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND,
+                "projectId: " + projectId
+            );
+        }
+
+        accessPolicy.ensureProjectMember(projectId, memberId);
+
+        List<ProjectMembership> projectMemberships = projectMembershipRepository.findAllByProjectId(
+            projectId);
+
+        return projectMemberships.stream()
+            .map(ProjectMembership::getMember)
+            .map(MemberResponseDto::from)
+            .toList();
     }
 }

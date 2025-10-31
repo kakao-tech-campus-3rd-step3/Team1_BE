@@ -1,18 +1,19 @@
 package knu.team1.be.boost.comment.service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import knu.team1.be.boost.comment.dto.CommentCreateRequestDto;
 import knu.team1.be.boost.comment.dto.CommentResponseDto;
 import knu.team1.be.boost.comment.dto.CommentUpdateRequestDto;
+import knu.team1.be.boost.comment.dto.FileInfoRequestDto;
 import knu.team1.be.boost.comment.entity.Comment;
 import knu.team1.be.boost.comment.entity.vo.FileInfo;
 import knu.team1.be.boost.comment.repository.CommentRepository;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.common.policy.AccessPolicy;
-import knu.team1.be.boost.file.entity.File;
 import knu.team1.be.boost.file.repository.FileRepository;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
@@ -66,14 +67,7 @@ public class CommentService {
                 ErrorCode.MEMBER_NOT_FOUND,
                 "memberId: " + memberId
             ));
-        File file = null;
-        if (requestDto.fileInfo().fileId() != null) {
-            file = fileRepository.findById(requestDto.fileInfo().fileId())
-                .orElseThrow(() -> new BusinessException(
-                    ErrorCode.FILE_NOT_FOUND,
-                    "fileId: " + requestDto.fileInfo().fileId()
-                ));
-        }
+        FileInfo fileInfo = createFileInfoFromDto(requestDto.fileInfo());
 
         Comment comment = Comment.builder()
             .task(task)
@@ -81,12 +75,7 @@ public class CommentService {
             .content(requestDto.content())
             .persona(requestDto.persona())
             .isAnonymous(requestDto.isAnonymous())
-            .fileInfo(file == null ? null : new FileInfo(
-                file,
-                requestDto.fileInfo().filePage(),
-                requestDto.fileInfo().fileX(),
-                requestDto.fileInfo().fileY()
-            ))
+            .fileInfo(fileInfo)
             .build();
 
         Comment savedComment = commentRepository.save(comment);
@@ -104,6 +93,13 @@ public class CommentService {
         accessPolicy.ensureCommentAuthor(comment.getMember().getId(), memberId);
 
         comment.updateContent(requestDto.content());
+
+        Optional.ofNullable(requestDto.isAnonymous())
+            .ifPresent(comment::updateIsAnonymous);
+
+        Optional.ofNullable(requestDto.fileInfo())
+            .map(this::createFileInfoFromDto)
+            .ifPresent(comment::updateFileInfo);
 
         return CommentResponseDto.from(comment);
     }
@@ -123,5 +119,25 @@ public class CommentService {
                 ErrorCode.COMMENT_NOT_FOUND,
                 "commentId: " + commentId
             ));
+    }
+
+    private FileInfo createFileInfoFromDto(FileInfoRequestDto dto) {
+        if (dto == null) {
+            return null;
+        }
+
+        return Optional.ofNullable(dto.fileId())
+            .map(fileId -> fileRepository.findById(fileId)
+                .orElseThrow(() -> new BusinessException(
+                    ErrorCode.FILE_NOT_FOUND,
+                    "fileId: " + fileId
+                )))
+            .map(file -> new FileInfo(
+                file,
+                dto.filePage(),
+                dto.fileX(),
+                dto.fileY()
+            ))
+            .orElse(null);
     }
 }

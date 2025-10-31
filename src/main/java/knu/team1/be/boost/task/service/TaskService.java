@@ -2,19 +2,23 @@ package knu.team1.be.boost.task.service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.comment.entity.Comment;
 import knu.team1.be.boost.comment.repository.CommentRepository;
+import knu.team1.be.boost.comment.repository.CommentRepository.CommentCount;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.common.policy.AccessPolicy;
 import knu.team1.be.boost.file.entity.File;
 import knu.team1.be.boost.file.repository.FileRepository;
+import knu.team1.be.boost.file.repository.FileRepository.FileCount;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
 import knu.team1.be.boost.project.entity.Project;
@@ -24,7 +28,11 @@ import knu.team1.be.boost.projectMembership.repository.ProjectMembershipReposito
 import knu.team1.be.boost.tag.entity.Tag;
 import knu.team1.be.boost.tag.repository.TagRepository;
 import knu.team1.be.boost.task.dto.CursorInfo;
-import knu.team1.be.boost.task.dto.TaskApproveResponse;
+import knu.team1.be.boost.task.dto.MemberTaskStatusCount;
+import knu.team1.be.boost.task.dto.MemberTaskStatusCountResponseDto;
+import knu.team1.be.boost.task.dto.ProjectTaskStatusCount;
+import knu.team1.be.boost.task.dto.ProjectTaskStatusCountResponseDto;
+import knu.team1.be.boost.task.dto.TaskApproveResponseDto;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
 import knu.team1.be.boost.task.dto.TaskDetailResponseDto;
 import knu.team1.be.boost.task.dto.TaskMemberSectionResponseDto;
@@ -220,12 +228,77 @@ public class TaskService {
     }
 
     @Transactional(readOnly = true)
+    public ProjectTaskStatusCountResponseDto countTasksByStatusForProject(
+        UUID projectId,
+        String search,
+        UserPrincipalDto user
+    ) {
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
+            ));
+
+        accessPolicy.ensureProjectMember(project.getId(), user.id());
+
+        ProjectTaskStatusCount count;
+        if (search != null && !search.trim().isEmpty()) {
+            String searchPattern = "%" + search.trim() + "%";
+            count = taskRepository.countByProjectWithSearchGrouped(project.getId(), searchPattern);
+        } else {
+            count = taskRepository.countByProjectGrouped(project.getId());
+        }
+
+        return ProjectTaskStatusCountResponseDto.from(
+            project.getId(),
+            count.todo(),
+            count.progress(),
+            count.review(),
+            count.done()
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public List<MemberTaskStatusCountResponseDto> countTasksByStatusForAllMembers(
+        UUID projectId,
+        String search,
+        UserPrincipalDto user
+    ) {
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
+            ));
+
+        accessPolicy.ensureProjectMember(project.getId(), user.id());
+
+        List<MemberTaskStatusCount> counts;
+        if (search != null && !search.trim().isEmpty()) {
+            String searchPattern = "%" + search.trim() + "%";
+            counts = taskRepository
+                .countTasksByStatusForAllMembersWithSearchGrouped(project.getId(), searchPattern);
+        } else {
+            counts = taskRepository
+                .countTasksByStatusForAllMembersGrouped(project.getId());
+        }
+
+        return counts.stream()
+            .map(c -> MemberTaskStatusCountResponseDto.from(
+                project.getId(),
+                c.memberId(),
+                c.todo(),
+                c.progress(),
+                c.review()
+            ))
+            .toList();
+    }
+
+    @Transactional(readOnly = true)
     public TaskStatusSectionDto listByStatus(
         UUID projectId,
         UUID tagId,
         TaskStatus status,
         TaskSortBy sortBy,
         TaskSortDirection direction,
+        String search,
         UUID cursorId,
         int limit,
         UserPrincipalDto user
@@ -251,13 +324,17 @@ public class TaskService {
             status,
             sortBy,
             direction,
+            search,
             cursorCreatedAtKey,
             cursorDueDateKey,
             cursorTaskId,
             pageable
         );
 
-        return TaskStatusSectionDto.from(tasks, limit);
+        Map<UUID, Long> fileCountMap = getFileCounts(tasks);
+        Map<UUID, Long> commentCountMap = getCommentCounts(tasks);
+
+        return TaskStatusSectionDto.from(tasks, limit, fileCountMap, commentCountMap);
     }
 
     @Transactional(readOnly = true)
@@ -265,6 +342,7 @@ public class TaskService {
         TaskStatus status,
         TaskSortBy sortBy,
         TaskSortDirection direction,
+        String search,
         UUID cursorId,
         int limit,
         UserPrincipalDto user
@@ -293,19 +371,24 @@ public class TaskService {
             status,
             sortBy,
             direction,
+            search,
             cursorCreatedAtKey,
             cursorDueDateKey,
             cursorTaskId,
             pageable
         );
 
-        return TaskStatusSectionDto.from(tasks, limit);
+        Map<UUID, Long> fileCountMap = getFileCounts(tasks);
+        Map<UUID, Long> commentCountMap = getCommentCounts(tasks);
+
+        return TaskStatusSectionDto.from(tasks, safeLimit, fileCountMap, commentCountMap);
     }
 
     @Transactional(readOnly = true)
     public TaskMemberSectionResponseDto listByMember(
         UUID projectId,
         UUID memberId,
+        String search,
         UUID cursorId,
         int limit,
         UserPrincipalDto user
@@ -328,27 +411,51 @@ public class TaskService {
 
         CursorInfo cursorInfo = extractCursorInfo(cursorId);
 
-        Integer cursorStatusOrder = cursorInfo.taskStatus().getOrder();
+        Integer cursorStatusOrder =
+            cursorInfo.taskStatus() != null ? cursorInfo.taskStatus().getOrder() : null;
         LocalDateTime cursorCreatedAt = cursorInfo.createdAt();
         UUID cursorTaskId = cursorInfo.taskId();
 
         int safeLimit = Math.max(1, Math.min(limit, 50));
         Pageable pageable = PageRequest.of(0, safeLimit + 1);
 
-        List<Task> tasks = taskRepository.findTasksByAssigneeWithCursor(
-            member,
-            project,
-            cursorStatusOrder,
-            cursorCreatedAt,
-            cursorTaskId,
-            pageable
-        );
+        List<Task> tasks;
+        if (search != null && !search.trim().isEmpty()) {
+            String searchPattern = "%" + search.trim() + "%";
+            tasks = taskRepository.findTasksByAssigneeWithSearchAndCursor(
+                member,
+                project,
+                searchPattern,
+                cursorStatusOrder,
+                cursorCreatedAt,
+                cursorTaskId,
+                pageable
+            );
+        } else {
+            tasks = taskRepository.findTasksByAssigneeWithCursor(
+                member,
+                project,
+                cursorStatusOrder,
+                cursorCreatedAt,
+                cursorTaskId,
+                pageable
+            );
+        }
 
-        return TaskMemberSectionResponseDto.from(member, tasks, safeLimit);
+        Map<UUID, Long> fileCountMap = getFileCounts(tasks);
+        Map<UUID, Long> commentCountMap = getCommentCounts(tasks);
+
+        return TaskMemberSectionResponseDto.from(
+            member,
+            tasks,
+            safeLimit,
+            fileCountMap,
+            commentCountMap
+        );
     }
 
     @Transactional
-    public TaskApproveResponse approveTask(
+    public TaskApproveResponseDto approveTask(
         UUID projectId,
         UUID taskId,
         UserPrincipalDto user
@@ -380,7 +487,35 @@ public class TaskService {
 
         task.approve(member, projectMembers);
 
-        return TaskApproveResponse.from(task, projectMembers);
+        return TaskApproveResponseDto.from(task, projectMembers);
+    }
+
+    private Map<UUID, Long> getFileCounts(List<Task> tasks) {
+        if (tasks.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        List<UUID> taskIds = tasks.stream()
+            .map(Task::getId)
+            .toList();
+
+        return fileRepository.countByTaskIds(taskIds)
+            .stream()
+            .collect(Collectors.toMap(FileCount::getTaskId, FileCount::getCount));
+    }
+
+    private Map<UUID, Long> getCommentCounts(List<Task> tasks) {
+        if (tasks.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        List<UUID> taskIds = tasks.stream()
+            .map(Task::getId)
+            .toList();
+
+        return commentRepository.countByTaskIds(taskIds)
+            .stream()
+            .collect(Collectors.toMap(CommentCount::getTaskId, CommentCount::getCount));
     }
 
     private List<Tag> findTagsByIds(List<UUID> tagIds) {
@@ -453,30 +588,61 @@ public class TaskService {
         TaskStatus status,
         TaskSortBy sortBy,
         TaskSortDirection direction,
+        String search,
         LocalDateTime cursorCreatedAtKey,
         LocalDate cursorDueDateKey,
         UUID cursorId,
         Pageable pageable
     ) {
-        switch (sortBy) {
-            case CREATED_AT:
-                if (direction == TaskSortDirection.ASC) {
-                    return taskRepository.findByStatusOrderByCreatedAtAsc(project, tagId, status,
-                        cursorCreatedAtKey, cursorId, pageable);
-                } else {
-                    return taskRepository.findByStatusOrderByCreatedAtDesc(project, tagId, status,
-                        cursorCreatedAtKey, cursorId, pageable);
-                }
-            case DUE_DATE:
-                if (direction == TaskSortDirection.ASC) {
-                    return taskRepository.findByStatusOrderByDueDateAsc(project, tagId, status,
-                        cursorDueDateKey, cursorId, pageable);
-                } else {
-                    return taskRepository.findByStatusOrderByDueDateDesc(project, tagId, status,
-                        cursorDueDateKey, cursorId, pageable);
-                }
-            default:
-                throw new BusinessException(ErrorCode.INVALID_SORT_OPTION, "sortBy: " + sortBy);
+        if (search != null && !search.trim().isEmpty()) {
+            String searchPattern = "%" + search.trim() + "%";
+            switch (sortBy) {
+                case CREATED_AT:
+                    if (direction == TaskSortDirection.ASC) {
+                        return taskRepository.findByStatusWithSearchOrderByCreatedAtAsc(
+                            project, tagId, status, searchPattern, cursorCreatedAtKey, cursorId,
+                            pageable);
+                    } else {
+                        return taskRepository.findByStatusWithSearchOrderByCreatedAtDesc(
+                            project, tagId, status, searchPattern, cursorCreatedAtKey, cursorId,
+                            pageable);
+                    }
+                case DUE_DATE:
+                    if (direction == TaskSortDirection.ASC) {
+                        return taskRepository.findByStatusWithSearchOrderByDueDateAsc(
+                            project, tagId, status, searchPattern, cursorDueDateKey, cursorId,
+                            pageable);
+                    } else {
+                        return taskRepository.findByStatusWithSearchOrderByDueDateDesc(
+                            project, tagId, status, searchPattern, cursorDueDateKey, cursorId,
+                            pageable);
+                    }
+                default:
+                    throw new BusinessException(ErrorCode.INVALID_SORT_OPTION, "sortBy: " + sortBy);
+            }
+        } else {
+            switch (sortBy) {
+                case CREATED_AT:
+                    if (direction == TaskSortDirection.ASC) {
+                        return taskRepository.findByStatusOrderByCreatedAtAsc(project, tagId,
+                            status,
+                            cursorCreatedAtKey, cursorId, pageable);
+                    } else {
+                        return taskRepository.findByStatusOrderByCreatedAtDesc(project, tagId,
+                            status,
+                            cursorCreatedAtKey, cursorId, pageable);
+                    }
+                case DUE_DATE:
+                    if (direction == TaskSortDirection.ASC) {
+                        return taskRepository.findByStatusOrderByDueDateAsc(project, tagId, status,
+                            cursorDueDateKey, cursorId, pageable);
+                    } else {
+                        return taskRepository.findByStatusOrderByDueDateDesc(project, tagId, status,
+                            cursorDueDateKey, cursorId, pageable);
+                    }
+                default:
+                    throw new BusinessException(ErrorCode.INVALID_SORT_OPTION, "sortBy: " + sortBy);
+            }
         }
     }
 
@@ -486,30 +652,62 @@ public class TaskService {
         TaskStatus status,
         TaskSortBy sortBy,
         TaskSortDirection direction,
+        String search,
         LocalDateTime cursorCreatedAtKey,
         LocalDate cursorDueDateKey,
         UUID cursorId,
         Pageable pageable
     ) {
-        switch (sortBy) {
-            case CREATED_AT:
-                if (direction == TaskSortDirection.ASC) {
-                    return taskRepository.findMyTasksOrderByCreatedAtAsc(projects, member, status,
-                        cursorCreatedAtKey, cursorId, pageable);
-                } else {
-                    return taskRepository.findMyTasksOrderByCreatedAtDesc(projects, member, status,
-                        cursorCreatedAtKey, cursorId, pageable);
-                }
-            case DUE_DATE:
-                if (direction == TaskSortDirection.ASC) {
-                    return taskRepository.findMyTasksOrderByDueDateAsc(projects, member, status,
-                        cursorDueDateKey, cursorId, pageable);
-                } else {
-                    return taskRepository.findMyTasksOrderByDueDateDesc(projects, member, status,
-                        cursorDueDateKey, cursorId, pageable);
-                }
-            default:
-                throw new BusinessException(ErrorCode.INVALID_SORT_OPTION, "sortBy: " + sortBy);
+        if (search != null && !search.trim().isEmpty()) {
+            String searchPattern = "%" + search.trim() + "%";
+            switch (sortBy) {
+                case CREATED_AT:
+                    if (direction == TaskSortDirection.ASC) {
+                        return taskRepository.findMyTasksWithSearchOrderByCreatedAtAsc(
+                            projects, member, status, searchPattern, cursorCreatedAtKey, cursorId,
+                            pageable);
+                    } else {
+                        return taskRepository.findMyTasksWithSearchOrderByCreatedAtDesc(
+                            projects, member, status, searchPattern, cursorCreatedAtKey, cursorId,
+                            pageable);
+                    }
+                case DUE_DATE:
+                    if (direction == TaskSortDirection.ASC) {
+                        return taskRepository.findMyTasksWithSearchOrderByDueDateAsc(
+                            projects, member, status, searchPattern, cursorDueDateKey, cursorId,
+                            pageable);
+                    } else {
+                        return taskRepository.findMyTasksWithSearchOrderByDueDateDesc(
+                            projects, member, status, searchPattern, cursorDueDateKey, cursorId,
+                            pageable);
+                    }
+                default:
+                    throw new BusinessException(ErrorCode.INVALID_SORT_OPTION, "sortBy: " + sortBy);
+            }
+        } else {
+            switch (sortBy) {
+                case CREATED_AT:
+                    if (direction == TaskSortDirection.ASC) {
+                        return taskRepository.findMyTasksOrderByCreatedAtAsc(projects, member,
+                            status,
+                            cursorCreatedAtKey, cursorId, pageable);
+                    } else {
+                        return taskRepository.findMyTasksOrderByCreatedAtDesc(projects, member,
+                            status,
+                            cursorCreatedAtKey, cursorId, pageable);
+                    }
+                case DUE_DATE:
+                    if (direction == TaskSortDirection.ASC) {
+                        return taskRepository.findMyTasksOrderByDueDateAsc(projects, member, status,
+                            cursorDueDateKey, cursorId, pageable);
+                    } else {
+                        return taskRepository.findMyTasksOrderByDueDateDesc(projects, member,
+                            status,
+                            cursorDueDateKey, cursorId, pageable);
+                    }
+                default:
+                    throw new BusinessException(ErrorCode.INVALID_SORT_OPTION, "sortBy: " + sortBy);
+            }
         }
     }
 }

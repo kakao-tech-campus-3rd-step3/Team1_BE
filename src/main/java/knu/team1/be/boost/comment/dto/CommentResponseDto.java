@@ -40,8 +40,8 @@ public record CommentResponseDto(
         return new CommentResponseDto(
             comment.getId(),
             comment.getIsAnonymous()
-                ? AuthorInfoResponseDto.from(comment.getMember())
-                : AuthorInfoResponseDto.anonymous(comment.getMember()),
+                ? AuthorInfoResponseDto.anonymous(comment.getMember())
+                : AuthorInfoResponseDto.from(comment.getMember()),
             comment.getContent(),
             comment.getPersona(),
             comment.getIsAnonymous(),

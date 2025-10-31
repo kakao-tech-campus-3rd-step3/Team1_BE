@@ -17,6 +17,7 @@ import knu.team1.be.boost.file.infra.s3.PresignedUrlFactory;
 import knu.team1.be.boost.file.repository.FileRepository;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
+import knu.team1.be.boost.project.entity.Project;
 import knu.team1.be.boost.task.entity.Task;
 import knu.team1.be.boost.task.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
@@ -150,6 +151,35 @@ public class FileService {
         log.info("파일 업로드 완료 처리 성공 - fileId={}, taskId={}, filename={}",
             fileId, taskId, request.filename());
         return FileCompleteResponseDto.from(file, taskId);
+    }
+
+    @Transactional
+    public void deleteFile(UUID fileId, UserPrincipalDto user) {
+        File file = fileRepository.findById(fileId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.FILE_NOT_FOUND, "fileId: " + fileId
+            ));
+
+        Task task = file.getTask();
+        if (task == null) {
+            throw new BusinessException(
+                ErrorCode.TASK_NOT_FOUND,
+                "파일에 연결된 할 일이 존재하지 않습니다. fileId: " + fileId
+            );
+        }
+
+        Project project = task.getProject();
+        if (project == null) {
+            throw new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND,
+                "작업에 연결된 프로젝트가 존재하지 않습니다. fileId: " + fileId + ", taskId: " + task.getId()
+            );
+        }
+
+        accessPolicy.ensureProjectMember(project.getId(), user.id());
+        accessPolicy.ensureTaskAssignee(task.getId(), user.id());
+
+        fileRepository.delete(file);
     }
 
     private void validateFileLimit(long sizeBytes, UUID fileIdOrNull) {

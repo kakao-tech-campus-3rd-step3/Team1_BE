@@ -16,6 +16,7 @@ import knu.team1.be.boost.file.dto.FilePresignedUrlResponseDto;
 import knu.team1.be.boost.file.dto.FileRequestDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -95,6 +96,24 @@ public interface FileApi {
     ResponseEntity<FileCompleteResponseDto> completeUpload(
         @PathVariable UUID fileId,
         @Valid @RequestBody FileCompleteRequestDto request,
+        @AuthenticationPrincipal UserPrincipalDto user
+    );
+
+    @Operation(
+        summary = "파일 삭제",
+        description = "파일 ID를 기반으로 파일을 소프트 삭제합니다. (deleted=true)"
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "파일 삭제 성공", content = @Content),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
+        @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
+        @ApiResponse(responseCode = "404", description = "파일을 찾을 수 없음", content = @Content),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
+    })
+    @DeleteMapping("/{fileId}")
+    ResponseEntity<Void> deleteFile(
+        @PathVariable UUID fileId,
         @AuthenticationPrincipal UserPrincipalDto user
     );
 }

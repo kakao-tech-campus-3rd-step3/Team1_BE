@@ -4,9 +4,12 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
-import knu.team1.be.boost.task.dto.TaskApproveResponse;
+import knu.team1.be.boost.task.dto.MemberTaskStatusCountResponseDto;
+import knu.team1.be.boost.task.dto.ProjectTaskStatusCountResponseDto;
+import knu.team1.be.boost.task.dto.TaskApproveResponseDto;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
 import knu.team1.be.boost.task.dto.TaskDetailResponseDto;
 import knu.team1.be.boost.task.dto.TaskMemberSectionResponseDto;
@@ -21,6 +24,7 @@ import knu.team1.be.boost.task.service.TaskService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -93,6 +97,7 @@ public class TaskController implements TaskApi {
         @RequestParam(required = false, defaultValue = "TODO") TaskStatus status,
         @RequestParam(required = false, defaultValue = "CREATED_AT") TaskSortBy sortBy,
         @RequestParam(required = false, defaultValue = "ASC") TaskSortDirection direction,
+        @RequestParam(required = false) String search,
         @RequestParam(required = false) UUID cursor,
         @RequestParam(defaultValue = "20") @Min(1) @Max(50) int limit,
         @AuthenticationPrincipal UserPrincipalDto user
@@ -104,6 +109,7 @@ public class TaskController implements TaskApi {
                 status,
                 sortBy,
                 direction,
+                search,
                 cursor,
                 limit,
                 user
@@ -116,6 +122,7 @@ public class TaskController implements TaskApi {
         @RequestParam(required = false, defaultValue = "TODO") TaskStatus status,
         @RequestParam(required = false, defaultValue = "CREATED_AT") TaskSortBy sortBy,
         @RequestParam(required = false, defaultValue = "ASC") TaskSortDirection direction,
+        @RequestParam(required = false) String search,
         @RequestParam(required = false) UUID cursor,
         @RequestParam(defaultValue = "20") @Min(1) @Max(50) int limit,
         @AuthenticationPrincipal UserPrincipalDto user
@@ -126,6 +133,7 @@ public class TaskController implements TaskApi {
                 status,
                 sortBy,
                 direction,
+                search,
                 cursor,
                 limit,
                 user
@@ -137,23 +145,52 @@ public class TaskController implements TaskApi {
     public ResponseEntity<TaskMemberSectionResponseDto> listTasksByMember(
         @PathVariable UUID projectId,
         @PathVariable UUID memberId,
+        @RequestParam(required = false) String search,
         @RequestParam(required = false) UUID cursor,
         @RequestParam(defaultValue = "20") @Min(1) @Max(50) int limit,
         @AuthenticationPrincipal UserPrincipalDto user
     ) {
         TaskMemberSectionResponseDto response =
-            taskService.listByMember(projectId, memberId, cursor, limit, user);
+            taskService.listByMember(projectId, memberId, search, cursor, limit, user);
 
         return ResponseEntity.ok(response);
     }
 
     @Override
-    public ResponseEntity<TaskApproveResponse> approveTask(
+    public ResponseEntity<TaskApproveResponseDto> approveTask(
         @PathVariable UUID projectId,
         @PathVariable UUID taskId,
         @AuthenticationPrincipal UserPrincipalDto user
     ) {
-        TaskApproveResponse response = taskService.approveTask(projectId, taskId, user);
+        TaskApproveResponseDto response = taskService.approveTask(projectId, taskId, user);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/projects/{projectId}/tasks/status-count")
+    public ResponseEntity<ProjectTaskStatusCountResponseDto> getProjectTaskStatusCount(
+        @PathVariable UUID projectId,
+        @RequestParam(required = false) String search,
+        @AuthenticationPrincipal UserPrincipalDto user
+    ) {
+        ProjectTaskStatusCountResponseDto response = taskService.countTasksByStatusForProject(
+            projectId,
+            search,
+            user
+        );
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/projects/{projectId}/tasks/members/status-count")
+    public ResponseEntity<List<MemberTaskStatusCountResponseDto>> getMemberTaskStatusCount(
+        @PathVariable UUID projectId,
+        @RequestParam(required = false) String search,
+        @AuthenticationPrincipal UserPrincipalDto user
+    ) {
+        List<MemberTaskStatusCountResponseDto> response = taskService.countTasksByStatusForAllMembers(
+            projectId,
+            search,
+            user
+        );
         return ResponseEntity.ok(response);
     }
 }

@@ -92,7 +92,8 @@ public interface ProjectMembershipApi {
     );
 
     @DeleteMapping("/api/projects/{projectId}/leave")
-    @Operation(summary = "프로젝트 나가기", description = "프로젝트에서 나갑니다.")
+    @Operation(summary = "프로젝트 나가기", description = "프로젝트에서 나갑니다. "
+        + "프로젝트 owner는 프로젝트를 나갈 수 없습니다.")
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "204",
@@ -101,7 +102,7 @@ public interface ProjectMembershipApi {
         ),
         @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content),
         @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
-        @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
+        @ApiResponse(responseCode = "403", description = "권한 없음 (프로젝트 owner는 나갈 수 없음)", content = @Content),
         @ApiResponse(responseCode = "404", description = "프로젝트 없음", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
