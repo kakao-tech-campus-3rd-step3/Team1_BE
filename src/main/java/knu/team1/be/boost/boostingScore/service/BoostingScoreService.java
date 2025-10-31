@@ -1,6 +1,8 @@
 package knu.team1.be.boost.boostingScore.service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import knu.team1.be.boost.boostingScore.config.BoostingScoreConfig;
@@ -42,33 +44,48 @@ public class BoostingScoreService {
     ) {
         accessPolicy.ensureProjectMember(projectId, memberId);
 
+        List<BoostingScore> scores; // 1. 리스트 변수를 밖에서 선언
+
         if (!boostingScoreRepository.existsByProjectId(projectId)) {
-            calculateAndSaveScoresForProjectFromApi(projectId);
+            // 2. DB 조회가 아닌, 계산 메소드가 반환한 리스트를 받음
+            scores = calculateAndSaveScoresForProjectFromApi(projectId);
+
+            // 3. (중요) DTO에서 순위(indexOf)를 매기므로, 정렬이 필요합니다.
+            // 'findLatestByProjectId'가 하던 정렬 로직을 동일하게 적용해야 합니다.
+            // (예: 총점(totalScore) 기준 내림차순)
+            // BoostingScore에 getTotalScore()가 있다고 가정합니다.
+            scores.sort(Comparator.comparingInt(BoostingScore::getTotalScore).reversed());
+
+        } else {
+            // 4. 데이터가 이미 있으면 DB에서 조회
+            scores = boostingScoreRepository.findLatestByProjectId(projectId);
         }
 
-        List<BoostingScore> scores = boostingScoreRepository.findLatestByProjectId(projectId);
-
-        return scores.stream()
+        // 5. 'scores' 변수에는 어느 경우든 결과 리스트가 담겨있음
+        final List<BoostingScore> finalScores = scores; // 람다에서 사용하기 위해 final로 복사
+        return finalScores.stream()
             .map(score -> BoostingScoreResponseDto.from(
                 score,
-                scores.indexOf(score) + 1
+                finalScores.indexOf(score) + 1 // 순위 계산
             ))
             .toList();
     }
 
     @Transactional
-    public void calculateAndSaveScoresForProjectFromApi(UUID projectId) {
+    public List<BoostingScore> calculateAndSaveScoresForProjectFromApi(UUID projectId) {
         LocalDateTime calculatedAt = LocalDateTime.now();
 
         List<ProjectMembership> memberships =
             projectMembershipRepository.findAllByProjectId(projectId);
 
         if (memberships.isEmpty()) {
-            return;
+            return new ArrayList<>();
         }
 
         int successCount = 0;
         int failureCount = 0;
+
+        List<BoostingScore> savedScores = new ArrayList<>();
 
         for (ProjectMembership membership : memberships) {
             try {
@@ -77,6 +94,7 @@ public class BoostingScoreService {
                     calculatedAt
                 );
                 boostingScoreRepository.save(score);
+                savedScores.add(score);
                 successCount++;
             } catch (Exception e) {
                 failureCount++;
@@ -95,6 +113,8 @@ public class BoostingScoreService {
                 "projectId: " + projectId + ", all members failed"
             );
         }
+
+        return savedScores;
     }
 
     @Transactional
