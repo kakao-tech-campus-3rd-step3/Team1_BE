@@ -12,12 +12,20 @@ import knu.team1.be.boost.task.entity.Task;
 import knu.team1.be.boost.task.entity.TaskStatus;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface TaskRepository extends JpaRepository<Task, UUID> {
 
     boolean existsByIdAndAssigneesId(UUID taskId, UUID memberId);
+
+    @Modifying(clearAutomatically = true)
+    @Query(
+        value = "DELETE FROM task_tags WHERE tag_id = :tagId",
+        nativeQuery = true
+    )
+    void detachTagFromAllTasks(@Param("tagId") UUID tagId);
 
     @Query("""
             SELECT new knu.team1.be.boost.task.dto.ProjectTaskStatusCount(

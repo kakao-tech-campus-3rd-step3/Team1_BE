@@ -14,6 +14,7 @@ import knu.team1.be.boost.member.entity.vo.OauthInfo;
 import knu.team1.be.boost.projectMembership.entity.ProjectMembership;
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -23,6 +24,7 @@ import org.hibernate.annotations.SQLRestriction;
 @Entity
 @Getter
 @SuperBuilder
+@EqualsAndHashCode(of = "id")
 @Table(name = "members", uniqueConstraints = {
     @UniqueConstraint(
         name = "uk_member_provider_provider_id",
