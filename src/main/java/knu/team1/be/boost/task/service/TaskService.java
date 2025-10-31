@@ -261,12 +261,30 @@ public class TaskService {
                 ErrorCode.MEMBER_NOT_FOUND, "memberId: " + user.id()
             ));
 
+        List<Project> projects = projectMembershipRepository.findAllByMemberId(member.getId())
+            .stream()
+            .map(ProjectMembership::getProject)
+            .toList();
+
+        if (projects.isEmpty()) {
+            return MyTaskStatusCountResponseDto.from(
+                member.getId(), 0, 0, 0, 0
+            );
+        }
+
         ProjectTaskStatusCount count;
         if (search != null && !search.trim().isEmpty()) {
             String searchPattern = "%" + search.trim() + "%";
-            count = taskRepository.countMyTasksWithSearchGrouped(member.getId(), searchPattern);
+            count = taskRepository.countMyTasksWithSearchGrouped(
+                member.getId(),
+                projects,
+                searchPattern
+            );
         } else {
-            count = taskRepository.countMyTasksGrouped(member.getId());
+            count = taskRepository.countMyTasksGrouped(
+                member.getId(),
+                projects
+            );
         }
 
         return MyTaskStatusCountResponseDto.from(

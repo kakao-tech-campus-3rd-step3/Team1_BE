@@ -37,8 +37,12 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
             FROM Task t
             JOIN t.assignees a
             WHERE a.id = :memberId
+              AND t.project IN :projects
         """)
-    ProjectTaskStatusCount countMyTasksGrouped(@Param("memberId") UUID memberId);
+    ProjectTaskStatusCount countMyTasksGrouped(
+        @Param("memberId") UUID memberId,
+        @Param("projects") List<Project> projects
+    );
 
     @Query("""
             SELECT new knu.team1.be.boost.task.dto.ProjectTaskStatusCount(
@@ -78,10 +82,12 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
             FROM Task t
             JOIN t.assignees a
             WHERE a.id = :memberId
+              AND t.project IN :projects
               AND (LOWER(t.title) LIKE LOWER(:searchPattern) OR LOWER(t.description) LIKE LOWER(:searchPattern))
         """)
     ProjectTaskStatusCount countMyTasksWithSearchGrouped(
         @Param("memberId") UUID memberId,
+        @Param("projects") List<Project> projects,
         @Param("searchPattern") String searchPattern
     );
 
