@@ -48,7 +48,7 @@ public class Member extends SoftDeletableEntity {
 
     @Column(name = "notification_enabled", nullable = false)
     @Builder.Default
-    private boolean notificationEnabled = true;
+    private boolean notificationEnabled = false;
 
     @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
     @Builder.Default
