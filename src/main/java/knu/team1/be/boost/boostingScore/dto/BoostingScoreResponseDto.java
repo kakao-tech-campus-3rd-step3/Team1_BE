@@ -8,11 +8,6 @@ import lombok.Builder;
 @Builder
 public record BoostingScoreResponseDto(
     UUID memberId,
-    String memberName,
-    String memberAvatar,
-    Integer taskScore,
-    Integer commentScore,
-    Integer approveScore,
     Integer totalScore,
     Integer rank,
     LocalDateTime calculatedAt
@@ -22,11 +17,6 @@ public record BoostingScoreResponseDto(
         var member = boostingScore.getProjectMembership().getMember();
         return BoostingScoreResponseDto.builder()
             .memberId(member.getId())
-            .memberName(member.getName())
-            .memberAvatar(member.getAvatar())
-            .taskScore(boostingScore.getTaskScore())
-            .commentScore(boostingScore.getCommentScore())
-            .approveScore(boostingScore.getApproveScore())
             .totalScore(boostingScore.getTotalScore())
             .rank(rank)
             .calculatedAt(boostingScore.getCalculatedAt())
