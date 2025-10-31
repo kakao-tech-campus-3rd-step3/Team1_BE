@@ -8,6 +8,8 @@ import knu.team1.be.boost.boostingScore.dto.BoostingScoreResponseDto;
 import knu.team1.be.boost.boostingScore.entity.BoostingScore;
 import knu.team1.be.boost.boostingScore.repository.BoostingScoreRepository;
 import knu.team1.be.boost.comment.repository.CommentRepository;
+import knu.team1.be.boost.common.exception.BusinessException;
+import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.common.policy.AccessPolicy;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.project.entity.Project;
@@ -41,7 +43,7 @@ public class BoostingScoreService {
         accessPolicy.ensureProjectMember(projectId, memberId);
 
         if (!boostingScoreRepository.existsByProjectId(projectId)) {
-            calculateAndSaveScoresForProject(projectId);
+            calculateAndSaveScoresForProjectFromApi(projectId);
         }
 
         List<BoostingScore> scores = boostingScoreRepository.findLatestByProjectId(projectId);
@@ -55,8 +57,48 @@ public class BoostingScoreService {
     }
 
     @Transactional
-    public void calculateAndSaveScoresForProject(UUID projectId) {
+    public void calculateAndSaveScoresForProjectFromApi(UUID projectId) {
+        LocalDateTime calculatedAt = LocalDateTime.now();
 
+        List<ProjectMembership> memberships =
+            projectMembershipRepository.findAllByProjectId(projectId);
+
+        if (memberships.isEmpty()) {
+            return;
+        }
+
+        int successCount = 0;
+        int failureCount = 0;
+
+        for (ProjectMembership membership : memberships) {
+            try {
+                BoostingScore score = calculateScoreForMember(
+                    membership,
+                    calculatedAt
+                );
+                boostingScoreRepository.save(score);
+                successCount++;
+            } catch (Exception e) {
+                failureCount++;
+                log.error(
+                    "Failed to calculate score for member: {}, project: {}",
+                    membership.getMember().getId(),
+                    projectId,
+                    e
+                );
+            }
+        }
+
+        if (successCount == 0 && failureCount > 0) {
+            throw new BusinessException(
+                ErrorCode.BOOSTING_SCORE_CALCULATION_FAILED,
+                "projectId: " + projectId + ", all members failed"
+            );
+        }
+    }
+
+    @Transactional
+    public void calculateAndSaveScoresForProjectFromScheduler(UUID projectId) {
         LocalDateTime calculatedAt = LocalDateTime.now();
 
         List<ProjectMembership> memberships =
@@ -76,10 +118,8 @@ public class BoostingScoreService {
                     projectId,
                     e
                 );
-
             }
         }
-
     }
 
     /**

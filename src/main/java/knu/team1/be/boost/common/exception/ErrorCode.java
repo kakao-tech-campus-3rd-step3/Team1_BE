@@ -92,7 +92,12 @@ public enum ErrorCode {
     WEB_PUSH_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Web-Push service error",
         "웹 푸시 전송 중 오류가 발생했습니다."),
     INVALID_WEB_PUSH_STATE_TRANSITION(HttpStatus.CONFLICT, "Invalid WebPush session transition",
-        "웹 푸시 세션 상태 전환이 올바르지 않습니다.");
+        "웹 푸시 세션 상태 전환이 올바르지 않습니다."),
+
+    // Boosting Score 관련
+    BOOSTING_SCORE_CALCULATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR,
+        "Boosting score calculation failed",
+        "공헌도 점수 계산 중 오류가 발생했습니다.");
 
     private final HttpStatus httpStatus;
     private final String errorMessage;

@@ -31,7 +31,9 @@ public class BoostingScoreScheduler {
 
             for (Project project : projects) {
                 try {
-                    boostingScoreService.calculateAndSaveScoresForProject(project.getId());
+                    boostingScoreService.calculateAndSaveScoresForProjectFromScheduler(
+                        project.getId()
+                    );
                     successCount++;
                 } catch (Exception e) {
                     log.error(
