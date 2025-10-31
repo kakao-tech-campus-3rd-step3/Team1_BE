@@ -122,9 +122,6 @@ public class BoostingScoreService {
         }
     }
 
-    /**
-     * 특정 멤버의 Boosting Score를 계산합니다.
-     */
     private BoostingScore calculateScoreForMember(
         ProjectMembership membership,
         LocalDateTime calculatedAt
