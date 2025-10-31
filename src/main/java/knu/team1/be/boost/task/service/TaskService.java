@@ -266,6 +266,12 @@ public class TaskService {
             .map(ProjectMembership::getProject)
             .toList();
 
+        if (projects.isEmpty()) {
+            return MyTaskStatusCountResponseDto.from(
+                member.getId(), 0, 0, 0, 0
+            );
+        }
+
         ProjectTaskStatusCount count;
         if (search != null && !search.trim().isEmpty()) {
             String searchPattern = "%" + search.trim() + "%";
