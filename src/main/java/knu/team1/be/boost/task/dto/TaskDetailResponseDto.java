@@ -43,6 +43,9 @@ public record TaskDetailResponseDto(
     @Schema(description = "필요 리뷰어 수", example = "2")
     Integer requiredReviewerCount,
 
+    @Schema(description = "내가 승인했는지 여부", example = "true")
+    Boolean approvedByMe,
+
     @ArraySchema(
         schema = @Schema(implementation = TagResponseDto.class),
         arraySchema = @Schema(description = "태그 목록")
@@ -76,6 +79,7 @@ public record TaskDetailResponseDto(
 
     public static TaskDetailResponseDto from(
         Task task,
+        boolean approvedByMe,
         List<Comment> comments,
         List<File> files,
         List<Member> projectMembers
@@ -89,6 +93,7 @@ public record TaskDetailResponseDto(
             task.getUrgent(),
             task.getApprovers().size(),
             task.getRequiredApprovalsCount(projectMembers),
+            approvedByMe,
             task.getTags().stream()
                 .map(TagResponseDto::from)
                 .collect(Collectors.toList()),

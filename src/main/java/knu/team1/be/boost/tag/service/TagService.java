@@ -1,6 +1,5 @@
 package knu.team1.be.boost.tag.service;
 
-import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.UUID;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
@@ -14,14 +13,17 @@ import knu.team1.be.boost.tag.dto.TagResponseDto;
 import knu.team1.be.boost.tag.dto.TagUpdateRequestDto;
 import knu.team1.be.boost.tag.entity.Tag;
 import knu.team1.be.boost.tag.repository.TagRepository;
+import knu.team1.be.boost.task.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class TagService {
 
     private final TagRepository tagRepository;
+    private final TaskRepository taskRepository;
     private final ProjectRepository projectRepository;
     private final AccessPolicy accessPolicy;
 
@@ -50,6 +52,7 @@ public class TagService {
         return TagResponseDto.from(saved);
     }
 
+    @Transactional(readOnly = true)
     public List<TagResponseDto> getAllTags(
         UUID projectId,
         UserPrincipalDto user
@@ -127,6 +130,8 @@ public class TagService {
             ));
 
         tag.ensureTagInProject(projectId);
+
+        taskRepository.detachTagFromAllTasks(tag.getId());
 
         tagRepository.delete(tag);
     }

@@ -45,3 +45,20 @@ boost:
     credentials:
       access-key: ${AWS_ACCESS_KEY}
       secret-key: ${AWS_SECRET_KEY}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,env,loggers
+      path-mapping:
+        env: actuator/env
+        loggers: actuator/loggers
+  endpoint:
+    health:
+      show-details: always
+      
+webpush:
+  vapid:
+    public-key: ${VAPID_PUBLIC_KEY}
+    private-key: ${VAPID_PRIVATE_KEY}

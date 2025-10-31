@@ -45,6 +45,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 class TaskServiceTest {
@@ -63,6 +64,8 @@ class TaskServiceTest {
     ProjectRepository projectRepository;
     @Mock
     ProjectMembershipRepository projectMembershipRepository;
+    @Mock
+    ApplicationEventPublisher eventPublisher;
     @Mock
     AccessPolicy accessPolicy;
 
@@ -90,6 +93,7 @@ class TaskServiceTest {
             commentRepository,
             projectRepository,
             projectMembershipRepository,
+            eventPublisher,
             accessPolicy
         );
     }
@@ -117,7 +121,8 @@ class TaskServiceTest {
             UUID t1 = UUID.randomUUID();
             UUID t2 = UUID.randomUUID();
             given(tagRepository.findAllById(anyList()))
-                .willReturn(List.of(Fixtures.tag(t1, "태그1", project), Fixtures.tag(t2, "태그2", project)));
+                .willReturn(
+                    List.of(Fixtures.tag(t1, "태그1", project), Fixtures.tag(t2, "태그2", project)));
 
             TaskCreateRequestDto request = Fixtures.reqCreate(
                 "1회차 기술 멘토링 피드백 반영",

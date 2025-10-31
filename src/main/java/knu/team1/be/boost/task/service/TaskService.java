@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,13 +31,16 @@ import knu.team1.be.boost.tag.repository.TagRepository;
 import knu.team1.be.boost.task.dto.CursorInfo;
 import knu.team1.be.boost.task.dto.MemberTaskStatusCount;
 import knu.team1.be.boost.task.dto.MemberTaskStatusCountResponseDto;
+import knu.team1.be.boost.task.dto.MyTaskStatusCountResponseDto;
 import knu.team1.be.boost.task.dto.ProjectTaskStatusCount;
 import knu.team1.be.boost.task.dto.ProjectTaskStatusCountResponseDto;
+import knu.team1.be.boost.task.dto.TaskApproveEvent;
 import knu.team1.be.boost.task.dto.TaskApproveResponseDto;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
 import knu.team1.be.boost.task.dto.TaskDetailResponseDto;
 import knu.team1.be.boost.task.dto.TaskMemberSectionResponseDto;
 import knu.team1.be.boost.task.dto.TaskResponseDto;
+import knu.team1.be.boost.task.dto.TaskReviewEvent;
 import knu.team1.be.boost.task.dto.TaskSortBy;
 import knu.team1.be.boost.task.dto.TaskSortDirection;
 import knu.team1.be.boost.task.dto.TaskStatusRequestDto;
@@ -46,6 +50,7 @@ import knu.team1.be.boost.task.entity.Task;
 import knu.team1.be.boost.task.entity.TaskStatus;
 import knu.team1.be.boost.task.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -63,6 +68,7 @@ public class TaskService {
     private final ProjectRepository projectRepository;
     private final ProjectMembershipRepository projectMembershipRepository;
 
+    private final ApplicationEventPublisher eventPublisher;
     private final AccessPolicy accessPolicy;
 
     @Transactional
@@ -78,7 +84,7 @@ public class TaskService {
 
         accessPolicy.ensureProjectMember(project.getId(), user.id());
 
-        List<Tag> tags = findTagsByIds(request.tags());
+        Set<Tag> tags = findTagsByIds(request.tags());
         tags.forEach(tag -> tag.ensureTagInProject(project.getId()));
 
         Set<Member> assignees = findAssignees(request.assignees());
@@ -124,7 +130,7 @@ public class TaskService {
         accessPolicy.ensureProjectMember(project.getId(), user.id());
         accessPolicy.ensureTaskAssignee(task.getId(), user.id());
 
-        List<Tag> tags = findTagsByIds(request.tags());
+        Set<Tag> tags = findTagsByIds(request.tags());
         tags.forEach(tag -> tag.ensureTagInProject(project.getId()));
 
         Set<Member> assignees = findAssignees(request.assignees());
@@ -193,6 +199,10 @@ public class TaskService {
 
         task.changeStatus(request.status());
 
+        if (request.status() == TaskStatus.REVIEW) {
+            eventPublisher.publishEvent(TaskReviewEvent.from(project, task));
+        }
+
         return TaskResponseDto.from(task);
     }
 
@@ -216,6 +226,14 @@ public class TaskService {
 
         accessPolicy.ensureProjectMember(project.getId(), user.id());
 
+        boolean approvedByMe = false;
+        for (Member approver : task.getApprovers()) {
+            if (approver.getId().equals(user.id())) {
+                approvedByMe = true;
+                break;
+            }
+        }
+
         List<Comment> comments = commentRepository.findAllByTaskId(task.getId());
         List<File> files = fileRepository.findAllByTask(task);
         List<Member> projectMembers = projectMembershipRepository.findAllByProjectId(
@@ -224,7 +242,40 @@ public class TaskService {
             .map(ProjectMembership::getMember)
             .toList();
 
-        return TaskDetailResponseDto.from(task, comments, files, projectMembers);
+        return TaskDetailResponseDto.from(
+            task,
+            approvedByMe,
+            comments,
+            files,
+            projectMembers
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public MyTaskStatusCountResponseDto countMyTasksByStatus(
+        String search,
+        UserPrincipalDto user
+    ) {
+        Member member = memberRepository.findById(user.id())
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.MEMBER_NOT_FOUND, "memberId: " + user.id()
+            ));
+
+        ProjectTaskStatusCount count;
+        if (search != null && !search.trim().isEmpty()) {
+            String searchPattern = "%" + search.trim() + "%";
+            count = taskRepository.countMyTasksWithSearchGrouped(member.getId(), searchPattern);
+        } else {
+            count = taskRepository.countMyTasksGrouped(member.getId());
+        }
+
+        return MyTaskStatusCountResponseDto.from(
+            member.getId(),
+            count.todo(),
+            count.progress(),
+            count.review(),
+            count.done()
+        );
     }
 
     @Transactional(readOnly = true)
@@ -487,6 +538,10 @@ public class TaskService {
 
         task.approve(member, projectMembers);
 
+        if (task.getStatus() == TaskStatus.DONE) {
+            eventPublisher.publishEvent(TaskApproveEvent.from(project, task));
+        }
+
         return TaskApproveResponseDto.from(task, projectMembers);
     }
 
@@ -518,9 +573,9 @@ public class TaskService {
             .collect(Collectors.toMap(CommentCount::getTaskId, CommentCount::getCount));
     }
 
-    private List<Tag> findTagsByIds(List<UUID> tagIds) {
+    private Set<Tag> findTagsByIds(List<UUID> tagIds) {
         if (tagIds == null || tagIds.isEmpty()) {
-            return List.of();
+            return Set.of();
         }
 
         List<Tag> foundTags = tagRepository.findAllById(tagIds);
@@ -538,7 +593,7 @@ public class TaskService {
             );
         }
 
-        return foundTags;
+        return new LinkedHashSet<>(foundTags);
     }
 
     private Set<Member> findAssignees(List<UUID> assigneeIds) {

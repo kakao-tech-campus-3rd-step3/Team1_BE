@@ -14,6 +14,7 @@ import knu.team1.be.boost.member.entity.vo.OauthInfo;
 import knu.team1.be.boost.projectMembership.entity.ProjectMembership;
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -23,6 +24,7 @@ import org.hibernate.annotations.SQLRestriction;
 @Entity
 @Getter
 @SuperBuilder
+@EqualsAndHashCode(of = "id")
 @Table(name = "members", uniqueConstraints = {
     @UniqueConstraint(
         name = "uk_member_provider_provider_id",
@@ -43,6 +45,13 @@ public class Member extends SoftDeletableEntity {
     @Column(name = "avatar", nullable = false)
     private String avatar;
 
+    @Column(name = "background_color", nullable = false, length = 7)
+    private String backgroundColor;
+
+    @Column(name = "notification_enabled", nullable = false)
+    @Builder.Default
+    private boolean notificationEnabled = false;
+
     @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
     @Builder.Default
     private List<ProjectMembership> projectMemberships = new ArrayList<>();
@@ -53,5 +62,13 @@ public class Member extends SoftDeletableEntity {
 
     public void updateAvatar(String avatar) {
         this.avatar = avatar;
+    }
+
+    public void updateBackgroundColor(String backgroundColor) {
+        this.backgroundColor = backgroundColor;
+    }
+
+    public void updateNotificationEnabled(boolean enabled) {
+        this.notificationEnabled = enabled;
     }
 }

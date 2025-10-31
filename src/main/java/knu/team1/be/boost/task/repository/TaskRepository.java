@@ -12,6 +12,7 @@ import knu.team1.be.boost.task.entity.Task;
 import knu.team1.be.boost.task.entity.TaskStatus;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -19,12 +20,32 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
 
     boolean existsByIdAndAssigneesId(UUID taskId, UUID memberId);
 
+    @Modifying(clearAutomatically = true)
+    @Query(
+        value = "DELETE FROM task_tags WHERE tag_id = :tagId",
+        nativeQuery = true
+    )
+    void detachTagFromAllTasks(@Param("tagId") UUID tagId);
+
     @Query("""
             SELECT new knu.team1.be.boost.task.dto.ProjectTaskStatusCount(
-                sum(case when t.status = 'TODO' then 1 else 0 end),
-                sum(case when t.status = 'PROGRESS' then 1 else 0 end),
-                sum(case when t.status = 'REVIEW' then 1 else 0 end),
-                sum(case when t.status = 'DONE' then 1 else 0 end)
+                COALESCE(SUM(CASE WHEN t.status = knu.team1.be.boost.task.entity.TaskStatus.TODO THEN 1 ELSE 0 END), 0L),
+                COALESCE(SUM(CASE WHEN t.status = knu.team1.be.boost.task.entity.TaskStatus.PROGRESS THEN 1 ELSE 0 END), 0L),
+                COALESCE(SUM(CASE WHEN t.status = knu.team1.be.boost.task.entity.TaskStatus.REVIEW THEN 1 ELSE 0 END), 0L),
+                COALESCE(SUM(CASE WHEN t.status = knu.team1.be.boost.task.entity.TaskStatus.DONE THEN 1 ELSE 0 END), 0L)
+            )
+            FROM Task t
+            JOIN t.assignees a
+            WHERE a.id = :memberId
+        """)
+    ProjectTaskStatusCount countMyTasksGrouped(@Param("memberId") UUID memberId);
+
+    @Query("""
+            SELECT new knu.team1.be.boost.task.dto.ProjectTaskStatusCount(
+                COALESCE(SUM(CASE WHEN t.status = knu.team1.be.boost.task.entity.TaskStatus.TODO THEN 1 ELSE 0 END), 0L),
+                COALESCE(SUM(CASE WHEN t.status = knu.team1.be.boost.task.entity.TaskStatus.PROGRESS THEN 1 ELSE 0 END), 0L),
+                COALESCE(SUM(CASE WHEN t.status = knu.team1.be.boost.task.entity.TaskStatus.REVIEW THEN 1 ELSE 0 END), 0L),
+                COALESCE(SUM(CASE WHEN t.status = knu.team1.be.boost.task.entity.TaskStatus.DONE THEN 1 ELSE 0 END), 0L)
             )
             FROM Task t
             WHERE t.project.id = :projectId
@@ -34,9 +55,9 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     @Query("""
             SELECT new knu.team1.be.boost.task.dto.MemberTaskStatusCount(
                 a.id,
-                sum(case when t.status = 'TODO' then 1 else 0 end),
-                sum(case when t.status = 'PROGRESS' then 1 else 0 end),
-                sum(case when t.status = 'REVIEW' then 1 else 0 end)
+                COALESCE(SUM(CASE WHEN t.status = knu.team1.be.boost.task.entity.TaskStatus.TODO THEN 1 ELSE 0 END), 0L),
+                COALESCE(SUM(CASE WHEN t.status = knu.team1.be.boost.task.entity.TaskStatus.PROGRESS THEN 1 ELSE 0 END), 0L),
+                COALESCE(SUM(CASE WHEN t.status = knu.team1.be.boost.task.entity.TaskStatus.REVIEW THEN 1 ELSE 0 END), 0L)
             )
             FROM Task t
             JOIN t.assignees a
@@ -49,10 +70,27 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
 
     @Query("""
             SELECT new knu.team1.be.boost.task.dto.ProjectTaskStatusCount(
-                sum(case when t.status = 'TODO' then 1 else 0 end),
-                sum(case when t.status = 'PROGRESS' then 1 else 0 end),
-                sum(case when t.status = 'REVIEW' then 1 else 0 end),
-                sum(case when t.status = 'DONE' then 1 else 0 end)
+                COALESCE(SUM(CASE WHEN t.status = knu.team1.be.boost.task.entity.TaskStatus.TODO THEN 1 ELSE 0 END), 0L),
+                COALESCE(SUM(CASE WHEN t.status = knu.team1.be.boost.task.entity.TaskStatus.PROGRESS THEN 1 ELSE 0 END), 0L),
+                COALESCE(SUM(CASE WHEN t.status = knu.team1.be.boost.task.entity.TaskStatus.REVIEW THEN 1 ELSE 0 END), 0L),
+                COALESCE(SUM(CASE WHEN t.status = knu.team1.be.boost.task.entity.TaskStatus.DONE THEN 1 ELSE 0 END), 0L)
+            )
+            FROM Task t
+            JOIN t.assignees a
+            WHERE a.id = :memberId
+              AND (LOWER(t.title) LIKE LOWER(:searchPattern) OR LOWER(t.description) LIKE LOWER(:searchPattern))
+        """)
+    ProjectTaskStatusCount countMyTasksWithSearchGrouped(
+        @Param("memberId") UUID memberId,
+        @Param("searchPattern") String searchPattern
+    );
+
+    @Query("""
+            SELECT new knu.team1.be.boost.task.dto.ProjectTaskStatusCount(
+                COALESCE(SUM(CASE WHEN t.status = knu.team1.be.boost.task.entity.TaskStatus.TODO THEN 1 ELSE 0 END), 0L),
+                COALESCE(SUM(CASE WHEN t.status = knu.team1.be.boost.task.entity.TaskStatus.PROGRESS THEN 1 ELSE 0 END), 0L),
+                COALESCE(SUM(CASE WHEN t.status = knu.team1.be.boost.task.entity.TaskStatus.REVIEW THEN 1 ELSE 0 END), 0L),
+                COALESCE(SUM(CASE WHEN t.status = knu.team1.be.boost.task.entity.TaskStatus.DONE THEN 1 ELSE 0 END), 0L)
             )
             FROM Task t
             WHERE t.project.id = :projectId
@@ -66,9 +104,9 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     @Query("""
             SELECT new knu.team1.be.boost.task.dto.MemberTaskStatusCount(
                 a.id,
-                sum(case when t.status = 'TODO' then 1 else 0 end),
-                sum(case when t.status = 'PROGRESS' then 1 else 0 end),
-                sum(case when t.status = 'REVIEW' then 1 else 0 end)
+                COALESCE(SUM(CASE WHEN t.status = knu.team1.be.boost.task.entity.TaskStatus.TODO THEN 1 ELSE 0 END), 0L),
+                COALESCE(SUM(CASE WHEN t.status = knu.team1.be.boost.task.entity.TaskStatus.PROGRESS THEN 1 ELSE 0 END), 0L),
+                COALESCE(SUM(CASE WHEN t.status = knu.team1.be.boost.task.entity.TaskStatus.REVIEW THEN 1 ELSE 0 END), 0L)
             )
             FROM Task t
             JOIN t.assignees a
@@ -473,4 +511,31 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
         Pageable pageable
     );
 
+    @Query("""
+            SELECT DISTINCT
+                pm.member.id AS memberId,
+                p.id AS projectId,
+                p.name AS projectName,
+                t.title AS taskTitle
+            FROM Task t
+            JOIN t.project p
+            JOIN t.assignees a
+            JOIN a.projectMemberships pm
+                ON pm.project = t.project
+            WHERE t.dueDate = :targetDate
+              AND t.status <> knu.team1.be.boost.task.entity.TaskStatus.DONE
+              AND pm.notificationEnabled = true
+        """)
+    List<DueTask> findDueTasksByMember(@Param("targetDate") LocalDate targetDate);
+
+    interface DueTask {
+
+        UUID getMemberId();
+
+        UUID getProjectId();
+
+        String getProjectName();
+
+        String getTaskTitle();
+    }
 }

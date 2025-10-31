@@ -11,14 +11,17 @@ import jakarta.validation.Valid;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.member.dto.MemberAvatarUpdateRequestDto;
 import knu.team1.be.boost.member.dto.MemberNameUpdateRequestDto;
+import knu.team1.be.boost.member.dto.MemberNotificationResponseDto;
 import knu.team1.be.boost.member.dto.MemberResponseDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Members", description = "Member 관련 API")
 @RequestMapping("/api/members")
@@ -64,13 +67,13 @@ public interface MemberApi {
     );
 
     @Operation(
-        summary = "내 아바타 수정",
-        description = "로그인한 회원의 아바타를 수정합니다."
+        summary = "내 아바타 및 배경색 수정",
+        description = "로그인한 회원의 아바타와 배경색을 수정합니다."
     )
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "아바타 수정 성공",
+            description = "아바타 및 배경색 수정 성공",
             content = @Content(schema = @Schema(implementation = MemberResponseDto.class))
         ),
         @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
@@ -96,4 +99,25 @@ public interface MemberApi {
     })
     @DeleteMapping("/me")
     ResponseEntity<Void> deleteMyAccount(@AuthenticationPrincipal UserPrincipalDto user);
+
+    @Operation(
+        summary = "전체 서비스 알림 설정 변경",
+        description = "로그인한 사용자의 전체 서비스 알림 수신 여부를 켜거나 끕니다."
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200",
+            description = "알림 설정 변경 성공",
+            content = @Content(schema = @Schema(implementation = MemberNotificationResponseDto.class))
+        ),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
+        @ApiResponse(responseCode = "404", description = "회원을 찾을 수 없음", content = @Content),
+        @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
+    })
+    @PatchMapping("/me/notifications")
+    ResponseEntity<MemberNotificationResponseDto> setNotificationEnabled(
+        @RequestParam boolean enabled,
+        @AuthenticationPrincipal UserPrincipalDto user
+    );
+
 }

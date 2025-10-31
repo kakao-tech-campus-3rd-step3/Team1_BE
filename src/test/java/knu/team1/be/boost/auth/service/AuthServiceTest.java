@@ -87,8 +87,9 @@ class AuthServiceTest {
             TokenDto mockTokenDto = new TokenDto("access", "refresh");
 
             given(kakaoClientService.getUserInfo(requestDto)).willReturn(mockKakaoUser);
-            given(memberRepository.findByOauthInfoProviderAndOauthInfoProviderId("kakao",
-                mockKakaoUser.id())).willReturn(Optional.empty());
+            given(memberRepository.findByOauthInfoProviderAndOauthInfoProviderIdIncludingDeleted(
+                "kakao", mockKakaoUser.id()
+            )).willReturn(Optional.empty());
             given(memberRepository.save(any(Member.class))).willReturn(newMember);
             given(jwtUtil.generateToken(any(Authentication.class))).willReturn(mockTokenDto);
 
@@ -118,8 +119,9 @@ class AuthServiceTest {
             TokenDto mockTokenDto = new TokenDto("access", "refresh");
 
             given(kakaoClientService.getUserInfo(requestDto)).willReturn(mockKakaoUser);
-            given(memberRepository.findByOauthInfoProviderAndOauthInfoProviderId("kakao",
-                mockKakaoUser.id())).willReturn(Optional.of(existingMember));
+            given(memberRepository.findByOauthInfoProviderAndOauthInfoProviderIdIncludingDeleted(
+                "kakao", mockKakaoUser.id()
+            )).willReturn(Optional.of(existingMember));
             given(jwtUtil.generateToken(any(Authentication.class))).willReturn(mockTokenDto);
 
             // when

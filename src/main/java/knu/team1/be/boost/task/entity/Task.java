@@ -11,7 +11,6 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -67,7 +66,7 @@ public class Task extends SoftDeletableEntity {
         inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
     @Builder.Default
-    private List<Tag> tags = new ArrayList<>();
+    private Set<Tag> tags = new LinkedHashSet<>();
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
@@ -95,7 +94,7 @@ public class Task extends SoftDeletableEntity {
         LocalDate dueDate,
         Boolean urgent,
         Integer requiredReviewerCount,
-        List<Tag> tags,
+        Set<Tag> tags,
         Set<Member> assignees
     ) {
         return Task.builder()
@@ -118,7 +117,7 @@ public class Task extends SoftDeletableEntity {
         LocalDate dueDate,
         Boolean urgent,
         Integer requiredReviewerCount,
-        List<Tag> tags,
+        Set<Tag> tags,
         Set<Member> assignees
     ) {
         this.title = title;

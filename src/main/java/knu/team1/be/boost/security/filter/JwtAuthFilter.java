@@ -37,8 +37,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         "/api/auth/login/kakao",
         "/api/auth/reissue",
 
-        // 헬스체크 경로
-        "/health"
+        // 헬스체크 경로 (Spring Actuator)
+        "/health",
+        "/health/**",
+        "/actuator/**"
     );
 
     @Override

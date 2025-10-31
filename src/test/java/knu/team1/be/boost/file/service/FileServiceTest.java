@@ -34,6 +34,7 @@ import knu.team1.be.boost.file.repository.FileRepository;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
 import knu.team1.be.boost.project.entity.Project;
+import knu.team1.be.boost.project.repository.ProjectRepository;
 import knu.team1.be.boost.task.entity.Task;
 import knu.team1.be.boost.task.repository.TaskRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -59,6 +60,8 @@ class FileServiceTest {
     @Mock
     MemberRepository memberRepository;
     @Mock
+    ProjectRepository projectRepository;
+    @Mock
     AccessPolicy accessPolicy;
     @Mock
     PresignedUrlFactory presignedUrlFactory;
@@ -82,7 +85,12 @@ class FileServiceTest {
         task = Fixtures.task(UUID.randomUUID(), project);
 
         fileService = new FileService(
-            fileRepository, taskRepository, memberRepository, accessPolicy, presignedUrlFactory
+            fileRepository,
+            taskRepository,
+            memberRepository,
+            projectRepository,
+            accessPolicy,
+            presignedUrlFactory
         );
         ReflectionTestUtils.setField(fileService, "bucket", Fixtures.BUCKET);
         ReflectionTestUtils.setField(fileService, "expireSeconds", Fixtures.EXPIRES);

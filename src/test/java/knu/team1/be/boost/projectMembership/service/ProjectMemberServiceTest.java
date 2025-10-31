@@ -122,7 +122,7 @@ class ProjectParticipantServiceTest {
             ProjectRole role = ProjectRole.MEMBER;
 
             ProjectMembership projectMembership = ProjectMembership.createProjectMembership(project,
-                member, role);
+                member, true, role);
             // activeProjectMember는 기본적으로 deleted=false 상태
 
             given(projectRepository.findById(projectId)).willReturn(Optional.of(project));
@@ -255,7 +255,7 @@ class ProjectParticipantServiceTest {
         Member member,
         ProjectRole role
     ) {
-        return ProjectMembership.createProjectMembership(project, member, role);
+        return ProjectMembership.createProjectMembership(project, member, true, role);
     }
 
     private ProjectMembership createDeletedProjectMember(

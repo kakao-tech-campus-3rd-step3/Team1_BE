@@ -67,7 +67,7 @@ class ProjectParticipantService {
         // 참여기록이 없다면 새로 생성해서 저장
         if (existingRecord.isEmpty()) {
             ProjectMembership newMembership = ProjectMembership.createProjectMembership(project,
-                member, role);
+                member, true, role);
             projectMembershipRepository.save(newMembership);
             return;
         }

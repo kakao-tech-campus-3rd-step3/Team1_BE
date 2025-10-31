@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.member.dto.MemberAvatarUpdateRequestDto;
 import knu.team1.be.boost.member.dto.MemberNameUpdateRequestDto;
+import knu.team1.be.boost.member.dto.MemberNotificationResponseDto;
 import knu.team1.be.boost.member.dto.MemberResponseDto;
 import knu.team1.be.boost.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
@@ -49,5 +50,17 @@ public class MemberController implements MemberApi {
     public ResponseEntity<Void> deleteMyAccount(@AuthenticationPrincipal UserPrincipalDto user) {
         memberService.deleteMember(user.id());
         return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    public ResponseEntity<MemberNotificationResponseDto> setNotificationEnabled(
+        boolean enabled,
+        UserPrincipalDto user
+    ) {
+        MemberNotificationResponseDto response = memberService.setNotificationEnabled(
+            user.id(),
+            enabled
+        );
+        return ResponseEntity.ok(response);
     }
 }
