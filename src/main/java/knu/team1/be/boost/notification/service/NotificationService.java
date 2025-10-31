@@ -10,15 +10,19 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
+import knu.team1.be.boost.common.policy.AccessPolicy;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
 import knu.team1.be.boost.notification.dto.NotificationListResponseDto;
 import knu.team1.be.boost.notification.dto.NotificationReadResponseDto;
 import knu.team1.be.boost.notification.dto.NotificationSavedEvent;
+import knu.team1.be.boost.notification.dto.ProjectNotificationResponseDto;
 import knu.team1.be.boost.notification.entity.Notification;
 import knu.team1.be.boost.notification.repository.NotificationRepository;
 import knu.team1.be.boost.project.entity.Project;
+import knu.team1.be.boost.project.repository.ProjectRepository;
 import knu.team1.be.boost.projectMembership.entity.ProjectMembership;
+import knu.team1.be.boost.projectMembership.repository.ProjectMembershipRepository;
 import knu.team1.be.boost.task.dto.TaskApproveEvent;
 import knu.team1.be.boost.task.dto.TaskReviewEvent;
 import knu.team1.be.boost.task.entity.Task;
@@ -40,9 +44,13 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @RequiredArgsConstructor
 public class NotificationService {
 
-    private final MemberRepository memberRepository;
     private final TaskRepository taskRepository;
+    private final MemberRepository memberRepository;
+    private final ProjectRepository projectRepository;
     private final NotificationRepository notificationRepository;
+    private final ProjectMembershipRepository projectMembershipRepository;
+
+    private final AccessPolicy accessPolicy;
 
     private final WebPushClient webPushClient;
 
@@ -102,6 +110,36 @@ public class NotificationService {
     }
 
     @Transactional
+    public ProjectNotificationResponseDto setProjectNotification(
+        UUID projectId,
+        boolean enabled,
+        UUID userId
+    ) {
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND,
+                "projectId: " + projectId
+            ));
+
+        accessPolicy.ensureProjectMember(project.getId(), userId);
+
+        ProjectMembership membership = projectMembershipRepository.findByProjectIdAndMemberId(
+                project.getId(), userId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_MEMBER_NOT_FOUND,
+                "projectId: " + project.getId() + ", memberId: " + userId
+            ));
+
+        membership.updateNotificationEnabled(enabled);
+
+        return ProjectNotificationResponseDto.from(
+            project.getId(),
+            userId,
+            membership.isNotificationEnabled()
+        );
+    }
+
+    @Transactional
     public void notifyTaskReview(Project project, Task task) {
         Set<Member> assignees = task.getAssignees();
 
@@ -124,7 +162,8 @@ public class NotificationService {
     public void notifyTaskApprove(Project project, Task task) {
         List<Member> assignees = project.getProjectMemberships().stream()
             .filter(
-                pm -> task.getAssignees().contains(pm.getMember()) && pm.isNotificationEnabled())
+                pm -> pm.isNotificationEnabled() && task.getAssignees().contains(pm.getMember())
+            )
             .map(ProjectMembership::getMember)
             .toList();
 
@@ -181,7 +220,9 @@ public class NotificationService {
 
         notificationRepository.save(notification);
 
-        eventPublisher.publishEvent(NotificationSavedEvent.from(member, title, message));
+        if (member.isNotificationEnabled()) {
+            eventPublisher.publishEvent(NotificationSavedEvent.from(member, title, message));
+        }
     }
 
     private String buildNotificationMessage(Map<UUID, List<DueTask>> projectTasks) {

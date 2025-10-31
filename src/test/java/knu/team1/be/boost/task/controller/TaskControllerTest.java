@@ -110,6 +110,7 @@ class TaskControllerTest {
                         "김부스트",
                         "avatar1.png",
                         "#FF5733",
+                        true,
                         LocalDateTime.of(2025, 9, 5, 15, 0, 0),
                         LocalDateTime.of(2025, 9, 5, 16, 0, 0)
                     ),
@@ -118,6 +119,7 @@ class TaskControllerTest {
                         "이부스트",
                         "avatar2.png",
                         "#FF5733",
+                        true,
                         LocalDateTime.of(2025, 9, 6, 10, 0, 0),
                         LocalDateTime.of(2025, 9, 6, 11, 0, 0)
                     )

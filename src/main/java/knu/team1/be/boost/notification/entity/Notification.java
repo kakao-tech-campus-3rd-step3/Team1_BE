@@ -13,6 +13,7 @@ import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.member.entity.Member;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -41,6 +42,7 @@ public class Notification extends SoftDeletableEntity {
     private String message;
 
     @Column(nullable = false)
+    @Builder.Default
     private boolean read = false;
 
     public static Notification create(Member member, String title, String message) {

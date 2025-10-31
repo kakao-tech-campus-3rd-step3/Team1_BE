@@ -19,6 +19,9 @@ public record MemberResponseDto(
     @Schema(description = "회원 배경색", example = "#FF5733")
     String backgroundColor,
 
+    @Schema(description = "전체 서비스 알림 수신 여부", example = "true")
+    boolean notificationEnabled,
+
     @Schema(description = "계정 생성일", example = "2025-09-05T15:00:00")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
     LocalDateTime createdAt,
@@ -34,6 +37,7 @@ public record MemberResponseDto(
             member.getName(),
             member.getAvatar(),
             member.getBackgroundColor(),
+            member.isNotificationEnabled(),
             member.getCreatedAt(),
             member.getUpdatedAt()
         );

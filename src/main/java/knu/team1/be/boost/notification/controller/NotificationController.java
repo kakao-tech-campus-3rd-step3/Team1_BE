@@ -6,6 +6,7 @@ import java.util.UUID;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.notification.dto.NotificationListResponseDto;
 import knu.team1.be.boost.notification.dto.NotificationReadResponseDto;
+import knu.team1.be.boost.notification.dto.ProjectNotificationResponseDto;
 import knu.team1.be.boost.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -45,4 +46,19 @@ public class NotificationController implements NotificationApi {
         );
         return ResponseEntity.ok(response);
     }
+
+    @Override
+    public ResponseEntity<ProjectNotificationResponseDto> setProjectNotification(
+        @PathVariable UUID projectId,
+        @RequestParam boolean enabled,
+        @AuthenticationPrincipal UserPrincipalDto user
+    ) {
+        ProjectNotificationResponseDto response = notificationService.setProjectNotification(
+            projectId,
+            enabled,
+            user.id()
+        );
+        return ResponseEntity.ok(response);
+    }
+
 }

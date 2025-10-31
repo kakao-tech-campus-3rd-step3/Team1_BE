@@ -48,6 +48,10 @@ public class Member extends SoftDeletableEntity {
     @Column(name = "background_color", nullable = false, length = 7)
     private String backgroundColor;
 
+    @Column(name = "notification_enabled", nullable = false)
+    @Builder.Default
+    private boolean notificationEnabled = false;
+
     @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
     @Builder.Default
     private List<ProjectMembership> projectMemberships = new ArrayList<>();
@@ -62,5 +66,9 @@ public class Member extends SoftDeletableEntity {
 
     public void updateBackgroundColor(String backgroundColor) {
         this.backgroundColor = backgroundColor;
+    }
+
+    public void updateNotificationEnabled(boolean enabled) {
+        this.notificationEnabled = enabled;
     }
 }

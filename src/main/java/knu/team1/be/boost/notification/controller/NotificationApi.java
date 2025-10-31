@@ -13,6 +13,7 @@ import java.util.UUID;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.notification.dto.NotificationListResponseDto;
 import knu.team1.be.boost.notification.dto.NotificationReadResponseDto;
+import knu.team1.be.boost.notification.dto.ProjectNotificationResponseDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,7 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Notifications", description = "알림 관련 API")
-@RequestMapping("/api/notifications")
+@RequestMapping("/api")
 @SecurityRequirement(name = "bearerAuth")
 public interface NotificationApi {
 
@@ -40,7 +41,7 @@ public interface NotificationApi {
         @ApiResponse(responseCode = "404", description = "존재하지 않는 멤버", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
-    @GetMapping
+    @GetMapping("/notifications")
     ResponseEntity<NotificationListResponseDto> getNotifications(
         @RequestParam(required = false) UUID cursor,
         @RequestParam(defaultValue = "20") @Min(1) @Max(50) int limit,
@@ -62,9 +63,31 @@ public interface NotificationApi {
         @ApiResponse(responseCode = "404", description = "존재하지 않는 알림 ID", content = @Content),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
-    @PatchMapping("/{notificationId}/read")
+    @PatchMapping("/notifications/{notificationId}/read")
     ResponseEntity<NotificationReadResponseDto> markAsRead(
         @PathVariable UUID notificationId,
+        @AuthenticationPrincipal UserPrincipalDto user
+    );
+
+    @Operation(
+        summary = "프로젝트별 알림 설정 변경",
+        description = "특정 프로젝트에서 사용자의 알림 수신 여부를 켜거나 끕니다."
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200",
+            description = "알림 설정 변경 성공",
+            content = @Content(schema = @Schema(implementation = ProjectNotificationResponseDto.class))
+        ),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
+        @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
+        @ApiResponse(responseCode = "404", description = "프로젝트 또는 멤버십 없음", content = @Content),
+        @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
+    })
+    @PatchMapping("/projects/{projectId}/notifications")
+    ResponseEntity<ProjectNotificationResponseDto> setProjectNotification(
+        @PathVariable UUID projectId,
+        @RequestParam boolean enabled,
         @AuthenticationPrincipal UserPrincipalDto user
     );
 

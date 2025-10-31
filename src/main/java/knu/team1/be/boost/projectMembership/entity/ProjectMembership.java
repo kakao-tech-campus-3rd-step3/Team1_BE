@@ -90,4 +90,8 @@ public class ProjectMembership extends SoftDeletableEntity {
         this.role = role;
     }
 
+    public void updateNotificationEnabled(boolean notificationEnabled) {
+        this.notificationEnabled = notificationEnabled;
+    }
+
 }
