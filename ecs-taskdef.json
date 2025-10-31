@@ -79,7 +79,7 @@
         },
         {
           "name": "VAPID_PRIVATE_KEY",
-          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:876253814177:secret:boost-secrets-Zbelb3:VAPID_PUBLIC_KEY::"
+          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:876253814177:secret:boost-secrets-Zbelb3:VAPID_PRIVATE_KEY::"
         }
       ],
       "memoryReservation": 512,
