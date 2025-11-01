@@ -36,6 +36,7 @@ public class BoostingScoreService {
     private final BoostingScoreConfig scoreConfig;
     private final AccessPolicy accessPolicy;
 
+    @Transactional
     public List<BoostingScoreResponseDto> getProjectBoostingScores(
         UUID projectId,
         UUID memberId
