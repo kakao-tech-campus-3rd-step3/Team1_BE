@@ -61,6 +61,15 @@ ai:
     transform:
       timeout-seconds: 10
 
+boosting-score:
+  task:
+    todo: 1
+    progress: 2
+    review: 3
+    done: 5
+  comment-score: 1
+  approve-score: 3
+
 management:
   endpoints:
     web:

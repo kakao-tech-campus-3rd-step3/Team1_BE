@@ -25,4 +25,16 @@ public interface CommentRepository extends JpaRepository<Comment, UUID> {
 
         Long getCount();
     }
+
+    @Query("""
+        SELECT COUNT(c)
+        FROM Comment c
+        WHERE c.task.project.id = :projectId
+        AND c.member.id = :memberId
+        AND c.deleted = false
+        """)
+    Long countByTaskProjectIdAndMemberId(
+        @Param("projectId") UUID projectId,
+        @Param("memberId") UUID memberId
+    );
 }
