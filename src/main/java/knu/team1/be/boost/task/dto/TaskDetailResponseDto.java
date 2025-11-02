@@ -7,8 +7,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import knu.team1.be.boost.comment.dto.CommentResponseDto;
-import knu.team1.be.boost.comment.entity.Comment;
 import knu.team1.be.boost.file.dto.FileResponseDto;
 import knu.team1.be.boost.file.entity.File;
 import knu.team1.be.boost.member.dto.MemberResponseDto;
@@ -59,12 +57,6 @@ public record TaskDetailResponseDto(
     List<MemberResponseDto> assignees,
 
     @ArraySchema(
-        schema = @Schema(implementation = CommentResponseDto.class),
-        arraySchema = @Schema(description = "댓글 목록")
-    )
-    List<CommentResponseDto> comments,
-
-    @ArraySchema(
         schema = @Schema(implementation = FileResponseDto.class),
         arraySchema = @Schema(description = "첨부 파일 목록")
     )
@@ -80,7 +72,6 @@ public record TaskDetailResponseDto(
     public static TaskDetailResponseDto from(
         Task task,
         boolean approvedByMe,
-        List<Comment> comments,
         List<File> files,
         List<Member> projectMembers
     ) {
@@ -99,9 +90,6 @@ public record TaskDetailResponseDto(
                 .collect(Collectors.toList()),
             task.getAssignees().stream()
                 .map(MemberResponseDto::from)
-                .collect(Collectors.toList()),
-            comments.stream()
-                .map(CommentResponseDto::from)
                 .collect(Collectors.toList()),
             files.stream()
                 .map(FileResponseDto::from)

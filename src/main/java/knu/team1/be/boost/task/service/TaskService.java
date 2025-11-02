@@ -11,7 +11,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
-import knu.team1.be.boost.comment.entity.Comment;
 import knu.team1.be.boost.comment.repository.CommentRepository;
 import knu.team1.be.boost.comment.repository.CommentRepository.CommentCount;
 import knu.team1.be.boost.common.exception.BusinessException;
@@ -234,7 +233,6 @@ public class TaskService {
             }
         }
 
-        List<Comment> comments = commentRepository.findAllByTaskId(task.getId());
         List<File> files = fileRepository.findAllByTask(task);
         List<Member> projectMembers = projectMembershipRepository.findAllByProjectId(
                 project.getId())
@@ -245,7 +243,6 @@ public class TaskService {
         return TaskDetailResponseDto.from(
             task,
             approvedByMe,
-            comments,
             files,
             projectMembers
         );
