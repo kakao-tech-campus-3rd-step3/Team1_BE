@@ -117,7 +117,9 @@ public interface TaskApi {
         description = "특정 프로젝트에 속한 할 일의 상태만 변경합니다."
     )
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "할 일 상태 변경 성공", content = @Content),
+        @ApiResponse(responseCode = "200", description = "할 일 상태 변경 성공",
+            content = @Content(schema = @Schema(implementation = TaskResponseDto.class))
+        ),
         @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
         @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
         @ApiResponse(responseCode = "404", description = "존재하지 않는 프로젝트/할 일 ID 포함", content = @Content),
