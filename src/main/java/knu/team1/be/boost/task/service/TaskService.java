@@ -137,6 +137,8 @@ public class TaskService {
 
         accessPolicy.ensureAssigneesAreProjectMembers(project.getId(), assignees);
 
+        validateCanMarkDone(project, task, request.status());
+
         task.update(
             request.title(),
             request.description(),
@@ -147,6 +149,14 @@ public class TaskService {
             tags,
             assignees
         );
+
+        if (task.getStatus() == TaskStatus.REVIEW) {
+            eventPublisher.publishEvent(TaskReviewEvent.from(project, task));
+        }
+
+        if (task.getStatus() == TaskStatus.DONE) {
+            eventPublisher.publishEvent(TaskApproveEvent.from(project, task));
+        }
 
         return TaskResponseDto.from(task);
     }
@@ -569,7 +579,7 @@ public class TaskService {
         if (newStatus != TaskStatus.DONE) {
             return;
         }
-        
+
         Integer requiredReviewerCount = task.getRequiredReviewerCount();
         if (requiredReviewerCount == null || requiredReviewerCount <= 0) {
             return;
