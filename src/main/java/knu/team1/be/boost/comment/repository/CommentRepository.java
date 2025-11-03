@@ -11,6 +11,9 @@ public interface CommentRepository extends JpaRepository<Comment, UUID> {
 
     List<Comment> findAllByTaskId(UUID taskId);
 
+    @Query("SELECT COUNT(c) FROM Comment c WHERE c.task.id = :taskId")
+    long countByTaskId(@Param("taskId") UUID taskId);
+
     @Query("""
             SELECT c.task.id AS taskId, COUNT(c) AS count
             FROM Comment c
