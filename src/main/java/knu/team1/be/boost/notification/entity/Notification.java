@@ -4,7 +4,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.util.UUID;
@@ -33,15 +32,13 @@ public class Notification extends SoftDeletableEntity {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-
-    @Column(nullable = false, length = 100)
+    @Column(name = "title", nullable = false)
     private String title;
 
-    @Lob
-    @Column(nullable = false)
+    @Column(name = "message", nullable = false)
     private String message;
 
-    @Column(nullable = false)
+    @Column(name = "read", nullable = false)
     @Builder.Default
     private boolean read = false;
 
