@@ -34,7 +34,12 @@ public interface FileRepository extends JpaRepository<File, UUID> {
         Pageable pageable
     );
 
-    @Query("SELECT COUNT(f) FROM File f WHERE f.task.id = :taskId")
+    @Query("""
+            SELECT COUNT(f)
+            FROM File f
+            WHERE f.task.id = :taskId
+                AND f.status = knu.team1.be.boost.file.entity.FileStatus.COMPLETED
+        """)
     long countByTaskId(@Param("task") UUID taskId);
 
     @Query("""
