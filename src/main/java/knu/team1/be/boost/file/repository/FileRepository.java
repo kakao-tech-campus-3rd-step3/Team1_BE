@@ -40,7 +40,7 @@ public interface FileRepository extends JpaRepository<File, UUID> {
             WHERE f.task.id = :taskId
                 AND f.status = knu.team1.be.boost.file.entity.FileStatus.COMPLETED
         """)
-    long countByTaskId(@Param("task") UUID taskId);
+    long countByTaskId(@Param("taskId") UUID taskId);
 
     @Query("""
             SELECT f.task.id AS taskId, COUNT(f) AS count
