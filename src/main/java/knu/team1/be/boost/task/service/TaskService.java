@@ -581,7 +581,7 @@ public class TaskService {
         }
 
         Integer requiredReviewerCount = task.getRequiredReviewerCount();
-        if (requiredReviewerCount == null || requiredReviewerCount <= 0) {
+        if (requiredReviewerCount <= 0) {
             return;
         }
 
