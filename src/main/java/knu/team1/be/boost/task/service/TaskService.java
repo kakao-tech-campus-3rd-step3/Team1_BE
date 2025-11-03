@@ -566,20 +566,27 @@ public class TaskService {
     }
 
     private void validateCanMarkDone(Project project, Task task, TaskStatus newStatus) {
-        if (newStatus == TaskStatus.DONE) {
-            List<Member> projectMembers = projectMembershipRepository.findAllByProjectId(
-                    project.getId())
-                .stream()
-                .map(ProjectMembership::getMember)
-                .toList();
+        if (newStatus != TaskStatus.DONE) {
+            return;
+        }
+        
+        Integer requiredReviewerCount = task.getRequiredReviewerCount();
+        if (requiredReviewerCount == null || requiredReviewerCount <= 0) {
+            return;
+        }
 
-            int requiredApprovals = task.getRequiredApprovalsCount(projectMembers);
+        List<Member> projectMembers = projectMembershipRepository.findAllByProjectId(
+                project.getId())
+            .stream()
+            .map(ProjectMembership::getMember)
+            .toList();
 
-            if (task.getApprovers().size() < requiredApprovals) {
-                throw new BusinessException(
-                    ErrorCode.INSUFFICIENT_APPROVALS, "taskId: " + task.getId()
-                );
-            }
+        int requiredApprovals = task.getRequiredApprovalsCount(projectMembers);
+
+        if (task.getApprovers().size() < requiredApprovals) {
+            throw new BusinessException(
+                ErrorCode.INSUFFICIENT_APPROVALS, "taskId: " + task.getId()
+            );
         }
     }
 
