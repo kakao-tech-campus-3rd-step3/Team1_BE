@@ -148,7 +148,10 @@ public class TaskService {
             assignees
         );
 
-        return TaskResponseDto.from(task);
+        List<Comment> comments = commentRepository.findAllByTaskId(task.getId());
+        List<File> files = fileRepository.findAllByTask(task);
+
+        return TaskResponseDto.from(task, comments.size(), files.size());
     }
 
     @Transactional
@@ -203,7 +206,10 @@ public class TaskService {
             eventPublisher.publishEvent(TaskReviewEvent.from(project, task));
         }
 
-        return TaskResponseDto.from(task);
+        List<Comment> comments = commentRepository.findAllByTaskId(task.getId());
+        List<File> files = fileRepository.findAllByTask(task);
+
+        return TaskResponseDto.from(task, comments.size(), files.size());
     }
 
     @Transactional(readOnly = true)
