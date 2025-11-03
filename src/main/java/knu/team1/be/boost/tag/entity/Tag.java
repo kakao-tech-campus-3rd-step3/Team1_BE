@@ -13,7 +13,6 @@ import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.project.entity.Project;
 import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -22,7 +21,6 @@ import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
-@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 @Table(name = "tags", uniqueConstraints = {
     @UniqueConstraint(
         name = "uk_project_tag_name_deleted_at",
@@ -34,11 +32,6 @@ import org.hibernate.annotations.SQLRestriction;
 @SQLDelete(sql = "UPDATE tags SET deleted = true, deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
 @SQLRestriction("deleted = false")
 public class Tag extends SoftDeletableEntity {
-
-    @EqualsAndHashCode.Include
-    public UUID getId() {
-        return super.getId();
-    }
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "project_id", nullable = false)

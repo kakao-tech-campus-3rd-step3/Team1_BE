@@ -9,6 +9,7 @@ import jakarta.persistence.MappedSuperclass;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -21,11 +22,13 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public abstract class BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false, updatable = false)
+    @EqualsAndHashCode.Include
     private UUID id;
 
     @CreatedDate
