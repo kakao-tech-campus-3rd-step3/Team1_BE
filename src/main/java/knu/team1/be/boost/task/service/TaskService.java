@@ -201,7 +201,7 @@ public class TaskService {
 
         task.changeStatus(request.status());
 
-        if (request.status() == TaskStatus.REVIEW) {
+        if (task.getStatus() == TaskStatus.REVIEW) {
             eventPublisher.publishEvent(TaskReviewEvent.from(project, task));
         }
 
