@@ -31,6 +31,8 @@ public enum ErrorCode {
     INVALID_SORT_OPTION(HttpStatus.BAD_REQUEST, "Invalid sort option", "올바르지 않은 정렬 옵션입니다."),
     INVALID_APPROVER(HttpStatus.FORBIDDEN, "Invalid approver", "담당자는 승인할 수 없습니다."),
     ALREADY_APPROVED(HttpStatus.CONFLICT, "Already approved", "이미 승인한 사용자입니다."),
+    INSUFFICIENT_APPROVALS(HttpStatus.BAD_REQUEST, "Insufficient approvals",
+        "승인 수가 부족하여 완료 상태로 변경할 수 없습니다."),
 
     // Tag 관련
     TAG_NOT_FOUND(HttpStatus.NOT_FOUND, "Tag not found", "해당 태그를 찾을 수 없습니다."),

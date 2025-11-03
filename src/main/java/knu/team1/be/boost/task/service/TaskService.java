@@ -197,10 +197,16 @@ public class TaskService {
         accessPolicy.ensureProjectMember(project.getId(), user.id());
         accessPolicy.ensureTaskAssignee(task.getId(), user.id());
 
+        validateCanMarkDone(project, task, request.status());
+
         task.changeStatus(request.status());
 
         if (request.status() == TaskStatus.REVIEW) {
             eventPublisher.publishEvent(TaskReviewEvent.from(project, task));
+        }
+
+        if (task.getStatus() == TaskStatus.DONE) {
+            eventPublisher.publishEvent(TaskApproveEvent.from(project, task));
         }
 
         return TaskResponseDto.from(task);
@@ -554,13 +560,27 @@ public class TaskService {
                 ErrorCode.MEMBER_NOT_FOUND, "memberId: " + user.id()
             ));
 
-        task.approve(member, projectMembers);
-
-        if (task.getStatus() == TaskStatus.DONE) {
-            eventPublisher.publishEvent(TaskApproveEvent.from(project, task));
-        }
+        task.approve(member);
 
         return TaskApproveResponseDto.from(task, projectMembers);
+    }
+
+    private void validateCanMarkDone(Project project, Task task, TaskStatus newStatus) {
+        if (newStatus == TaskStatus.DONE) {
+            List<Member> projectMembers = projectMembershipRepository.findAllByProjectId(
+                    project.getId())
+                .stream()
+                .map(ProjectMembership::getMember)
+                .toList();
+
+            int requiredApprovals = task.getRequiredApprovalsCount(projectMembers);
+
+            if (task.getApprovers().size() < requiredApprovals) {
+                throw new BusinessException(
+                    ErrorCode.INSUFFICIENT_APPROVALS, "taskId: " + task.getId()
+                );
+            }
+        }
     }
 
     private Map<UUID, Long> getFileCounts(List<Task> tasks) {
