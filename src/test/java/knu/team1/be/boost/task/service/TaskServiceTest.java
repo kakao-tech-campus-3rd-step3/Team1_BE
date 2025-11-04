@@ -12,7 +12,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -36,6 +35,7 @@ import knu.team1.be.boost.task.dto.TaskStatusRequestDto;
 import knu.team1.be.boost.task.dto.TaskUpdateRequestDto;
 import knu.team1.be.boost.task.entity.Task;
 import knu.team1.be.boost.task.entity.TaskStatus;
+import knu.team1.be.boost.task.event.TaskEventPublisher;
 import knu.team1.be.boost.task.repository.TaskRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -45,7 +45,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.ApplicationEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 class TaskServiceTest {
@@ -65,7 +64,7 @@ class TaskServiceTest {
     @Mock
     ProjectMembershipRepository projectMembershipRepository;
     @Mock
-    ApplicationEventPublisher eventPublisher;
+    TaskEventPublisher taskEventPublisher;
     @Mock
     AccessPolicy accessPolicy;
 
@@ -93,8 +92,8 @@ class TaskServiceTest {
             commentRepository,
             projectRepository,
             projectMembershipRepository,
-            eventPublisher,
-            accessPolicy
+            accessPolicy,
+            taskEventPublisher
         );
     }
 
@@ -553,7 +552,7 @@ class TaskServiceTest {
                 .dueDate(DUE)
                 .urgent(false)
                 .requiredReviewerCount(1)
-                .tags(new ArrayList<>(List.of(tag1, tag2)))
+                .tags(Set.of(tag1, tag2))
                 .assignees(Set.of())
                 .build();
         }
