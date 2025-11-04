@@ -52,7 +52,7 @@ public class SecurityConfig {
 
                     // 웹 푸시 디바이스 연결 경로
                     "/api/web-push/sessions/connect",
-                    "/api/web-push/subscriptions/register"
+                    "/api/web-push/subscriptions"
                 ).permitAll()
                 .anyRequest().authenticated()
             )
