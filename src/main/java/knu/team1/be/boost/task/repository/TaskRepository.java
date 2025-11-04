@@ -544,4 +544,28 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
 
         String getTaskTitle();
     }
+
+    @Query("""
+        SELECT t
+        FROM Task t
+        JOIN t.assignees a
+        WHERE t.project.id = :projectId
+        AND a.id = :memberId
+        """)
+    List<Task> findAllByProjectIdAndAssigneesId(
+        @Param("projectId") UUID projectId,
+        @Param("memberId") UUID memberId
+    );
+
+    @Query("""
+        SELECT COUNT(t)
+        FROM Task t
+        JOIN t.approvers a
+        WHERE t.project.id = :projectId
+        AND a.id = :memberId
+        """)
+    Long countByProjectIdAndApproversId(
+        @Param("projectId") UUID projectId,
+        @Param("memberId") UUID memberId
+    );
 }
