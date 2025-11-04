@@ -24,6 +24,7 @@ import knu.team1.be.boost.project.repository.ProjectRepository;
 import knu.team1.be.boost.projectMembership.entity.ProjectMembership;
 import knu.team1.be.boost.projectMembership.repository.ProjectMembershipRepository;
 import knu.team1.be.boost.task.dto.TaskApproveEvent;
+import knu.team1.be.boost.task.dto.TaskReReviewEvent;
 import knu.team1.be.boost.task.dto.TaskReviewEvent;
 import knu.team1.be.boost.task.entity.Task;
 import knu.team1.be.boost.task.repository.TaskRepository;
@@ -219,6 +220,12 @@ public class NotificationService {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleTaskReviewEvent(TaskReviewEvent event) {
         notifyTaskReview(event.projectId(), event.taskId(), NotificationType.REVIEW);
+    }
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleTaskReReviewEvent(TaskReReviewEvent event) {
+        notifyTaskReview(event.projectId(), event.taskId(), NotificationType.RE_REVIEW);
     }
 
     @Async
