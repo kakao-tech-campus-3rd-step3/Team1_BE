@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import knu.team1.be.boost.common.exception.BusinessException;
@@ -16,6 +15,7 @@ import knu.team1.be.boost.member.repository.MemberRepository;
 import knu.team1.be.boost.notification.dto.NotificationListResponseDto;
 import knu.team1.be.boost.notification.dto.NotificationReadResponseDto;
 import knu.team1.be.boost.notification.dto.NotificationSavedEvent;
+import knu.team1.be.boost.notification.dto.NotificationType;
 import knu.team1.be.boost.notification.dto.ProjectNotificationResponseDto;
 import knu.team1.be.boost.notification.entity.Notification;
 import knu.team1.be.boost.notification.repository.NotificationRepository;
@@ -55,6 +55,9 @@ public class NotificationService {
     private final WebPushClient webPushClient;
 
     private final ApplicationEventPublisher eventPublisher;
+
+    private final NotificationSenderService notificationSenderService;
+
 
     @Transactional(readOnly = true)
     public NotificationListResponseDto getNotifications(
@@ -140,38 +143,53 @@ public class NotificationService {
     }
 
     @Transactional
-    public void notifyTaskReview(Project project, Task task) {
-        Set<Member> assignees = task.getAssignees();
+    public void notifyTaskReview(UUID projectId, UUID taskId, NotificationType type) {
+        Project project = projectRepository.findByIdWithMemberships(projectId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
+            ));
+        Task task = taskRepository.findById(taskId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.TASK_NOT_FOUND, "taskId: " + taskId
+            ));
 
         List<Member> members = project.getProjectMemberships().stream()
             .filter(ProjectMembership::isNotificationEnabled)
             .map(ProjectMembership::getMember)
-            .filter(member -> !assignees.contains(member))
+            .filter(member -> !task.getAssignees().contains(member))
             .toList();
 
         for (Member member : members) {
             saveAndSendNotification(
                 member,
-                "작업 검토 요청",
-                String.format("[%s] 작업이 검토 중 상태로 변경되었습니다.", task.getTitle())
+                type.title(),
+                type.message(task.getTitle())
             );
         }
     }
 
     @Transactional
-    public void notifyTaskApprove(Project project, Task task) {
+    public void notifyTaskApprove(UUID projectId, UUID taskId) {
+        Project project = projectRepository.findByIdWithMemberships(projectId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
+            ));
+        Task task = taskRepository.findById(taskId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.TASK_NOT_FOUND, "taskId: " + taskId
+            ));
+
         List<Member> assignees = project.getProjectMemberships().stream()
             .filter(
-                pm -> pm.isNotificationEnabled() && task.getAssignees().contains(pm.getMember())
-            )
+                pm -> pm.isNotificationEnabled() && task.getAssignees().contains(pm.getMember()))
             .map(ProjectMembership::getMember)
             .toList();
 
         for (Member assignee : assignees) {
             saveAndSendNotification(
                 assignee,
-                "작업 승인 완료",
-                String.format("[%s] 작업이 모든 승인자를 통해 승인되었습니다.", task.getTitle())
+                NotificationType.APPROVED.title(),
+                NotificationType.APPROVED.message(task.getTitle())
             );
         }
     }
@@ -200,13 +218,13 @@ public class NotificationService {
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleTaskReviewEvent(TaskReviewEvent event) {
-        notifyTaskReview(event.project(), event.task());
+        notifyTaskReview(event.projectId(), event.taskId(), NotificationType.REVIEW);
     }
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleTaskApproveEvent(TaskApproveEvent event) {
-        notifyTaskApprove(event.project(), event.task());
+        notifyTaskApprove(event.projectId(), event.taskId());
     }
 
     @Async
