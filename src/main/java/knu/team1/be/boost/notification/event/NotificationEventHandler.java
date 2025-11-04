@@ -5,6 +5,7 @@ import knu.team1.be.boost.notification.event.dto.NotificationType;
 import knu.team1.be.boost.notification.service.NotificationService;
 import knu.team1.be.boost.task.event.dto.TaskApproveEvent;
 import knu.team1.be.boost.task.event.dto.TaskReReviewEvent;
+import knu.team1.be.boost.task.event.dto.TaskReviewEvent;
 import knu.team1.be.boost.webPush.service.WebPushClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
@@ -21,7 +22,7 @@ public class NotificationEventHandler {
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handleTaskReviewEvent(TaskReReviewEvent event) {
+    public void handleTaskReviewEvent(TaskReviewEvent event) {
         notificationService.notifyTaskReview(event.projectId(), event.taskId(),
             NotificationType.REVIEW);
     }
