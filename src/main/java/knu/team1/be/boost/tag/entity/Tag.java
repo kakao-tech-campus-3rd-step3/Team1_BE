@@ -24,7 +24,7 @@ import org.hibernate.annotations.SQLRestriction;
 @Table(name = "tags", uniqueConstraints = {
     @UniqueConstraint(
         name = "uk_project_tag_name_deleted_at",
-        columnNames = {"project_id", "name", "deleted_at"}
+        columnNames = {"project_id", "name"}
     )
 })
 @SuperBuilder
