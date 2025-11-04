@@ -14,7 +14,6 @@ import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
 import knu.team1.be.boost.notification.dto.NotificationListResponseDto;
 import knu.team1.be.boost.notification.dto.NotificationReadResponseDto;
-import knu.team1.be.boost.notification.dto.NotificationSavedEvent;
 import knu.team1.be.boost.notification.dto.NotificationType;
 import knu.team1.be.boost.notification.dto.ProjectNotificationResponseDto;
 import knu.team1.be.boost.notification.entity.Notification;
@@ -23,22 +22,15 @@ import knu.team1.be.boost.project.entity.Project;
 import knu.team1.be.boost.project.repository.ProjectRepository;
 import knu.team1.be.boost.projectMembership.entity.ProjectMembership;
 import knu.team1.be.boost.projectMembership.repository.ProjectMembershipRepository;
-import knu.team1.be.boost.task.dto.TaskApproveEvent;
-import knu.team1.be.boost.task.dto.TaskReReviewEvent;
-import knu.team1.be.boost.task.dto.TaskReviewEvent;
 import knu.team1.be.boost.task.entity.Task;
 import knu.team1.be.boost.task.repository.TaskRepository;
 import knu.team1.be.boost.task.repository.TaskRepository.DueTask;
-import knu.team1.be.boost.webPush.service.WebPushClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 
 @Service
 @RequiredArgsConstructor
@@ -51,8 +43,6 @@ public class NotificationService {
     private final ProjectMembershipRepository projectMembershipRepository;
 
     private final AccessPolicy accessPolicy;
-
-    private final WebPushClient webPushClient;
 
     private final NotificationSenderService notificationSenderService;
 
@@ -211,30 +201,6 @@ public class NotificationService {
             String title = formattedDate + " 마감 임박 작업";
             notificationSenderService.saveAndSendNotification(member, title, message);
         });
-    }
-
-    @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handleTaskReviewEvent(TaskReviewEvent event) {
-        notifyTaskReview(event.projectId(), event.taskId(), NotificationType.REVIEW);
-    }
-
-    @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handleTaskReReviewEvent(TaskReReviewEvent event) {
-        notifyTaskReview(event.projectId(), event.taskId(), NotificationType.RE_REVIEW);
-    }
-
-    @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handleTaskApproveEvent(TaskApproveEvent event) {
-        notifyTaskApprove(event.projectId(), event.taskId());
-    }
-
-    @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handleNotificationSavedEvent(NotificationSavedEvent event) {
-        webPushClient.sendNotification(event.member(), event.title(), event.message());
     }
 
     private String buildNotificationMessage(Map<UUID, List<DueTask>> projectTasks) {
