@@ -1,4 +1,4 @@
-package knu.team1.be.boost.task.dto;
+package knu.team1.be.boost.task.event.dto;
 
 import java.util.UUID;
 
