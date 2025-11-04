@@ -3,7 +3,6 @@ package knu.team1.be.boost.task.repository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.project.entity.Project;
@@ -517,13 +516,6 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
         @Param("cursorId") UUID cursorId,
         Pageable pageable
     );
-
-    @Query("""
-            select distinct t from Task t
-            left join fetch t.assignees a
-            where t.id = :taskId
-        """)
-    Optional<Task> findByIdWithAssignees(@Param("taskId") UUID taskId);
 
     @Query("""
             SELECT DISTINCT
