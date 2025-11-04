@@ -1,6 +1,7 @@
 package knu.team1.be.boost.notification.scheduler;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +30,7 @@ public class NotificationScheduler {
     @Scheduled(cron = "0 0 8 * * *", zone = "Asia/Seoul")
     @Transactional
     public void notifyDueTomorrowTasks() {
-        LocalDate tomorrow = LocalDate.now().plusDays(1);
+        LocalDate tomorrow = LocalDate.now(ZoneId.of("Asia/Seoul")).plusDays(1);
         List<DueTask> dueTasks = taskRepository.findDueTasksByMember(tomorrow);
 
         Map<UUID, Map<UUID, List<DueTask>>> groupedDueTask = dueTasks.stream()
