@@ -19,6 +19,8 @@ public enum ErrorCode {
     PROJECT_OWNER_ONLY(HttpStatus.FORBIDDEN, "Project owner only", "프로젝트 소유자만 수행할 수 있습니다."),
     PROJECT_OWNER_CANNOT_LEAVE(HttpStatus.FORBIDDEN, "Project owner cannot leave",
         "프로젝트 소유자는 프로젝트를 나갈 수 없습니다."),
+    CANNOT_KICK_YOURSELF(HttpStatus.BAD_REQUEST, "Cannot kick yourself", "자기 자신을 추방할 수 없습니다."),
+    CANNOT_KICK_OWNER(HttpStatus.FORBIDDEN, "Cannot kick owner", "프로젝트 소유자를 추방할 수 없습니다."),
 
     // Project Join Code 관련
     EXPIRED_JOIN_CODE(HttpStatus.BAD_REQUEST, "Expired join code", "만료된 참가 코드입니다."),
