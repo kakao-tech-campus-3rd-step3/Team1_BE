@@ -13,7 +13,6 @@ import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.project.entity.Project;
 import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -22,7 +21,6 @@ import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
-@EqualsAndHashCode(of = "id")
 @Table(name = "tags", uniqueConstraints = {
     @UniqueConstraint(
         name = "uk_project_tag_name_deleted_at",
