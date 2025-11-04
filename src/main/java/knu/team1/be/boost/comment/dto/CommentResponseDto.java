@@ -36,6 +36,10 @@ public record CommentResponseDto(
     LocalDateTime updatedAt
 ) {
 
+    private static final String ANONYMOUS_NAME = "익명";
+    private static final String ANONYMOUS_AVATAR = "0000";
+    private static final String ANONYMOUS_BACKGROUND_COLOR = "#99a1af";
+
     public static CommentResponseDto from(Comment comment) {
         return new CommentResponseDto(
             comment.getId(),
@@ -80,9 +84,9 @@ public record CommentResponseDto(
         public static AuthorInfoResponseDto anonymous(Member member) {
             return new AuthorInfoResponseDto(
                 member.getId(),
-                "익명",
-                "0000",
-                "#99a1af"
+                ANONYMOUS_NAME,
+                ANONYMOUS_AVATAR,
+                ANONYMOUS_BACKGROUND_COLOR
             );
         }
     }
