@@ -15,10 +15,12 @@ import knu.team1.be.boost.notification.service.NotificationSenderService;
 import knu.team1.be.boost.task.repository.TaskRepository;
 import knu.team1.be.boost.task.repository.TaskRepository.DueTask;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class NotificationScheduler {
@@ -41,10 +43,14 @@ public class NotificationScheduler {
         String formattedDate = tomorrow.format(DateTimeFormatter.ofPattern("MM월 dd일"));
 
         groupedDueTask.forEach((memberId, projectTasks) -> {
-            Member member = findMember(memberId);
-            String message = buildNotificationMessage(projectTasks);
-            String title = formattedDate + " 마감 임박 작업";
-            notificationSenderService.saveAndSendNotification(member, title, message);
+            try {
+                Member member = findMember(memberId);
+                String message = buildNotificationMessage(projectTasks);
+                String title = formattedDate + " 마감 임박 작업";
+                notificationSenderService.saveAndSendNotification(member, title, message);
+            } catch (Exception e) {
+                log.error("Failed to send notification to member: " + memberId, e);
+            }
         });
     }
 

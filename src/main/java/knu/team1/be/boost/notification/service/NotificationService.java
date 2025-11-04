@@ -21,11 +21,13 @@ import knu.team1.be.boost.projectMembership.repository.ProjectMembershipReposito
 import knu.team1.be.boost.task.entity.Task;
 import knu.team1.be.boost.task.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class NotificationService {
@@ -142,11 +144,15 @@ public class NotificationService {
             .toList();
 
         for (Member member : members) {
-            notificationSenderService.saveAndSendNotification(
-                member,
-                type.title(),
-                type.message(task.getTitle())
-            );
+            try {
+                notificationSenderService.saveAndSendNotification(
+                    member,
+                    type.title(),
+                    type.message(task.getTitle())
+                );
+            } catch (Exception e) {
+                log.error("Failed to send review notification to member: " + member.getId(), e);
+            }
         }
     }
 
@@ -168,11 +174,15 @@ public class NotificationService {
             .toList();
 
         for (Member assignee : assignees) {
-            notificationSenderService.saveAndSendNotification(
-                assignee,
-                NotificationType.APPROVED.title(),
-                NotificationType.APPROVED.message(task.getTitle())
-            );
+            try {
+                notificationSenderService.saveAndSendNotification(
+                    assignee,
+                    NotificationType.APPROVED.title(),
+                    NotificationType.APPROVED.message(task.getTitle())
+                );
+            } catch (Exception e) {
+                log.error("Failed to send approval notification to member: " + assignee.getId(), e);
+            }
         }
     }
 
