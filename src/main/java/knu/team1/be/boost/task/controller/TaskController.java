@@ -167,6 +167,16 @@ public class TaskController implements TaskApi {
     }
 
     @Override
+    public ResponseEntity<Void> requestReReview(
+        @PathVariable UUID projectId,
+        @PathVariable UUID taskId,
+        @AuthenticationPrincipal UserPrincipalDto user
+    ) {
+        taskService.requestReReview(projectId, taskId, user);
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
     public ResponseEntity<MyTaskStatusCountResponseDto> getMyTaskStatusCount(
         @RequestParam(required = false) String search,
         @AuthenticationPrincipal UserPrincipalDto user
