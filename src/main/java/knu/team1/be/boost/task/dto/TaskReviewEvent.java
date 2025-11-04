@@ -1,17 +1,13 @@
 package knu.team1.be.boost.task.dto;
 
-import knu.team1.be.boost.project.entity.Project;
-import knu.team1.be.boost.task.entity.Task;
+import java.util.UUID;
 
 public record TaskReviewEvent(
-    Project project,
-    Task task
+    UUID projectId,
+    UUID taskId
 ) {
 
-    public static TaskReviewEvent from(Project project, Task task) {
-        return new TaskReviewEvent(
-            project,
-            task
-        );
+    public static TaskReviewEvent from(UUID projectId, UUID taskId) {
+        return new TaskReviewEvent(projectId, taskId);
     }
 }

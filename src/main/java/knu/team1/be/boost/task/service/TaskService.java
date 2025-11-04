@@ -200,7 +200,7 @@ public class TaskService {
         task.changeStatus(request.status());
 
         if (request.status() == TaskStatus.REVIEW) {
-            eventPublisher.publishEvent(TaskReviewEvent.from(project, task));
+            eventPublisher.publishEvent(TaskReviewEvent.from(project.getId(), task.getId()));
         }
 
         return TaskResponseDto.from(task);
@@ -557,7 +557,7 @@ public class TaskService {
         task.approve(member, projectMembers);
 
         if (task.getStatus() == TaskStatus.DONE) {
-            eventPublisher.publishEvent(TaskApproveEvent.from(project, task));
+            eventPublisher.publishEvent(TaskApproveEvent.from(project.getId(), task.getId()));
         }
 
         return TaskApproveResponseDto.from(task, projectMembers);
