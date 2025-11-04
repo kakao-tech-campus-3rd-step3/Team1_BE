@@ -93,10 +93,11 @@ public class TagService {
         TagUpdateRequestDto request,
         UserPrincipalDto user
     ) {
-        Project project = projectRepository.findById(projectId)
-            .orElseThrow(() -> new BusinessException(
+        if (!projectRepository.existsById(projectId)) {
+            throw new BusinessException(
                 ErrorCode.PROJECT_NOT_FOUND, "projectId=" + projectId
-            ));
+            );
+        }
 
         accessPolicy.ensureProjectMember(projectId, user.id());
 
@@ -109,7 +110,7 @@ public class TagService {
 
         String trimmedName = request.name().trim();
         Optional<Tag> existingRecord = tagRepository.findByProjectIdAndNameIncludingDeleted(
-            project.getId(), trimmedName);
+            projectId, trimmedName);
 
         // 동일한 이름의 다른 태그가 존재하는 경우
         if (existingRecord.isPresent()) {
