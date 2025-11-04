@@ -43,7 +43,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         "/actuator/**",
 
         // 웹 푸시 디바이스 연결 경로
-        "/api/web-push/sessions/connect"
+        "/api/web-push/sessions/connect",
+        "/api/web-push/subscriptions/register"
     );
 
     @Override
