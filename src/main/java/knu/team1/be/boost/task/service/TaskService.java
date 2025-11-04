@@ -39,6 +39,7 @@ import knu.team1.be.boost.task.dto.TaskApproveResponseDto;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
 import knu.team1.be.boost.task.dto.TaskDetailResponseDto;
 import knu.team1.be.boost.task.dto.TaskMemberSectionResponseDto;
+import knu.team1.be.boost.task.dto.TaskReReviewEvent;
 import knu.team1.be.boost.task.dto.TaskResponseDto;
 import knu.team1.be.boost.task.dto.TaskReviewEvent;
 import knu.team1.be.boost.task.dto.TaskSortBy;
@@ -561,6 +562,36 @@ public class TaskService {
         }
 
         return TaskApproveResponseDto.from(task, projectMembers);
+    }
+
+    @Transactional
+    public void requestReReview(
+        UUID projectId,
+        UUID taskId,
+        UserPrincipalDto user
+    ) {
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
+            ));
+
+        Task task = taskRepository.findById(taskId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.TASK_NOT_FOUND, "taskId: " + taskId
+            ));
+
+        task.ensureTaskInProject(project.getId());
+
+        accessPolicy.ensureProjectMember(project.getId(), user.id());
+        accessPolicy.ensureTaskAssignee(task.getId(), user.id());
+
+        if (task.getStatus() != TaskStatus.REVIEW) {
+            throw new BusinessException(
+                ErrorCode.TASK_RE_REVIEW_NOT_ALLOWED, "taskId: " + taskId
+            );
+        }
+
+        eventPublisher.publishEvent(TaskReReviewEvent.from(project.getId(), task.getId()));
     }
 
     private Map<UUID, Long> getFileCounts(List<Task> tasks) {
