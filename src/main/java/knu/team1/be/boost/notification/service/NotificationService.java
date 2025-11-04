@@ -1,12 +1,8 @@
 package knu.team1.be.boost.notification.service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.common.policy.AccessPolicy;
@@ -24,11 +20,9 @@ import knu.team1.be.boost.projectMembership.entity.ProjectMembership;
 import knu.team1.be.boost.projectMembership.repository.ProjectMembershipRepository;
 import knu.team1.be.boost.task.entity.Task;
 import knu.team1.be.boost.task.repository.TaskRepository;
-import knu.team1.be.boost.task.repository.TaskRepository.DueTask;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -180,54 +174,6 @@ public class NotificationService {
                 NotificationType.APPROVED.message(task.getTitle())
             );
         }
-    }
-
-    @Scheduled(cron = "0 0 8 * * *", zone = "Asia/Seoul")
-    @Transactional
-    public void notifyDueTomorrowTasks() {
-        LocalDate tomorrow = LocalDate.now().plusDays(1);
-        List<DueTask> dueTasks = taskRepository.findDueTasksByMember(tomorrow);
-
-        Map<UUID, Map<UUID, List<DueTask>>> groupedDueTask = dueTasks.stream()
-            .collect(Collectors.groupingBy(
-                DueTask::getMemberId,
-                Collectors.groupingBy(DueTask::getProjectId)
-            ));
-        String formattedDate = tomorrow.format(DateTimeFormatter.ofPattern("MM월 dd일"));
-
-        groupedDueTask.forEach((memberId, projectTasks) -> {
-            Member member = findMember(memberId);
-            String message = buildNotificationMessage(projectTasks);
-            String title = formattedDate + " 마감 임박 작업";
-            notificationSenderService.saveAndSendNotification(member, title, message);
-        });
-    }
-
-    private String buildNotificationMessage(Map<UUID, List<DueTask>> projectTasks) {
-        StringBuilder message = new StringBuilder();
-
-        projectTasks.forEach((projectId, tasks) -> {
-            String projectName = tasks.getFirst().getProjectName();
-            String taskTitles = tasks.stream()
-                .map(DueTask::getTaskTitle)
-                .collect(Collectors.joining(", "));
-
-            message.append("[")
-                .append(projectName)
-                .append("] ")
-                .append(taskTitles)
-                .append("\n");
-        });
-
-        return message.toString().trim();
-    }
-
-    private Member findMember(UUID memberId) {
-        return memberRepository.findById(memberId)
-            .orElseThrow(() -> new BusinessException(
-                ErrorCode.MEMBER_NOT_FOUND,
-                "memberId: " + memberId
-            ));
     }
 
     private boolean isCursorNotMine(Notification cursor, Member member) {
