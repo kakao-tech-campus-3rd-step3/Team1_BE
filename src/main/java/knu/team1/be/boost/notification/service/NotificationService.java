@@ -124,7 +124,7 @@ public class NotificationService {
         );
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public void notifyTaskReview(UUID projectId, UUID taskId, NotificationType type) {
         Project project = projectRepository.findByIdWithMemberships(projectId)
             .orElseThrow(() -> new BusinessException(
@@ -150,7 +150,7 @@ public class NotificationService {
         }
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public void notifyTaskApprove(UUID projectId, UUID taskId) {
         Project project = projectRepository.findByIdWithMemberships(projectId)
             .orElseThrow(() -> new BusinessException(

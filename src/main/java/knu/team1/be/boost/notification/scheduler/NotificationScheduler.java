@@ -28,7 +28,7 @@ public class NotificationScheduler {
     private final NotificationSenderService notificationSenderService;
 
     @Scheduled(cron = "0 0 8 * * *", zone = "Asia/Seoul")
-    @Transactional
+    @Transactional(readOnly = true)
     public void notifyDueTomorrowTasks() {
         LocalDate tomorrow = LocalDate.now(ZoneId.of("Asia/Seoul")).plusDays(1);
         List<DueTask> dueTasks = taskRepository.findDueTasksByMember(tomorrow);
