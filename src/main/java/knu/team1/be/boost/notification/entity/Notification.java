@@ -38,21 +38,21 @@ public class Notification extends SoftDeletableEntity {
     @Column(name = "message", nullable = false, columnDefinition = "TEXT")
     private String message;
 
-    @Column(name = "read", nullable = false)
+    @Column(name = "is_read", nullable = false)
     @Builder.Default
-    private boolean read = false;
+    private boolean isRead = false;
 
     public static Notification create(Member member, String title, String message) {
         return Notification.builder()
             .member(member)
             .title(title)
             .message(message)
-            .read(false)
+            .isRead(false)
             .build();
     }
 
     public void markAsRead() {
-        this.read = true;
+        this.isRead = true;
     }
 
     public void ensureOwner(UUID memberId) {
