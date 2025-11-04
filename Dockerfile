@@ -5,4 +5,4 @@ FROM eclipse-temurin:21-jre
 COPY build/libs/*.jar app.jar
 
 # 3. 컨테이너 시작 시 실행할 명령어
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-Duser.timezone=Asia/Seoul", "-jar", "app.jar"]
