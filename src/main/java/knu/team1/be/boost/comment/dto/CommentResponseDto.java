@@ -62,14 +62,18 @@ public record CommentResponseDto(
         String name,
 
         @Schema(description = "회원 아바타", example = "1111")
-        String avatar
+        String avatar,
+
+        @Schema(description = "회원 배경색", example = "#FF5733")
+        String backgroundColor
     ) {
 
         public static AuthorInfoResponseDto from(Member member) {
             return new AuthorInfoResponseDto(
                 member.getId(),
                 member.getName(),
-                member.getAvatar()
+                member.getAvatar(),
+                member.getBackgroundColor()
             );
         }
 
@@ -77,7 +81,8 @@ public record CommentResponseDto(
             return new AuthorInfoResponseDto(
                 member.getId(),
                 "익명",
-                "0000"
+                "0000",
+                "#99a1af"
             );
         }
     }
