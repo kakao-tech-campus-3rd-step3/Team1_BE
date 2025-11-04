@@ -263,6 +263,25 @@ public interface TaskApi {
     );
 
     @Operation(
+        summary = "할 일 재검토 요청",
+        description = "담당자가 특정 프로젝트의 할 일에 대해 재검토를 요청합니다. REVIEW 상태에서만 가능합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "재검토 요청 성공", content = @Content),
+        @ApiResponse(responseCode = "400", description = "재검토 불가능한 상태", content = @Content),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
+        @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
+        @ApiResponse(responseCode = "404", description = "존재하지 않는 프로젝트/할 일 ID 포함", content = @Content),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
+    })
+    @PostMapping("/projects/{projectId}/tasks/{taskId}/re-review")
+    ResponseEntity<Void> requestReReview(
+        @PathVariable UUID projectId,
+        @PathVariable UUID taskId,
+        @AuthenticationPrincipal UserPrincipalDto user
+    );
+
+    @Operation(
         summary = "내 할 일 상태별 개수 조회",
         description = """
             로그인한 사용자에게 할당된 전체 Task 상태별 개수를 반환합니다.<br>

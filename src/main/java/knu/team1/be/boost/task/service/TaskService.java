@@ -33,13 +33,11 @@ import knu.team1.be.boost.task.dto.MemberTaskStatusCountResponseDto;
 import knu.team1.be.boost.task.dto.MyTaskStatusCountResponseDto;
 import knu.team1.be.boost.task.dto.ProjectTaskStatusCount;
 import knu.team1.be.boost.task.dto.ProjectTaskStatusCountResponseDto;
-import knu.team1.be.boost.task.dto.TaskApproveEvent;
 import knu.team1.be.boost.task.dto.TaskApproveResponseDto;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
 import knu.team1.be.boost.task.dto.TaskDetailResponseDto;
 import knu.team1.be.boost.task.dto.TaskMemberSectionResponseDto;
 import knu.team1.be.boost.task.dto.TaskResponseDto;
-import knu.team1.be.boost.task.dto.TaskReviewEvent;
 import knu.team1.be.boost.task.dto.TaskSortBy;
 import knu.team1.be.boost.task.dto.TaskSortDirection;
 import knu.team1.be.boost.task.dto.TaskStatusRequestDto;
@@ -47,9 +45,9 @@ import knu.team1.be.boost.task.dto.TaskStatusSectionDto;
 import knu.team1.be.boost.task.dto.TaskUpdateRequestDto;
 import knu.team1.be.boost.task.entity.Task;
 import knu.team1.be.boost.task.entity.TaskStatus;
+import knu.team1.be.boost.task.event.TaskEventPublisher;
 import knu.team1.be.boost.task.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -67,8 +65,8 @@ public class TaskService {
     private final ProjectRepository projectRepository;
     private final ProjectMembershipRepository projectMembershipRepository;
 
-    private final ApplicationEventPublisher eventPublisher;
     private final AccessPolicy accessPolicy;
+    private final TaskEventPublisher taskEventPublisher;
 
     @Transactional
     public TaskResponseDto createTask(
@@ -202,7 +200,7 @@ public class TaskService {
         task.changeStatus(request.status());
 
         if (request.status() == TaskStatus.REVIEW) {
-            eventPublisher.publishEvent(TaskReviewEvent.from(project, task));
+            taskEventPublisher.publishTaskReviewEvent(project.getId(), task.getId());
         }
 
         int commentCount = (int) commentRepository.countByTaskId(task.getId());
@@ -560,10 +558,40 @@ public class TaskService {
         task.approve(member, projectMembers);
 
         if (task.getStatus() == TaskStatus.DONE) {
-            eventPublisher.publishEvent(TaskApproveEvent.from(project, task));
+            taskEventPublisher.publishTaskApproveEvent(project.getId(), task.getId());
         }
 
         return TaskApproveResponseDto.from(task, projectMembers);
+    }
+
+    @Transactional
+    public void requestReReview(
+        UUID projectId,
+        UUID taskId,
+        UserPrincipalDto user
+    ) {
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
+            ));
+
+        Task task = taskRepository.findById(taskId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.TASK_NOT_FOUND, "taskId: " + taskId
+            ));
+
+        task.ensureTaskInProject(project.getId());
+
+        accessPolicy.ensureProjectMember(project.getId(), user.id());
+        accessPolicy.ensureTaskAssignee(task.getId(), user.id());
+
+        if (task.getStatus() != TaskStatus.REVIEW) {
+            throw new BusinessException(
+                ErrorCode.TASK_RE_REVIEW_NOT_ALLOWED, "taskId: " + taskId
+            );
+        }
+
+        taskEventPublisher.publishTaskReReviewEvent(project.getId(), task.getId());
     }
 
     private Map<UUID, Long> getFileCounts(List<Task> tasks) {
