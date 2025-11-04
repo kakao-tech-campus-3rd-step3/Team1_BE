@@ -111,4 +111,25 @@ public interface ProjectMembershipApi {
         @AuthenticationPrincipal UserPrincipalDto user
     );
 
+    @DeleteMapping("/api/projects/{projectId}/members/{targetMemberId}")
+    @Operation(summary = "프로젝트 멤버 추방", description = "프로젝트에서 특정 멤버를 추방합니다. "
+        + "프로젝트 owner만 사용할 수 있습니다. 자기 자신이나 다른 owner를 추방할 수 없습니다.")
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "204",
+            description = "멤버 추방 성공",
+            content = @Content
+        ),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청 (자기 자신을 추방하려는 경우)", content = @Content),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
+        @ApiResponse(responseCode = "403", description = "권한 없음 (프로젝트 owner만 사용 가능, owner는 추방 불가)", content = @Content),
+        @ApiResponse(responseCode = "404", description = "프로젝트 또는 멤버 없음", content = @Content),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
+    })
+    ResponseEntity<Void> kickMember(
+        @PathVariable UUID projectId,
+        @PathVariable UUID targetMemberId,
+        @AuthenticationPrincipal UserPrincipalDto user
+    );
+
 }

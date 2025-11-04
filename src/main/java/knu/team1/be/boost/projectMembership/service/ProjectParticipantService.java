@@ -109,4 +109,33 @@ class ProjectParticipantService {
         projectMembershipRepository.delete(projectMembership);
     }
 
+    @Transactional
+    void kickMember(UUID projectId, UUID targetMemberId, UUID requesterId) {
+        // 자기 자신을 추방할 수 없음
+        if (targetMemberId.equals(requesterId)) {
+            throw new BusinessException(
+                ErrorCode.CANNOT_KICK_YOURSELF,
+                "projectId: " + projectId + ", targetMemberId: " + targetMemberId
+            );
+        }
+
+        ProjectMembership targetMembership = projectMembershipRepository
+            .findByProjectIdAndMemberId(projectId, targetMemberId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_MEMBER_NOT_FOUND,
+                "projectId: " + projectId + ", targetMemberId: " + targetMemberId
+            ));
+
+        // 프로젝트 소유자는 추방할 수 없음
+        // 현재는 소유자가 한 명이지만, 추후 다중 소유자가 될 가능성을 고려하여 체크
+        if (targetMembership.getRole() == ProjectRole.OWNER) {
+            throw new BusinessException(
+                ErrorCode.CANNOT_KICK_OWNER,
+                "projectId: " + projectId + ", targetMemberId: " + targetMemberId
+            );
+        }
+
+        projectMembershipRepository.delete(targetMembership);
+    }
+
 }

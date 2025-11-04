@@ -71,5 +71,17 @@ public class ProjectMembershipService {
 
         projectParticipantService.leaveProject(projectId, memberId);
     }
+
+    @Transactional
+    public void kickMember(UUID projectId, UUID targetMemberId, UUID requesterId) {
+
+        projectParticipantService.checkProjectExists(projectId);
+        projectParticipantService.checkMemberExists(requesterId);
+        projectParticipantService.checkMemberExists(targetMemberId);
+
+        accessPolicy.ensureProjectOwner(projectId, requesterId);
+
+        projectParticipantService.kickMember(projectId, targetMemberId, requesterId);
+    }
 }
 
