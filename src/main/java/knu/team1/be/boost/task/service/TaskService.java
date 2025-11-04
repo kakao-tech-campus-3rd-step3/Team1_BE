@@ -147,12 +147,12 @@ public class TaskService {
             assignees
         );
 
-        if (task.getStatus() == TaskStatus.REVIEW) {
-            eventPublisher.publishEvent(TaskReviewEvent.from(project, task));
+        if (request.status() == TaskStatus.REVIEW) {
+            taskEventPublisher.publishTaskReviewEvent(project.getId(), task.getId());
         }
 
-        if (task.getStatus() == TaskStatus.DONE) {
-            eventPublisher.publishEvent(TaskApproveEvent.from(project, task));
+        if (request.status() == TaskStatus.DONE) {
+            taskEventPublisher.publishTaskApproveEvent(project.getId(), task.getId());
         }
 
         int commentCount = (int) commentRepository.countByTaskId(task.getId());
@@ -572,10 +572,6 @@ public class TaskService {
             ));
 
         task.approve(member);
-
-        if (task.getStatus() == TaskStatus.DONE) {
-            taskEventPublisher.publishTaskApproveEvent(project.getId(), task.getId());
-        }
 
         return TaskApproveResponseDto.from(task, projectMembers);
     }
