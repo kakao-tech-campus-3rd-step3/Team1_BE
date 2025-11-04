@@ -34,7 +34,7 @@ public record ProjectFileResponseDto(
     public static ProjectFileResponseDto from(File file) {
         return new ProjectFileResponseDto(
             file.getId(),
-            file.getTask() != null ? file.getTask().getId() : null,
+            file.getTask().getId(),
             file.getMetadata().originalFilename(),
             file.getMetadata().contentType(),
             file.getMetadata().sizeBytes(),
