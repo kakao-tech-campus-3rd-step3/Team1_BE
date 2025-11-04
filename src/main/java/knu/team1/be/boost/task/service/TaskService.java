@@ -147,7 +147,10 @@ public class TaskService {
             assignees
         );
 
-        return TaskResponseDto.from(task);
+        int commentCount = (int) commentRepository.countByTaskId(task.getId());
+        int fileCount = (int) fileRepository.countByTaskId(task.getId());
+
+        return TaskResponseDto.from(task, commentCount, fileCount);
     }
 
     @Transactional
@@ -202,7 +205,10 @@ public class TaskService {
             eventPublisher.publishEvent(TaskReviewEvent.from(project, task));
         }
 
-        return TaskResponseDto.from(task);
+        int commentCount = (int) commentRepository.countByTaskId(task.getId());
+        int fileCount = (int) fileRepository.countByTaskId(task.getId());
+
+        return TaskResponseDto.from(task, commentCount, fileCount);
     }
 
     @Transactional(readOnly = true)
