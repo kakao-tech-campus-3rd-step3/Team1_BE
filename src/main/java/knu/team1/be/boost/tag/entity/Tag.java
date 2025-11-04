@@ -23,7 +23,7 @@ import org.hibernate.annotations.SQLRestriction;
 @Getter
 @Table(name = "tags", uniqueConstraints = {
     @UniqueConstraint(
-        name = "uk_project_tag_name_deleted_at",
+        name = "uk_project_tag_name",
         columnNames = {"project_id", "name"}
     )
 })
