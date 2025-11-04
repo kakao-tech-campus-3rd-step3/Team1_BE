@@ -125,6 +125,7 @@ public class TagService {
             // 삭제된 태그라면 재활성화 + 현재 태그 삭제 (이름 덮어쓰기)
             if (existingTag.isDeleted()) {
                 existingTag.reactivate();
+                taskRepository.transferTagToAnotherTag(tag.getId(), existingTag.getId());
                 tagRepository.delete(tag);
                 return TagResponseDto.from(existingTag);
             }
