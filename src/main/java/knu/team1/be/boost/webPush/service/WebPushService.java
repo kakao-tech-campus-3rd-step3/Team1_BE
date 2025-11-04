@@ -90,12 +90,14 @@ public class WebPushService {
                 ErrorCode.MEMBER_NOT_FOUND, "memberId: " + session.userId()
             ));
 
-        WebPushSubscription existing = webPushRepository
-            .findByMemberIdAndDeviceInfo(member.getId(), session.deviceInfo())
-            .orElse(null);
+        WebPushSubscription existingSubscriptionForDevice =
+            webPushRepository.findByMemberIdAndDeviceInfo(member.getId(), session.deviceInfo())
+                .orElse(null);
 
-        if (existing != null) {
-            existing.updateSubscription(
+        boolean isAlreadySubscribedOnDevice = (existingSubscriptionForDevice != null);
+
+        if (isAlreadySubscribedOnDevice) {
+            existingSubscriptionForDevice.updateSubscription(
                 registerDto.webPushUrl(),
                 registerDto.publicKey(),
                 registerDto.authKey()
