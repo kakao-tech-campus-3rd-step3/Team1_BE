@@ -31,7 +31,6 @@ import knu.team1.be.boost.task.repository.TaskRepository;
 import knu.team1.be.boost.task.repository.TaskRepository.DueTask;
 import knu.team1.be.boost.webPush.service.WebPushClient;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
@@ -54,8 +53,6 @@ public class NotificationService {
     private final AccessPolicy accessPolicy;
 
     private final WebPushClient webPushClient;
-
-    private final ApplicationEventPublisher eventPublisher;
 
     private final NotificationSenderService notificationSenderService;
 
@@ -161,7 +158,7 @@ public class NotificationService {
             .toList();
 
         for (Member member : members) {
-            saveAndSendNotification(
+            notificationSenderService.saveAndSendNotification(
                 member,
                 type.title(),
                 type.message(task.getTitle())
@@ -187,7 +184,7 @@ public class NotificationService {
             .toList();
 
         for (Member assignee : assignees) {
-            saveAndSendNotification(
+            notificationSenderService.saveAndSendNotification(
                 assignee,
                 NotificationType.APPROVED.title(),
                 NotificationType.APPROVED.message(task.getTitle())
@@ -212,7 +209,7 @@ public class NotificationService {
             Member member = findMember(memberId);
             String message = buildNotificationMessage(projectTasks);
             String title = formattedDate + " 마감 임박 작업";
-            saveAndSendNotification(member, title, message);
+            notificationSenderService.saveAndSendNotification(member, title, message);
         });
     }
 
@@ -238,16 +235,6 @@ public class NotificationService {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleNotificationSavedEvent(NotificationSavedEvent event) {
         webPushClient.sendNotification(event.member(), event.title(), event.message());
-    }
-
-    private void saveAndSendNotification(Member member, String title, String message) {
-        Notification notification = Notification.create(member, title, message);
-
-        notificationRepository.save(notification);
-
-        if (member.isNotificationEnabled()) {
-            eventPublisher.publishEvent(NotificationSavedEvent.from(member, title, message));
-        }
     }
 
     private String buildNotificationMessage(Map<UUID, List<DueTask>> projectTasks) {
