@@ -3,6 +3,7 @@ package knu.team1.be.boost.task.repository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.project.entity.Project;
@@ -518,6 +519,13 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     );
 
     @Query("""
+            select distinct t from Task t
+            left join fetch t.assignees a
+            where t.id = :taskId
+        """)
+    Optional<Task> findByIdWithAssignees(@Param("taskId") UUID taskId);
+
+    @Query("""
             SELECT DISTINCT
                 pm.member.id AS memberId,
                 p.id AS projectId,
@@ -544,4 +552,28 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
 
         String getTaskTitle();
     }
+
+    @Query("""
+        SELECT t
+        FROM Task t
+        JOIN t.assignees a
+        WHERE t.project.id = :projectId
+        AND a.id = :memberId
+        """)
+    List<Task> findAllByProjectIdAndAssigneesId(
+        @Param("projectId") UUID projectId,
+        @Param("memberId") UUID memberId
+    );
+
+    @Query("""
+        SELECT COUNT(t)
+        FROM Task t
+        JOIN t.approvers a
+        WHERE t.project.id = :projectId
+        AND a.id = :memberId
+        """)
+    Long countByProjectIdAndApproversId(
+        @Param("projectId") UUID projectId,
+        @Param("memberId") UUID memberId
+    );
 }

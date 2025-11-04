@@ -40,7 +40,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         // 헬스체크 경로 (Spring Actuator)
         "/health",
         "/health/**",
-        "/actuator/**"
+        "/actuator/**",
+
+        // 웹 푸시 디바이스 연결 경로
+        "/api/web-push/sessions/connect",
+        "/api/web-push/subscriptions"
     );
 
     @Override

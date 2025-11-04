@@ -55,4 +55,14 @@ public class ProjectMembershipController implements ProjectMembershipApi {
         membershipService.leaveProject(projectId, user.id());
         return ResponseEntity.noContent().build();
     }
+
+    @Override
+    public ResponseEntity<Void> kickMember(
+        @PathVariable UUID projectId,
+        @PathVariable UUID targetMemberId,
+        @AuthenticationPrincipal UserPrincipalDto user
+    ) {
+        membershipService.kickMember(projectId, targetMemberId, user.id());
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -11,10 +11,13 @@ public interface CommentRepository extends JpaRepository<Comment, UUID> {
 
     List<Comment> findAllByTaskId(UUID taskId);
 
+    @Query("SELECT COUNT(c) FROM Comment c WHERE c.task.id = :taskId")
+    long countByTaskId(@Param("taskId") UUID taskId);
+
     @Query("""
             SELECT c.task.id AS taskId, COUNT(c) AS count
             FROM Comment c
-            WHERE c.task.id IN :taskIds AND c.deleted = false
+            WHERE c.task.id IN :taskIds
             GROUP BY c.task.id
         """)
     List<CommentCount> countByTaskIds(@Param("taskIds") List<UUID> taskIds);
@@ -25,4 +28,16 @@ public interface CommentRepository extends JpaRepository<Comment, UUID> {
 
         Long getCount();
     }
+
+    @Query("""
+        SELECT COUNT(c)
+        FROM Comment c
+        WHERE c.task.project.id = :projectId
+        AND c.member.id = :memberId
+        AND c.deleted = false
+        """)
+    Long countByTaskProjectIdAndMemberId(
+        @Param("projectId") UUID projectId,
+        @Param("memberId") UUID memberId
+    );
 }
