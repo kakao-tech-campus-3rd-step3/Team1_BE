@@ -43,20 +43,23 @@ public class Task extends SoftDeletableEntity {
     @JoinColumn(name = "project_id", nullable = false)
     private Project project;
 
-    @Column(nullable = false, length = 100)
+    @Column(name = "title", nullable = false, length = 100)
     private String title;
 
-    @Column(length = 2000)
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "status", nullable = false)
     private TaskStatus status;
 
+    @Column(name = "due_date")
     private LocalDate dueDate;
 
+    @Column(name = "urgent", nullable = false)
     private Boolean urgent;
 
+    @Column(name = "required_reviewer_count", nullable = false)
     private Integer requiredReviewerCount;
 
     @ManyToMany(fetch = FetchType.LAZY)

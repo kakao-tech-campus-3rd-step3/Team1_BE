@@ -37,7 +37,7 @@ public class WebPushSubscription extends SoftDeletableEntity {
     @Column(name = "token", nullable = false, unique = true)
     private String token;
 
-    @Column(name = "device_info")
+    @Column(name = "device_info", nullable = false)
     private String deviceInfo;
 
     @Column(name = "web_push_url", nullable = false)

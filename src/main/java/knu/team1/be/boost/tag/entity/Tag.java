@@ -37,7 +37,7 @@ public class Tag extends SoftDeletableEntity {
     @JoinColumn(name = "project_id", nullable = false)
     private Project project;
 
-    @Column(nullable = false, length = 50)
+    @Column(name = "name", nullable = false, length = 50)
     private String name;
 
     public static Tag create(Project project, String name) {
