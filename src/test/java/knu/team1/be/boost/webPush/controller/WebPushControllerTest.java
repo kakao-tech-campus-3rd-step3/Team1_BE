@@ -155,7 +155,7 @@ class WebPushControllerTest {
     class RegisterSubscription {
 
         @Test
-        @DisplayName("구독 등록 성공 - 200 OK")
+        @DisplayName("웹푸시 구독 등록 성공 - 200 OK")
         void success_registerSubscription() throws Exception {
             // given
             WebPushRegisterDto request = new WebPushRegisterDto(
@@ -183,7 +183,7 @@ class WebPushControllerTest {
         }
 
         @Test
-        @DisplayName("구독 등록 실패 - 400 (빈 필드)")
+        @DisplayName("웹푸시 구독 등록 실패 - 400 (빈 필드)")
         void fail_blankFields() throws Exception {
             // given
             WebPushRegisterDto request = new WebPushRegisterDto("", "", "", "");
