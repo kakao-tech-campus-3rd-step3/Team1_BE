@@ -33,6 +33,8 @@ public enum ErrorCode {
     INVALID_SORT_OPTION(HttpStatus.BAD_REQUEST, "Invalid sort option", "올바르지 않은 정렬 옵션입니다."),
     INVALID_APPROVER(HttpStatus.FORBIDDEN, "Invalid approver", "담당자는 승인할 수 없습니다."),
     ALREADY_APPROVED(HttpStatus.CONFLICT, "Already approved", "이미 승인한 사용자입니다."),
+    INSUFFICIENT_APPROVALS(HttpStatus.BAD_REQUEST, "Insufficient approvals",
+        "승인 수가 부족하여 완료 상태로 변경할 수 없습니다."),
     TASK_RE_REVIEW_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "Task re-review not allowed",
         "현재 상태에서는 재검토 요청을 보낼 수 없습니다."),
 

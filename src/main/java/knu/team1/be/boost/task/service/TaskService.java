@@ -134,6 +134,8 @@ public class TaskService {
 
         accessPolicy.ensureAssigneesAreProjectMembers(project.getId(), assignees);
 
+        validateCanMarkDone(project, task, request.status());
+
         task.update(
             request.title(),
             request.description(),
@@ -144,6 +146,14 @@ public class TaskService {
             tags,
             assignees
         );
+
+        if (request.status() == TaskStatus.REVIEW) {
+            taskEventPublisher.publishTaskReviewEvent(project.getId(), task.getId());
+        }
+
+        if (request.status() == TaskStatus.DONE) {
+            taskEventPublisher.publishTaskApproveEvent(project.getId(), task.getId());
+        }
 
         int commentCount = (int) commentRepository.countByTaskId(task.getId());
         int fileCount = (int) fileRepository.countByTaskId(task.getId());
@@ -197,10 +207,16 @@ public class TaskService {
         accessPolicy.ensureProjectMember(project.getId(), user.id());
         accessPolicy.ensureTaskAssignee(task.getId(), user.id());
 
+        validateCanMarkDone(project, task, request.status());
+
         task.changeStatus(request.status());
 
         if (request.status() == TaskStatus.REVIEW) {
             taskEventPublisher.publishTaskReviewEvent(project.getId(), task.getId());
+        }
+
+        if (request.status() == TaskStatus.DONE) {
+            taskEventPublisher.publishTaskApproveEvent(project.getId(), task.getId());
         }
 
         int commentCount = (int) commentRepository.countByTaskId(task.getId());
@@ -555,11 +571,7 @@ public class TaskService {
                 ErrorCode.MEMBER_NOT_FOUND, "memberId: " + user.id()
             ));
 
-        task.approve(member, projectMembers);
-
-        if (task.getStatus() == TaskStatus.DONE) {
-            taskEventPublisher.publishTaskApproveEvent(project.getId(), task.getId());
-        }
+        task.approve(member);
 
         return TaskApproveResponseDto.from(task, projectMembers);
     }
@@ -592,6 +604,31 @@ public class TaskService {
         }
 
         taskEventPublisher.publishTaskReReviewEvent(project.getId(), task.getId());
+    }
+
+    private void validateCanMarkDone(Project project, Task task, TaskStatus newStatus) {
+        if (newStatus != TaskStatus.DONE) {
+            return;
+        }
+
+        Integer requiredReviewerCount = task.getRequiredReviewerCount();
+        if (requiredReviewerCount <= 0) {
+            return;
+        }
+
+        List<Member> projectMembers = projectMembershipRepository.findAllByProjectId(
+                project.getId())
+            .stream()
+            .map(ProjectMembership::getMember)
+            .toList();
+
+        int requiredApprovals = task.getRequiredApprovalsCount(projectMembers);
+
+        if (task.getApprovers().size() < requiredApprovals) {
+            throw new BusinessException(
+                ErrorCode.INSUFFICIENT_APPROVALS, "taskId: " + task.getId()
+            );
+        }
     }
 
     private Map<UUID, Long> getFileCounts(List<Task> tasks) {

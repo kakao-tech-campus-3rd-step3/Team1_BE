@@ -134,7 +134,7 @@ public class Task extends SoftDeletableEntity {
         this.status = taskStatus;
     }
 
-    public void approve(Member member, List<Member> projectMembers) {
+    public void approve(Member member) {
         if (assignees.contains(member)) {
             throw new BusinessException(
                 ErrorCode.INVALID_APPROVER, "memberId: " + member.getId()
@@ -148,12 +148,6 @@ public class Task extends SoftDeletableEntity {
         }
 
         approvers.add(member);
-
-        int requiredApprovals = getRequiredApprovalsCount(projectMembers);
-
-        if (approvers.size() >= requiredApprovals) {
-            this.status = TaskStatus.DONE;
-        }
     }
 
     public int getRequiredApprovalsCount(List<Member> projectMembers) {
