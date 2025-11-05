@@ -44,7 +44,7 @@ public class WebPushClient {
         pushService = new PushService();
         pushService.setPublicKey(Utils.loadPublicKey(publicKey));
         pushService.setPrivateKey(Utils.loadPrivateKey(privateKey));
-        pushService.setSubject("boost@boost.com");
+        pushService.setSubject("mailto:boost@boost.com");
     }
 
     public void sendNotification(Member member, String title, String message) {
