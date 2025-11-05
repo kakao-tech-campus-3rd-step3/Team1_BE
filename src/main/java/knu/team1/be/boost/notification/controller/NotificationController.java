@@ -69,6 +69,5 @@ public class NotificationController implements NotificationApi {
         NotificationCountResponseDto response = notificationService.getNotificationCount(user.id());
         return ResponseEntity.ok(response);
     }
-
-
+    
 }

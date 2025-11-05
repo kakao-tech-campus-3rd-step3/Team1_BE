@@ -199,8 +199,7 @@ public class NotificationService {
 
         return NotificationCountResponseDto.from(totalCount, unreadCount);
     }
-
-
+    
     private boolean isCursorNotMine(Notification cursor, Member member) {
         return !cursor.getMember().equals(member);
     }
