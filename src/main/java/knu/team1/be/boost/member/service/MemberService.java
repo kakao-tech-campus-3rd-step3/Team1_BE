@@ -9,6 +9,7 @@ import knu.team1.be.boost.member.dto.MemberNotificationResponseDto;
 import knu.team1.be.boost.member.dto.MemberResponseDto;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
+import knu.team1.be.boost.projectMembership.entity.ProjectRole;
 import knu.team1.be.boost.projectMembership.repository.ProjectMembershipRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -68,6 +69,18 @@ public class MemberService {
                 ErrorCode.MEMBER_NOT_FOUND,
                 "memberId: " + memberId
             ));
+
+        boolean hasOwnedProjects = projectMembershipRepository.existsByMemberIdAndRole(
+            memberId,
+            ProjectRole.OWNER
+        );
+
+        if (hasOwnedProjects) {
+            throw new BusinessException(
+                ErrorCode.MEMBER_HAS_OWNED_PROJECTS,
+                "memberId: " + memberId
+            );
+        }
 
         projectMembershipRepository.softDeleteAllByMemberId(memberId);
 

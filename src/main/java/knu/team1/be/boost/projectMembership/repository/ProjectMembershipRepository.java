@@ -45,4 +45,6 @@ public interface ProjectMembershipRepository extends JpaRepository<ProjectMember
     @Modifying
     @Query("UPDATE ProjectMembership pm SET pm.deleted = true, pm.deletedAt = CURRENT_TIMESTAMP WHERE pm.member.id = :memberId")
     void softDeleteAllByMemberId(@Param("memberId") UUID memberId);
+
+    boolean existsByMemberIdAndRole(UUID memberId, ProjectRole role);
 }
