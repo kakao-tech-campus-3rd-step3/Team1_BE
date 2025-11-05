@@ -242,7 +242,7 @@ class TagServiceTest {
             // then
             assertThat(res.tagId()).isEqualTo(tagId);
             assertThat(res.name()).isEqualTo(trimmed);
-            assertThat(existing.getName()).isEqualTo(trimmed); // 실제 엔티티에 반영되었는지
+            assertThat(existing.getName()).isEqualTo(trimmed);
             verify(tagRepository, never()).delete(any());
             verify(taskRepository, never()).transferTagToAnotherTag(any(), any());
         }
@@ -258,7 +258,7 @@ class TagServiceTest {
             Tag current = Fixtures.tag(tagId, "기존", project);
             given(tagRepository.findById(tagId)).willReturn(Optional.of(current));
 
-            String targetName = "피드백";
+            String targetName = "피드백 ";
             String trimmed = "피드백";
 
             Tag same = mock(Tag.class);
@@ -309,6 +309,7 @@ class TagServiceTest {
             assertThat(res.tagId()).isEqualTo(deletedId);
             assertThat(res.name()).isEqualTo(targetName);
             verify(deletedDup).reactivate();
+            verify(deletedDup).update(targetName);
             verify(taskRepository).transferTagToAnotherTag(currentId, deletedId);
             verify(tagRepository).delete(current);
         }
@@ -360,7 +361,7 @@ class TagServiceTest {
             given(projectRepository.existsById(projectId)).willReturn(true);
             doNothing().when(accessPolicy).ensureProjectMember(eq(projectId), eq(userId));
 
-            Tag tag = Fixtures.tag(tagId, "기존", other); // 다른 프로젝트 소속
+            Tag tag = Fixtures.tag(tagId, "기존", other);
             given(tagRepository.findById(tagId)).willReturn(Optional.of(tag));
 
             TagUpdateRequestDto request = Fixtures.reqUpdate("변경");
