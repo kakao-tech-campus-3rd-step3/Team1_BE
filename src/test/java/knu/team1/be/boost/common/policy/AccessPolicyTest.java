@@ -152,7 +152,7 @@ class AccessPolicyTest {
     @Test
     @DisplayName("ensureCommentAuthor - 댓글 작성자 본인일 때 통과")
     void ensureCommentAuthor_success() {
-        accessPolicy.ensureCommentAuthor(memberId, memberId);
+        assertDoesNotThrow(() -> accessPolicy.ensureCommentAuthor(memberId, memberId));
     }
 
     @Test
