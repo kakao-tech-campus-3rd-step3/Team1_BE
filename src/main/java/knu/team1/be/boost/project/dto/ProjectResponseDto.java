@@ -16,15 +16,19 @@ public record ProjectResponseDto(
     Integer defaultReviewerCount,
 
     @Schema(description = "프로젝트에서 사용자의 역할", example = "MEMBER")
-    ProjectRole role
+    ProjectRole role,
+
+    @Schema(description = "프로젝트 알림 허용 여부", example = "true")
+    boolean isNotificationEnabled
 ) {
 
-    public static ProjectResponseDto from(Project project, ProjectRole role) {
+    public static ProjectResponseDto from(Project project, ProjectRole role, boolean isNotificationEnabled) {
         return new ProjectResponseDto(
             project.getId(),
             project.getName(),
             project.getDefaultReviewerCount(),
-            role
+            role,
+            isNotificationEnabled
         );
     }
 
