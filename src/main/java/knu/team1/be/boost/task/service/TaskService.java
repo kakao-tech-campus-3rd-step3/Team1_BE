@@ -158,7 +158,7 @@ public class TaskService {
         int commentCount = (int) commentRepository.countByTaskId(task.getId());
         int fileCount = (int) fileRepository.countByTaskId(task.getId());
 
-        return TaskResponseDto.from(task, commentCount, fileCount);
+        return TaskResponseDto.from(task, fileCount, commentCount);
     }
 
     @Transactional
@@ -222,7 +222,7 @@ public class TaskService {
         int commentCount = (int) commentRepository.countByTaskId(task.getId());
         int fileCount = (int) fileRepository.countByTaskId(task.getId());
 
-        return TaskResponseDto.from(task, commentCount, fileCount);
+        return TaskResponseDto.from(task, fileCount, commentCount);
     }
 
     @Transactional(readOnly = true)
