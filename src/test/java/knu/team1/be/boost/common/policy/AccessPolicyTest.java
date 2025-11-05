@@ -1,6 +1,7 @@
 package knu.team1.be.boost.common.policy;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verifyNoInteractions;
 
@@ -50,7 +51,7 @@ class AccessPolicyTest {
         given(projectMembershipRepository.existsByProjectIdAndMemberId(projectId, memberId))
             .willReturn(true);
 
-        accessPolicy.ensureProjectMember(projectId, memberId);
+        assertDoesNotThrow(() -> accessPolicy.ensureProjectMember(projectId, memberId));
     }
 
     @Test
@@ -61,7 +62,7 @@ class AccessPolicyTest {
 
         assertThatThrownBy(() -> accessPolicy.ensureProjectMember(projectId, memberId))
             .isInstanceOf(BusinessException.class)
-            .hasMessageContaining(ErrorCode.PROJECT_MEMBER_ONLY.getErrorMessage());
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.PROJECT_MEMBER_ONLY);
     }
 
     @Test
@@ -75,7 +76,8 @@ class AccessPolicyTest {
             projectId, Set.of(member1.getId(), member2.getId())))
             .willReturn(2);
 
-        accessPolicy.ensureAssigneesAreProjectMembers(projectId, assignees);
+        assertDoesNotThrow(
+            () -> accessPolicy.ensureAssigneesAreProjectMembers(projectId, assignees));
     }
 
     @Test
@@ -92,14 +94,16 @@ class AccessPolicyTest {
         assertThatThrownBy(
             () -> accessPolicy.ensureAssigneesAreProjectMembers(projectId, assignees))
             .isInstanceOf(BusinessException.class)
-            .hasMessageContaining(ErrorCode.PROJECT_MEMBER_ONLY.getErrorMessage());
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.PROJECT_MEMBER_ONLY);
     }
 
     @Test
     @DisplayName("ensureAssigneesAreProjectMembers - 담당자 목록이 null 또는 empty일 경우 바로 통과")
     void ensureAssignees_emptyOrNull() {
-        accessPolicy.ensureAssigneesAreProjectMembers(projectId, null);
-        accessPolicy.ensureAssigneesAreProjectMembers(projectId, Set.of());
+        assertDoesNotThrow(
+            () -> accessPolicy.ensureAssigneesAreProjectMembers(projectId, null));
+        assertDoesNotThrow(
+            () -> accessPolicy.ensureAssigneesAreProjectMembers(projectId, Set.of()));
         verifyNoInteractions(projectMembershipRepository);
     }
 
@@ -109,7 +113,7 @@ class AccessPolicyTest {
         given(taskRepository.existsByIdAndAssigneesId(taskId, memberId))
             .willReturn(true);
 
-        accessPolicy.ensureTaskAssignee(taskId, memberId);
+        assertDoesNotThrow(() -> accessPolicy.ensureTaskAssignee(taskId, memberId));
     }
 
     @Test
@@ -120,7 +124,7 @@ class AccessPolicyTest {
 
         assertThatThrownBy(() -> accessPolicy.ensureTaskAssignee(taskId, memberId))
             .isInstanceOf(BusinessException.class)
-            .hasMessageContaining(ErrorCode.TASK_ASSIGNEE_ONLY.getErrorMessage());
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.TASK_ASSIGNEE_ONLY);
     }
 
     @Test
@@ -130,7 +134,7 @@ class AccessPolicyTest {
             projectId, memberId, ProjectRole.OWNER))
             .willReturn(true);
 
-        accessPolicy.ensureProjectOwner(projectId, memberId);
+        assertDoesNotThrow(() -> accessPolicy.ensureProjectOwner(projectId, memberId));
     }
 
     @Test
@@ -142,7 +146,7 @@ class AccessPolicyTest {
 
         assertThatThrownBy(() -> accessPolicy.ensureProjectOwner(projectId, memberId))
             .isInstanceOf(BusinessException.class)
-            .hasMessageContaining(ErrorCode.PROJECT_OWNER_ONLY.getErrorMessage());
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.PROJECT_OWNER_ONLY);
     }
 
     @Test
@@ -158,7 +162,7 @@ class AccessPolicyTest {
 
         assertThatThrownBy(() -> accessPolicy.ensureCommentAuthor(memberId, otherId))
             .isInstanceOf(BusinessException.class)
-            .hasMessageContaining(ErrorCode.COMMENT_AUTHOR_ONLY.getErrorMessage());
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.COMMENT_AUTHOR_ONLY);
     }
 
     static class Fixtures {
