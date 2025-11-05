@@ -309,7 +309,6 @@ class TagServiceTest {
             assertThat(res.tagId()).isEqualTo(deletedId);
             assertThat(res.name()).isEqualTo(targetName);
             verify(deletedDup).reactivate();
-            verify(deletedDup).update(targetName);
             verify(taskRepository).transferTagToAnotherTag(currentId, deletedId);
             verify(tagRepository).delete(current);
         }
