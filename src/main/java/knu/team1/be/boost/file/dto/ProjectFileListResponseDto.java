@@ -13,10 +13,10 @@ public record ProjectFileListResponseDto(
     UUID projectId,
 
     @ArraySchema(
-        schema = @Schema(implementation = FileResponseDto.class),
+        schema = @Schema(implementation = ProjectFileResponseDto.class),
         arraySchema = @Schema(description = "프로젝트에 속한 파일 목록")
     )
-    List<FileResponseDto> files,
+    List<ProjectFileResponseDto> files,
 
     @Schema(description = "응답에 포함된 파일 개수", example = "10")
     int count,
@@ -37,13 +37,13 @@ public record ProjectFileListResponseDto(
         boolean hasNext = files.size() > limit;
         UUID nextCursor = null;
 
-        List<FileResponseDto> fileDtos = files.stream()
+        List<ProjectFileResponseDto> fileDtos = files.stream()
             .limit(limit)
-            .map(FileResponseDto::from)
+            .map(ProjectFileResponseDto::from)
             .toList();
 
         if (hasNext && !fileDtos.isEmpty()) {
-            nextCursor = fileDtos.getLast().id();
+            nextCursor = fileDtos.getLast().fileId();
         }
 
         return new ProjectFileListResponseDto(

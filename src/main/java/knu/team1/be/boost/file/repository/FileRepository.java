@@ -17,7 +17,7 @@ public interface FileRepository extends JpaRepository<File, UUID> {
 
     @Query("""
             SELECT f FROM File f
-            JOIN f.task t
+            JOIN FETCH f.task t
             WHERE t.project = :project
               AND f.status = knu.team1.be.boost.file.entity.FileStatus.COMPLETED
               AND (
