@@ -80,6 +80,10 @@
         {
           "name": "VAPID_PRIVATE_KEY",
           "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:876253814177:secret:boost-secrets-Zbelb3:VAPID_PRIVATE_KEY::"
+        },
+        {
+          "name": "LLM_PROMPT",
+          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:876253814177:secret:boost-secrets-Zbelb3:LLM_PROMPT::"
         }
       ],
       "memoryReservation": 512,

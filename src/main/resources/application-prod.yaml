@@ -53,8 +53,11 @@ management:
   endpoint:
     health:
       show-details: never
-      
+
 webpush:
   vapid:
     public-key: ${VAPID_PUBLIC_KEY}
     private-key: ${VAPID_PRIVATE_KEY}
+
+llm:
+  prompt: ${LLM_PROMPT}
