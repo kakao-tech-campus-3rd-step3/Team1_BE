@@ -1,6 +1,7 @@
 package knu.team1.be.boost.tag.service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.common.exception.BusinessException;
@@ -41,15 +42,28 @@ public class TagService {
         accessPolicy.ensureProjectMember(project.getId(), user.id());
 
         String trimmedName = request.name().trim();
-        tagRepository.findByProjectIdAndName(project.getId(), trimmedName).ifPresent(t -> {
-            throw new BusinessException(ErrorCode.DUPLICATED_TAG_NAME,
-                "projectId=" + project.getId() + ", name=" + request.name());
-        });
+        Optional<Tag> existingRecord = tagRepository.findByProjectIdAndNameIncludingDeleted(
+            project.getId(), trimmedName);
 
-        Tag tag = Tag.create(project, trimmedName);
-        Tag saved = tagRepository.save(tag);
+        if (existingRecord.isEmpty()) {
+            Tag newTag = Tag.create(project, trimmedName);
+            tagRepository.save(newTag);
+            return TagResponseDto.from(newTag);
+        }
 
-        return TagResponseDto.from(saved);
+        Tag existingTag = existingRecord.get();
+
+        if (existingTag.isDeleted()) {
+            existingTag.reactivate();
+            existingTag.update(trimmedName);
+            tagRepository.save(existingTag);
+            return TagResponseDto.from(existingTag);
+        }
+
+        throw new BusinessException(
+            ErrorCode.DUPLICATED_TAG_NAME,
+            "projectId=" + project.getId() + ", name=" + trimmedName
+        );
     }
 
     @Transactional(readOnly = true)
@@ -95,15 +109,33 @@ public class TagService {
         tag.ensureTagInProject(projectId);
 
         String trimmedName = request.name().trim();
-        tagRepository.findByProjectIdAndName(projectId, trimmedName)
-            .ifPresent(t -> {
-                if (!t.getId().equals(tagId)) {
-                    throw new BusinessException(
-                        ErrorCode.DUPLICATED_TAG_NAME,
-                        "projectId=" + projectId + ", name=" + request.name()
-                    );
-                }
-            });
+        Optional<Tag> existingRecord = tagRepository.findByProjectIdAndNameIncludingDeleted(
+            projectId, trimmedName);
+
+        // 동일한 이름의 다른 태그가 존재하는 경우
+        if (existingRecord.isPresent()) {
+            Tag existingTag = existingRecord.get();
+
+            // 같은 태그면 그냥 이름만 변경
+            if (existingTag.getId().equals(tagId)) {
+                tag.update(trimmedName);
+                return TagResponseDto.from(tag);
+            }
+
+            // 삭제된 태그라면 재활성화 + 현재 태그 삭제 (이름 덮어쓰기)
+            if (existingTag.isDeleted()) {
+                existingTag.reactivate();
+                taskRepository.transferTagToAnotherTag(tag.getId(), existingTag.getId());
+                tagRepository.delete(tag);
+                return TagResponseDto.from(existingTag);
+            }
+
+            // 이미 활성화된 동일 이름 태그가 있다면 예외
+            throw new BusinessException(
+                ErrorCode.DUPLICATED_TAG_NAME,
+                "projectId=" + projectId + ", name=" + trimmedName
+            );
+        }
 
         tag.update(trimmedName);
 

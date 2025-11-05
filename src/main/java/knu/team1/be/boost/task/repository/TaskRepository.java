@@ -28,6 +28,16 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     )
     void detachTagFromAllTasks(@Param("tagId") UUID tagId);
 
+    @Modifying(clearAutomatically = true)
+    @Query(
+        value = "UPDATE task_tags SET tag_id = :newTagId WHERE tag_id = :oldTagId",
+        nativeQuery = true
+    )
+    void transferTagToAnotherTag(
+        @Param("oldTagId") UUID oldTagId,
+        @Param("newTagId") UUID newTagId
+    );
+
     @Query("""
             SELECT new knu.team1.be.boost.task.dto.ProjectTaskStatusCount(
                 COALESCE(SUM(CASE WHEN t.status = knu.team1.be.boost.task.entity.TaskStatus.TODO THEN 1 ELSE 0 END), 0L),

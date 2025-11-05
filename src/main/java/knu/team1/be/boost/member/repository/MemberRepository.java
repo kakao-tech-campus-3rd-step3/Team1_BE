@@ -9,11 +9,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface MemberRepository extends JpaRepository<Member, UUID> {
 
-    Optional<Member> findByOauthInfoProviderAndOauthInfoProviderId(
-        String provider,
-        Long providerId
-    );
-
     @Query(value = "SELECT * FROM members WHERE provider = :provider AND provider_id = :providerId LIMIT 1",
         nativeQuery = true)
     Optional<Member> findByOauthInfoProviderAndOauthInfoProviderIdIncludingDeleted(

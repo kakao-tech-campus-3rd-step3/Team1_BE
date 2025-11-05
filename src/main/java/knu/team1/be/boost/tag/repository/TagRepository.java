@@ -10,9 +10,19 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface TagRepository extends JpaRepository<Tag, UUID> {
 
-    Optional<Tag> findByProjectIdAndName(UUID projectId, String name);
-
     List<Tag> findAllByProjectId(UUID projectId);
+
+    @Query(
+        value = """
+                SELECT *
+                FROM tags
+                WHERE project_id = :projectId
+                  AND LOWER(name) = LOWER(:name)
+                LIMIT 1
+            """,
+        nativeQuery = true
+    )
+    Optional<Tag> findByProjectIdAndNameIncludingDeleted(UUID projectId, String name);
 
     @Modifying(clearAutomatically = true)
     @Query(
