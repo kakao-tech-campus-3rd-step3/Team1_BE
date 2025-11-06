@@ -2,6 +2,7 @@ package knu.team1.be.boost.file.service;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.list;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -14,6 +15,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.net.URL;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
@@ -24,6 +26,9 @@ import knu.team1.be.boost.file.dto.FileCompleteRequestDto;
 import knu.team1.be.boost.file.dto.FileCompleteResponseDto;
 import knu.team1.be.boost.file.dto.FilePresignedUrlResponseDto;
 import knu.team1.be.boost.file.dto.FileRequestDto;
+import knu.team1.be.boost.file.dto.ProjectFileListResponseDto;
+import knu.team1.be.boost.file.dto.ProjectFileResponseDto;
+import knu.team1.be.boost.file.dto.ProjectFileSummaryResponseDto;
 import knu.team1.be.boost.file.entity.File;
 import knu.team1.be.boost.file.entity.FileStatus;
 import knu.team1.be.boost.file.entity.FileType;
@@ -310,6 +315,187 @@ class FileServiceTest {
             verifyNoInteractions(taskRepository, accessPolicy);
         }
     }
+
+    @Nested
+    @DisplayName("프로젝트 파일 목록 조회")
+    class GetFilesByProject {
+
+        @Test
+        @DisplayName("프로젝트 파일 목록 조회 성공")
+        void success() {
+            // given
+            UUID cursorId = null;
+            given(projectRepository.findById(projectId)).willReturn(Optional.of(project));
+            doNothing().when(accessPolicy).ensureProjectMember(eq(projectId), eq(userId));
+
+            File f1 = Fixtures.fileCompleted(UUID.randomUUID(), member, task);
+            File f2 = Fixtures.fileCompleted(UUID.randomUUID(), member, task);
+            List<File> files = List.of(f1, f2);
+
+            given(
+                fileRepository.findByProjectWithCursor(eq(project), eq(null), eq(cursorId), any()))
+                .willReturn(files);
+
+            // when
+            ProjectFileListResponseDto res =
+                fileService.getFilesByProject(projectId, cursorId, 20, userId);
+
+            // then
+            assertThat(res.projectId()).isEqualTo(projectId);
+            assertThat(res.files())
+                .asInstanceOf(list(ProjectFileResponseDto.class))
+                .hasSize(2);
+            assertThat(res.hasNext()).isFalse();
+            verify(accessPolicy).ensureProjectMember(projectId, userId);
+        }
+
+        @Test
+        @DisplayName("프로젝트 파일 목록 조회 실패 - 404(프로젝트 없음)")
+        void fail_projectNotFound() {
+            // given
+            given(projectRepository.findById(projectId)).willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() ->
+                fileService.getFilesByProject(projectId, null, 20, userId)
+            )
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.PROJECT_NOT_FOUND);
+
+            verifyNoInteractions(accessPolicy);
+        }
+
+        @Test
+        @DisplayName("프로젝트 파일 목록 조회 - 커서 존재 (다음 페이지용)")
+        void success_withCursor() {
+            UUID cursorId = UUID.randomUUID();
+            File cursorFile = Fixtures.fileCompleted(cursorId, member, task);
+            given(projectRepository.findById(projectId)).willReturn(Optional.of(project));
+            given(fileRepository.findById(cursorId)).willReturn(Optional.of(cursorFile));
+            doNothing().when(accessPolicy).ensureProjectMember(eq(projectId), eq(userId));
+
+            given(fileRepository.findByProjectWithCursor(eq(project), any(), eq(cursorId), any()))
+                .willReturn(List.of(Fixtures.fileCompleted(UUID.randomUUID(), member, task)));
+
+            ProjectFileListResponseDto res =
+                fileService.getFilesByProject(projectId, cursorId, 10, userId);
+
+            assertThat(res.projectId()).isEqualTo(projectId);
+            assertThat(res.count()).isEqualTo(1);
+            assertThat(res.hasNext()).isFalse();
+        }
+    }
+
+    @Nested
+    @DisplayName("프로젝트 파일 요약 조회")
+    class ProjectFileSummary {
+
+        @Test
+        @DisplayName("프로젝트 파일 요약 조회 성공")
+        void success() {
+            // given
+            given(projectRepository.findById(projectId)).willReturn(Optional.of(project));
+            doNothing().when(accessPolicy).ensureProjectMember(eq(projectId), eq(userId));
+            given(fileRepository.countByProject(projectId)).willReturn(5L);
+            given(fileRepository.sumSizeByProject(projectId)).willReturn(10_485_760L);
+
+            // when
+            ProjectFileSummaryResponseDto res =
+                fileService.getProjectFileSummary(projectId, userId);
+
+            // then
+            assertThat(res.totalCount()).isEqualTo(5);
+            assertThat(res.totalSizeBytes()).isEqualTo(10_485_760L);
+            verify(accessPolicy).ensureProjectMember(projectId, userId);
+        }
+
+        @Test
+        @DisplayName("프로젝트 파일 요약 조회 실패 - 404(프로젝트 없음)")
+        void fail_projectNotFound() {
+            // given
+            given(projectRepository.findById(projectId)).willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() ->
+                fileService.getProjectFileSummary(projectId, userId)
+            )
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.PROJECT_NOT_FOUND);
+
+            verifyNoInteractions(accessPolicy, fileRepository);
+        }
+    }
+
+    @Nested
+    @DisplayName("파일 삭제")
+    class DeleteFile {
+
+        @Test
+        @DisplayName("파일 삭제 성공")
+        void success() {
+            // given
+            UUID fileId = UUID.randomUUID();
+            File file = Fixtures.fileCompleted(fileId, member, task);
+            given(fileRepository.findById(fileId)).willReturn(Optional.of(file));
+            doNothing().when(accessPolicy).ensureProjectMember(eq(projectId), eq(userId));
+            doNothing().when(accessPolicy).ensureTaskAssignee(eq(task.getId()), eq(userId));
+
+            // when
+            fileService.deleteFile(fileId, user);
+
+            // then
+            verify(fileRepository).delete(file);
+        }
+
+        @Test
+        @DisplayName("파일 삭제 실패 - 404(파일 없음)")
+        void fail_notFound() {
+            // given
+            UUID fileId = UUID.randomUUID();
+            given(fileRepository.findById(fileId)).willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> fileService.deleteFile(fileId, user))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.FILE_NOT_FOUND);
+
+            verifyNoInteractions(accessPolicy);
+        }
+
+        @Test
+        @DisplayName("파일 삭제 실패 - 404(연결된 Task 없음)")
+        void fail_noTask() {
+            // given
+            UUID fileId = UUID.randomUUID();
+            File file = Fixtures.fileCompleted(fileId, member, null);
+            given(fileRepository.findById(fileId)).willReturn(Optional.of(file));
+
+            // when & then
+            assertThatThrownBy(() -> fileService.deleteFile(fileId, user))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.TASK_NOT_FOUND);
+
+            verifyNoInteractions(accessPolicy);
+        }
+
+        @Test
+        @DisplayName("파일 삭제 실패 - 404(연결된 프로젝트 없음)")
+        void fail_noProject() {
+            // given
+            UUID fileId = UUID.randomUUID();
+            Task orphanTask = Task.builder().id(UUID.randomUUID()).project(null).build();
+            File file = Fixtures.fileCompleted(fileId, member, orphanTask);
+            given(fileRepository.findById(fileId)).willReturn(Optional.of(file));
+
+            // when & then
+            assertThatThrownBy(() -> fileService.deleteFile(fileId, user))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.PROJECT_NOT_FOUND);
+
+            verifyNoInteractions(accessPolicy);
+        }
+    }
+
 
     static class Fixtures {
 
