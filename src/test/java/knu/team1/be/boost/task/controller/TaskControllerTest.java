@@ -299,6 +299,7 @@ class TaskControllerTest {
                 true,
                 1,
                 2,
+                LocalDateTime.of(2025, 10, 5, 14, 25, 30),
                 true,
                 List.of(new TagResponseDto(Fixtures.id(), "피드백")),
                 List.of(Fixtures.memberDto(Fixtures.id(), "김부스트"))
@@ -553,12 +554,12 @@ class TaskControllerTest {
         static TaskDetailResponseDto taskDetail(
             UUID id, String title, String description, String status,
             LocalDate due, boolean urgent, int approvedCount,
-            int requiredReviewerCount, boolean approvedByMe,
+            int requiredReviewerCount, LocalDateTime reReviewRequestAt, boolean approvedByMe,
             List<TagResponseDto> tags, List<MemberResponseDto> assignees
         ) {
             return new TaskDetailResponseDto(
                 id, title, description, status, due, urgent,
-                approvedCount, requiredReviewerCount, approvedByMe,
+                approvedCount, requiredReviewerCount, reReviewRequestAt, approvedByMe,
                 tags, assignees, List.of(),
                 LocalDateTime.now().minusDays(1), LocalDateTime.now()
             );
