@@ -49,6 +49,14 @@ public class NotificationController implements NotificationApi {
     }
 
     @Override
+    public ResponseEntity<Void> markAllAsRead(
+        @AuthenticationPrincipal UserPrincipalDto user
+    ) {
+        notificationService.markAllAsRead(user.id());
+        return ResponseEntity.noContent().build();
+    }
+
+    @Override
     public ResponseEntity<ProjectNotificationResponseDto> setProjectNotification(
         @PathVariable UUID projectId,
         @RequestParam boolean enabled,

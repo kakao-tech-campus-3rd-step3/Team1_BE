@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -147,6 +148,39 @@ class NotificationControllerTest {
 
             mockMvc.perform(patch("/api/notifications/{notificationId}/read", notificationId))
                 .andExpect(status().isNotFound());
+        }
+    }
+
+    @Nested
+    @DisplayName("모든 알림 읽음 처리")
+    class MarkAllAsRead {
+
+        @Test
+        @DisplayName("모든 알림 읽음 처리 성공 - 204 No Content")
+        void markAllAsRead_success() throws Exception {
+
+            mockMvc.perform(patch("/api/notifications/read-all"))
+                .andExpect(status().isNoContent());
+        }
+
+        @Test
+        @DisplayName("모든 알림 읽음 처리 실패 - 404 (존재하지 않는 사용자)")
+        void markAllAsRead_fail_memberNotFound() throws Exception {
+            doThrow(new BusinessException(ErrorCode.MEMBER_NOT_FOUND))
+                .when(notificationService).markAllAsRead(any());
+
+            mockMvc.perform(patch("/api/notifications/read-all"))
+                .andExpect(status().isNotFound());
+        }
+
+        @Test
+        @DisplayName("모든 알림 읽음 처리 실패 - 500 (서버 내부 오류)")
+        void markAllAsRead_fail_serverError() throws Exception {
+            doThrow(new RuntimeException("Unexpected"))
+                .when(notificationService).markAllAsRead(any());
+
+            mockMvc.perform(patch("/api/notifications/read-all"))
+                .andExpect(status().isInternalServerError());
         }
     }
 

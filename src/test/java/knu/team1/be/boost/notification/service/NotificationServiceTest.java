@@ -175,6 +175,37 @@ class NotificationServiceTest {
     }
 
     @Nested
+    @DisplayName("모든 알림 읽음 처리 (Service)")
+    class MarkAllAsRead {
+
+        @Test
+        @DisplayName("모든 알림 읽음 처리 성공 - 미읽은 알림이 있을 때 bulk update 수행")
+        void success_bulkUpdateCalled() {
+            // given
+            given(memberRepository.findById(userId)).willReturn(Optional.of(member));
+
+            // when
+            notificationService.markAllAsRead(userId);
+
+            // then
+            verify(memberRepository).findById(userId);
+            verify(notificationRepository).markAllAsReadByMember(member);
+        }
+
+        @Test
+        @DisplayName("실패 - MEMBER_NOT_FOUND")
+        void fail_memberNotFound() {
+            // given
+            given(memberRepository.findById(userId)).willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> notificationService.markAllAsRead(userId))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.MEMBER_NOT_FOUND);
+        }
+    }
+
+    @Nested
     @DisplayName("프로젝트 알림 설정 변경")
     class SetProjectNotification {
 

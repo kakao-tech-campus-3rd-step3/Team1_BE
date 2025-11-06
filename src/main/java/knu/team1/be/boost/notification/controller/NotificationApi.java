@@ -73,6 +73,21 @@ public interface NotificationApi {
     );
 
     @Operation(
+        summary = "모든 알림 읽음 처리",
+        description = "로그인한 사용자의 모든 미읽은 알림을 읽음 상태로 변경합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "모든 알림 읽음 처리 성공", content = @Content),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
+        @ApiResponse(responseCode = "404", description = "존재하지 않는 멤버", content = @Content),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
+    })
+    @PatchMapping("/notifications/read-all")
+    ResponseEntity<Void> markAllAsRead(
+        @AuthenticationPrincipal UserPrincipalDto user
+    );
+
+    @Operation(
         summary = "프로젝트별 알림 설정 변경",
         description = "특정 프로젝트에서 사용자의 알림 수신 여부를 켜거나 끕니다."
     )
