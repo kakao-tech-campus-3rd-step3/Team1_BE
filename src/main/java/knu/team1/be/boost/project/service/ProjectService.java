@@ -53,7 +53,7 @@ public class ProjectService {
             ProjectRole.OWNER
         );
         projectMembershipRepository.save(projectMembership);
-        return ProjectResponseDto.from(savedProject, ProjectRole.OWNER);
+        return ProjectResponseDto.from(savedProject, ProjectRole.OWNER, projectMembership.isNotificationEnabled());
     }
 
     public ProjectResponseDto getProject(UUID projectId, UUID memberId) {
@@ -73,7 +73,7 @@ public class ProjectService {
                 "projectId: " + projectId + ", memberId: " + memberId
             ));
 
-        return ProjectResponseDto.from(project, membership.getRole());
+        return ProjectResponseDto.from(project, membership.getRole(), membership.isNotificationEnabled());
     }
 
     public List<ProjectResponseDto> getMyProjects(UUID memberId) {
@@ -84,7 +84,8 @@ public class ProjectService {
         return projectMemberships.stream()
             .map(membership -> ProjectResponseDto.from(
                 membership.getProject(),
-                membership.getRole()
+                membership.getRole(),
+                membership.isNotificationEnabled()
             ))
             .toList();
     }
@@ -106,7 +107,14 @@ public class ProjectService {
 
         oldProject.updateProject(requestDto.name(), requestDto.defaultReviewerCount());
 
-        return ProjectResponseDto.from(oldProject, ProjectRole.OWNER);
+        ProjectMembership membership = projectMembershipRepository.findByProjectIdAndMemberId(
+                projectId, memberId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_MEMBER_NOT_FOUND,
+                "projectId: " + projectId + ", memberId: " + memberId
+            ));
+
+        return ProjectResponseDto.from(oldProject, ProjectRole.OWNER, membership.isNotificationEnabled());
     }
 
     @Transactional
