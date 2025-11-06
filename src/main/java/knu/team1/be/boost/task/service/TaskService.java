@@ -612,7 +612,7 @@ public class TaskService {
 
         taskEventPublisher.publishTaskReReviewEvent(project.getId(), task.getId());
 
-        return TaskReReviewResponseDto.from(task.getReReviewRequestedAt());
+        return TaskReReviewResponseDto.from(now);
     }
 
     private void validateCanMarkDone(Project project, Task task, TaskStatus newStatus) {
