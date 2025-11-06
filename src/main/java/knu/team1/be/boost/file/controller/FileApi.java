@@ -17,6 +17,7 @@ import knu.team1.be.boost.file.dto.FileCompleteResponseDto;
 import knu.team1.be.boost.file.dto.FilePresignedUrlResponseDto;
 import knu.team1.be.boost.file.dto.FileRequestDto;
 import knu.team1.be.boost.file.dto.ProjectFileListResponseDto;
+import knu.team1.be.boost.file.dto.ProjectFileSummaryResponseDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
@@ -129,6 +130,31 @@ public interface FileApi {
         @PathVariable UUID projectId,
         @RequestParam(required = false) UUID cursor,
         @RequestParam(defaultValue = "20") @Min(1) @Max(50) int limit,
+        @AuthenticationPrincipal UserPrincipalDto user
+    );
+
+    @Operation(
+        summary = "프로젝트 파일 요약 조회",
+        description = """
+            특정 프로젝트 내의 전체 파일 개수(totalCount)와 총 용량(totalSizeBytes)을 반환합니다.
+            업로드가 완료된(COMPLETED) 파일만 집계됩니다.
+            """
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200",
+            description = "파일 요약 조회 성공",
+            content = @Content(schema = @Schema(implementation = ProjectFileSummaryResponseDto.class))
+        ),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터", content = @Content),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
+        @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
+        @ApiResponse(responseCode = "404", description = "프로젝트를 찾을 수 없음", content = @Content),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
+    })
+    @GetMapping("/projects/{projectId}/files/summary")
+    ResponseEntity<ProjectFileSummaryResponseDto> getProjectFileSummary(
+        @PathVariable UUID projectId,
         @AuthenticationPrincipal UserPrincipalDto user
     );
 
