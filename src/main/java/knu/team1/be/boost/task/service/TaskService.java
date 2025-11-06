@@ -69,6 +69,8 @@ public class TaskService {
     private final AccessPolicy accessPolicy;
     private final TaskEventPublisher taskEventPublisher;
 
+    private static final int RE_REVIEW_COOLDOWN_MINUTES = 10;
+
     @Transactional
     public TaskResponseDto createTask(
         UUID projectId,
@@ -604,9 +606,9 @@ public class TaskService {
             );
         }
 
-        validateReReviewCooldown(task);
-
-        task.requestReReview();
+        LocalDateTime now = LocalDateTime.now();
+        validateReReviewCooldown(task, now);
+        task.requestReReview(now);
 
         taskEventPublisher.publishTaskReReviewEvent(project.getId(), task.getId());
 
@@ -859,13 +861,13 @@ public class TaskService {
         }
     }
 
-    private void validateReReviewCooldown(Task task) {
+    private void validateReReviewCooldown(Task task, LocalDateTime now) {
         if (task.getReReviewRequestedAt() == null) {
             return;
         }
 
         LocalDateTime lastRequestedAt = task.getReReviewRequestedAt();
-        if (lastRequestedAt.isAfter(LocalDateTime.now().minusMinutes(10))) {
+        if (lastRequestedAt.isAfter(now.minusMinutes(RE_REVIEW_COOLDOWN_MINUTES))) {
             throw new BusinessException(
                 ErrorCode.TASK_RE_REVIEW_COOLDOWN,
                 "재검토 요청은 10분 간격으로만 가능합니다. 마지막 요청 시각: " + lastRequestedAt

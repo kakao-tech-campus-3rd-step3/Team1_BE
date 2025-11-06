@@ -157,8 +157,8 @@ public class Task extends SoftDeletableEntity {
         approvers.add(member);
     }
 
-    public void requestReReview() {
-        this.reReviewRequestedAt = LocalDateTime.now();
+    public void requestReReview(LocalDateTime now) {
+        this.reReviewRequestedAt = now;
     }
 
     public int getRequiredApprovalsCount(List<Member> projectMembers) {
