@@ -7,7 +7,6 @@ import static org.mockito.BDDMockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -166,8 +165,8 @@ class WebPushClientTest {
     @Test
     @DisplayName("예외 발생 시 로그만 남기고 중단되지 않음")
     void handleException() throws Exception {
-        when(pushService.send(any(Notification.class)))
-            .thenThrow(new RuntimeException("전송 실패"));
+        given(pushService.send(any(Notification.class)))
+            .willThrow(new RuntimeException("전송 실패"));
         given(webPushRepository.findByMemberId(member.getId())).willReturn(List.of(sub1));
 
         webPushClient.sendNotification(member, "예외테스트", "본문");
