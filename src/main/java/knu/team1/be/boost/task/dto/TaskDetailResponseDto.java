@@ -41,6 +41,9 @@ public record TaskDetailResponseDto(
     @Schema(description = "필요 리뷰어 수", example = "2")
     Integer requiredReviewerCount,
 
+    @Schema(description = "최근 재검토 요청일시", example = "2025-10-05T14:25:30")
+    LocalDateTime reReviewRequestedAt,
+
     @Schema(description = "내가 승인했는지 여부", example = "true")
     Boolean approvedByMe,
 
@@ -84,6 +87,7 @@ public record TaskDetailResponseDto(
             task.getUrgent(),
             task.getApprovers().size(),
             task.getRequiredApprovalsCount(projectMembers),
+            task.getReReviewRequestedAt(),
             approvedByMe,
             task.getTags().stream()
                 .map(TagResponseDto::from)
