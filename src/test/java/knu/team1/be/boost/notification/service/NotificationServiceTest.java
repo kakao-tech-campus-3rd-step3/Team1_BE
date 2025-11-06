@@ -175,49 +175,25 @@ class NotificationServiceTest {
     }
 
     @Nested
-    @DisplayName("모든 알림 읽음 처리")
+    @DisplayName("모든 알림 읽음 처리 (Service)")
     class MarkAllAsRead {
 
         @Test
-        @DisplayName("모든 알림 읽음 처리 성공 - 미읽은 알림이 있을 때 모두 읽음으로 변경")
-        void success_hasUnread() {
+        @DisplayName("모든 알림 읽음 처리 성공 - 미읽은 알림이 있을 때 bulk update 수행")
+        void success_bulkUpdateCalled() {
             // given
             given(memberRepository.findById(userId)).willReturn(Optional.of(member));
-
-            Notification n1 = Fixtures.notification(UUID.randomUUID(), member, "t1", "m1");
-            Notification n2 = Fixtures.notification(UUID.randomUUID(), member, "t2", "m2");
-
-            given(notificationRepository.findByMemberAndIsReadFalse(member))
-                .willReturn(List.of(n1, n2));
 
             // when
             notificationService.markAllAsRead(userId);
 
             // then
-            assertThat(n1.isRead()).isTrue();
-            assertThat(n2.isRead()).isTrue();
-
             verify(memberRepository).findById(userId);
-            verify(notificationRepository).findByMemberAndIsReadFalse(member);
+            verify(notificationRepository).markAllAsReadByMember(member);
         }
 
         @Test
-        @DisplayName("모든 알림 읽음 처리 성공 - 미읽은 알림이 없을 때 조용히 통과")
-        void success_noUnread() {
-            // given
-            given(memberRepository.findById(userId)).willReturn(Optional.of(member));
-            given(notificationRepository.findByMemberAndIsReadFalse(member))
-                .willReturn(List.of());
-
-            // when & then
-            notificationService.markAllAsRead(userId);
-
-            verify(memberRepository).findById(userId);
-            verify(notificationRepository).findByMemberAndIsReadFalse(member);
-        }
-
-        @Test
-        @DisplayName("모든 알림 읽음 처리 실패 - MEMBER_NOT_FOUND")
+        @DisplayName("실패 - MEMBER_NOT_FOUND")
         void fail_memberNotFound() {
             // given
             given(memberRepository.findById(userId)).willReturn(Optional.empty());
