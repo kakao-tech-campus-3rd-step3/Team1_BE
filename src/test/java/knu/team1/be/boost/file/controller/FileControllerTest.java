@@ -3,6 +3,8 @@ package knu.team1.be.boost.file.controller;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doThrow;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -13,6 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
@@ -22,7 +25,11 @@ import knu.team1.be.boost.file.dto.FileCompleteRequestDto;
 import knu.team1.be.boost.file.dto.FileCompleteResponseDto;
 import knu.team1.be.boost.file.dto.FilePresignedUrlResponseDto;
 import knu.team1.be.boost.file.dto.FileRequestDto;
+import knu.team1.be.boost.file.dto.ProjectFileListResponseDto;
+import knu.team1.be.boost.file.dto.ProjectFileResponseDto;
+import knu.team1.be.boost.file.dto.ProjectFileSummaryResponseDto;
 import knu.team1.be.boost.file.entity.FileStatus;
+import knu.team1.be.boost.file.entity.FileType;
 import knu.team1.be.boost.file.service.FileService;
 import knu.team1.be.boost.security.filter.JwtAuthFilter;
 import org.junit.jupiter.api.DisplayName;
@@ -291,6 +298,174 @@ class FileControllerTest {
                 .andExpect(status().isConflict());
         }
 
+    }
+
+    @Nested
+    @DisplayName("프로젝트 파일 목록 조회")
+    class GetFilesByProject {
+
+        @Test
+        @DisplayName("프로젝트 파일 목록 조회 성공 - (커서 X)")
+        void success_withoutCursor() throws Exception {
+            // given
+            UUID projectId = UUID.randomUUID();
+
+            ProjectFileResponseDto f1 = new ProjectFileResponseDto(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                "회의록.pdf",
+                "application/pdf",
+                123456,
+                FileType.PDF,
+                LocalDateTime.of(2025, 9, 9, 12, 30)
+            );
+
+            ProjectFileResponseDto f2 = new ProjectFileResponseDto(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                "설계서.pdf",
+                "application/pdf",
+                345678,
+                FileType.PDF,
+                LocalDateTime.of(2025, 9, 9, 14, 10)
+            );
+
+            ProjectFileListResponseDto response = new ProjectFileListResponseDto(
+                projectId,
+                List.of(f1, f2),
+                2,
+                null,
+                false
+            );
+
+            given(fileService.getFilesByProject(eq(projectId), any(), eq(20), any()))
+                .willReturn(response);
+
+            // when & then
+            mockMvc.perform(get("/api/projects/{projectId}/files", projectId)
+                    .param("limit", "20"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.projectId").value(projectId.toString()))
+                .andExpect(jsonPath("$.files[0].filename").value("회의록.pdf"))
+                .andExpect(jsonPath("$.files[1].filename").value("설계서.pdf"))
+                .andExpect(jsonPath("$.count").value(2))
+                .andExpect(jsonPath("$.hasNext").value(false));
+        }
+
+        @Test
+        @DisplayName("프로젝트 파일 목록 조회 성공 - 다음 페이지 존재 (hasNext=true)")
+        void success_hasNext() throws Exception {
+            UUID projectId = UUID.randomUUID();
+            UUID nextCursor = UUID.randomUUID();
+
+            ProjectFileResponseDto f1 = new ProjectFileResponseDto(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                "발표자료.pdf",
+                "application/pdf",
+                567890,
+                FileType.PDF,
+                LocalDateTime.of(2025, 9, 10, 10, 0)
+            );
+
+            ProjectFileListResponseDto response = new ProjectFileListResponseDto(
+                projectId,
+                List.of(f1),
+                1,
+                nextCursor,
+                true
+            );
+
+            given(fileService.getFilesByProject(eq(projectId), any(), eq(20), any()))
+                .willReturn(response);
+
+            mockMvc.perform(get("/api/projects/{projectId}/files", projectId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.hasNext").value(true))
+                .andExpect(jsonPath("$.nextCursor").value(nextCursor.toString()));
+        }
+
+        @Test
+        @DisplayName("프로젝트 파일 목록 조회 실패 - 400 (limit 유효하지 않음)")
+        void fail_invalidLimit() throws Exception {
+            UUID projectId = UUID.randomUUID();
+
+            mockMvc.perform(get("/api/projects/{projectId}/files", projectId)
+                    .param("limit", "0")) // Min(1) 위반
+                .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("프로젝트 파일 목록 조회 실패 - 404 (프로젝트 없음)")
+        void fail_projectNotFound() throws Exception {
+            UUID projectId = UUID.randomUUID();
+            given(fileService.getFilesByProject(eq(projectId), any(), eq(20), any()))
+                .willThrow(new BusinessException(ErrorCode.PROJECT_NOT_FOUND));
+
+            mockMvc.perform(get("/api/projects/{projectId}/files", projectId))
+                .andExpect(status().isNotFound());
+        }
+    }
+
+
+    @Nested
+    @DisplayName("프로젝트 파일 요약 조회")
+    class ProjectFileSummary {
+
+        @Test
+        @DisplayName("프로젝트 파일 요약 조회 성공")
+        void success() throws Exception {
+            UUID projectId = UUID.randomUUID();
+            ProjectFileSummaryResponseDto response =
+                new ProjectFileSummaryResponseDto(12, 104857600L);
+
+            given(fileService.getProjectFileSummary(eq(projectId), any()))
+                .willReturn(response);
+
+            mockMvc.perform(get("/api/projects/{projectId}/files/summary", projectId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalCount").value(12))
+                .andExpect(jsonPath("$.totalSizeBytes").value(104857600));
+        }
+
+        @Test
+        @DisplayName("프로젝트 파일 요약 조회 실패 - 404 (프로젝트 없음)")
+        void fail_notFound() throws Exception {
+            UUID projectId = UUID.randomUUID();
+            given(fileService.getProjectFileSummary(eq(projectId), any()))
+                .willThrow(new BusinessException(ErrorCode.PROJECT_NOT_FOUND));
+
+            mockMvc.perform(get("/api/projects/{projectId}/files/summary", projectId))
+                .andExpect(status().isNotFound());
+        }
+    }
+
+
+    @Nested
+    @DisplayName("파일 삭제")
+    class DeleteFile {
+
+        @Test
+        @DisplayName("파일 삭제 성공 - 204 (No Content)")
+        void success() throws Exception {
+            UUID fileId = UUID.randomUUID();
+
+            mockMvc.perform(delete("/api/files/{fileId}", fileId))
+                .andExpect(status().isNoContent());
+        }
+
+        @Test
+        @DisplayName("파일 삭제 실패 - 404 (파일 없음)")
+        void fail_notFound() throws Exception {
+            UUID fileId = UUID.randomUUID();
+
+            doThrow(new BusinessException(ErrorCode.FILE_NOT_FOUND))
+                .when(fileService)
+                .deleteFile(eq(fileId), any());
+
+            mockMvc.perform(delete("/api/files/{fileId}", fileId))
+                .andExpect(status().isNotFound());
+        }
     }
 
 }
