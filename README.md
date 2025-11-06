@@ -54,6 +54,25 @@
 
 <br/>
 
+## 📊 ERD
+
+<br/>
+
+## 🧪 Test Coverage (Jacoco)
+
+![Jacoco Coverage](https://img.shields.io/badge/Jacoco%20Coverage-00%25-brightgreen?style=for-the-badge&logo=java&logoColor=white)
+  
+> Jacoco를 활용하여 테스트 코드 커버리지를 측정하고 관리하였습니다. 주요 로직을 대상으로 측정하였습니다.
+
+- 단위 테스트, E2E 테스트 기반 커버리지 측정
+- 커버리지 리포트 자동 생성 (`build/reports/jacoco/test/html`)
+
+<br/>
+
+## ✨ 주요 기능 (Key Features)
+
+<br/>
+
 ## 프로젝트 초기 설정
 
 https://github.com/google/styleguide/blob/gh-pages/intellij-java-google-style.xml
