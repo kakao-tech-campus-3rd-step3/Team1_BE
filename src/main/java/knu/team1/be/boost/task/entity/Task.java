@@ -54,7 +54,7 @@ public class Task extends SoftDeletableEntity {
     @Column(name = "status", nullable = false)
     private TaskStatus status;
 
-    @Column(name = "due_date")
+    @Column(name = "due_date", nullable = false)
     private LocalDate dueDate;
 
     @Column(name = "urgent", nullable = false)
