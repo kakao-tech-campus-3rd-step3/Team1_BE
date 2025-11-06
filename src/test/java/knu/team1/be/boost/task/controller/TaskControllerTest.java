@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -14,6 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.OptimisticLockException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -438,6 +440,48 @@ class TaskControllerTest {
                     post("/api/projects/{projectId}/tasks/{taskId}/re-review", Fixtures.id(),
                         Fixtures.id()))
                 .andExpect(status().isOk());
+        }
+
+        @Test
+        @DisplayName("할 일 승인 실패 - 409 Conflict (낙관적 락 충돌)")
+        void approveTask_optimisticLockConflict() throws Exception {
+            UUID projectId = Fixtures.id();
+            UUID taskId = Fixtures.id();
+
+            // 낙관적 락 예외 발생 시뮬레이션
+            when(taskService.approveTask(eq(projectId), eq(taskId), any(UserPrincipalDto.class)))
+                .thenThrow(new OptimisticLockException("다른 사용자가 먼저 수정했습니다"));
+
+            mockMvc.perform(
+                    patch("/api/projects/{projectId}/tasks/{taskId}/approve", projectId, taskId))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.type").value("urn:problem:optimistic_lock_conflict"))
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.title").value("Conflict"))
+                .andExpect(jsonPath("$.detail").value("다른 사용자가 먼저 수정했습니다. 새로고침 후 다시 시도해주세요."));
+        }
+
+        @Test
+        @DisplayName("할 일 수정 실패 - 409 Conflict (낙관적 락 충돌)")
+        void updateTask_optimisticLockConflict() throws Exception {
+            UUID projectId = Fixtures.id();
+            UUID taskId = Fixtures.id();
+
+            TaskUpdateRequestDto request = Fixtures.reqUpdate(
+                "수정된 제목", "수정된 설명", TaskStatus.REVIEW,
+                Fixtures.DUE, false, 1, List.of(), List.of()
+            );
+
+            // 낙관적 락 예외 발생 시뮬레이션
+            when(taskService.updateTask(eq(projectId), eq(taskId), any(), any()))
+                .thenThrow(new OptimisticLockException("버전 충돌"));
+
+            mockMvc.perform(put("/api/projects/{projectId}/tasks/{taskId}", projectId, taskId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.type").value("urn:problem:optimistic_lock_conflict"))
+                .andExpect(jsonPath("$.status").value(409));
         }
     }
 
