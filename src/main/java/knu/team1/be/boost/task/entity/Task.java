@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
@@ -34,7 +35,14 @@ import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
-@Table(name = "tasks")
+@Table(
+    name = "tasks",
+    indexes = {
+        @Index(name = "idx_tasks_project_status_created", columnList = "project_id, status, created_at, id"),
+        @Index(name = "idx_tasks_project_status_duedate", columnList = "project_id, status, due_date, id"),
+        @Index(name = "idx_tasks_duedate_status", columnList = "due_date, status")
+    }
+)
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SQLDelete(sql = "UPDATE tasks SET deleted = true, deleted_at = CURRENT_TIMESTAMP WHERE id = ? AND version = ?")
@@ -84,7 +92,8 @@ public class Task extends SoftDeletableEntity {
     @JoinTable(
         name = "task_assignees",
         joinColumns = @JoinColumn(name = "task_id"),
-        inverseJoinColumns = @JoinColumn(name = "member_id")
+        inverseJoinColumns = @JoinColumn(name = "member_id"),
+        indexes = @Index(name = "idx_task_assignees_member_task", columnList = "member_id, task_id")
     )
     @Builder.Default
     private Set<Member> assignees = new LinkedHashSet<>();
