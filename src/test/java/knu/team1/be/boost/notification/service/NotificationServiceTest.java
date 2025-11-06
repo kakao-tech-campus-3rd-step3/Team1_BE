@@ -230,7 +230,6 @@ class NotificationServiceTest {
         void success() {
             Task task = Fixtures.task(UUID.randomUUID(), project);
             ProjectMembership pm1 = Fixtures.projectMembership(project, member);
-            pm1.updateNotificationEnabled(true);
             project.getProjectMemberships().add(pm1);
 
             given(projectRepository.findByIdWithMemberships(projectId)).willReturn(
@@ -283,7 +282,6 @@ class NotificationServiceTest {
             task.getAssignees().add(assignee);
 
             ProjectMembership pm = Fixtures.projectMembership(project, assignee);
-            pm.updateNotificationEnabled(true);
             project.getProjectMemberships().add(pm);
 
             given(projectRepository.findByIdWithMemberships(projectId)).willReturn(
