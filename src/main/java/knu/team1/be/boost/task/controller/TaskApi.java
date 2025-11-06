@@ -21,6 +21,7 @@ import knu.team1.be.boost.task.dto.TaskApproveResponseDto;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
 import knu.team1.be.boost.task.dto.TaskDetailResponseDto;
 import knu.team1.be.boost.task.dto.TaskMemberSectionResponseDto;
+import knu.team1.be.boost.task.dto.TaskReReviewResponseDto;
 import knu.team1.be.boost.task.dto.TaskResponseDto;
 import knu.team1.be.boost.task.dto.TaskSortBy;
 import knu.team1.be.boost.task.dto.TaskSortDirection;
@@ -267,7 +268,8 @@ public interface TaskApi {
         description = "담당자가 특정 프로젝트의 할 일에 대해 재검토를 요청합니다. REVIEW 상태에서만 가능합니다."
     )
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "재검토 요청 성공", content = @Content),
+        @ApiResponse(responseCode = "200", description = "재검토 요청 성공",
+            content = @Content(schema = @Schema(implementation = TaskReReviewResponseDto.class))),
         @ApiResponse(responseCode = "400", description = "재검토 불가능한 상태", content = @Content),
         @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
         @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
@@ -275,7 +277,7 @@ public interface TaskApi {
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
     })
     @PostMapping("/projects/{projectId}/tasks/{taskId}/re-review")
-    ResponseEntity<Void> requestReReview(
+    ResponseEntity<TaskReReviewResponseDto> requestReReview(
         @PathVariable UUID projectId,
         @PathVariable UUID taskId,
         @AuthenticationPrincipal UserPrincipalDto user

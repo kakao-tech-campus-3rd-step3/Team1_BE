@@ -39,6 +39,8 @@ public enum ErrorCode {
         "승인 수가 부족하여 완료 상태로 변경할 수 없습니다."),
     TASK_RE_REVIEW_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "Task re-review not allowed",
         "현재 상태에서는 재검토 요청을 보낼 수 없습니다."),
+    TASK_RE_REVIEW_COOLDOWN(HttpStatus.BAD_REQUEST, "Task re-review cooldown",
+        "재검토 요청은 10분 간격으로만 가능합니다."),
 
     // Tag 관련
     TAG_NOT_FOUND(HttpStatus.NOT_FOUND, "Tag not found", "해당 태그를 찾을 수 없습니다."),
