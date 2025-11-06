@@ -2,6 +2,7 @@ package knu.team1.be.boost.common.exception;
 
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
@@ -68,6 +69,28 @@ public class GlobalExceptionHandler {
             "입력값이 올바르지 않습니다.",
             URI.create(req.getRequestURI()),
             Map.of("errors", errors)
+        );
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ProblemDetail handleConstraintValidation(
+        ConstraintViolationException e,
+        HttpServletRequest req
+    ) {
+        List<Map<String, String>> violations = e.getConstraintViolations().stream()
+            .map(v -> Map.of(
+                "property", v.getPropertyPath().toString(),
+                "message", v.getMessage()
+            ))
+            .toList();
+
+        log.warn("[400 BAD_REQUEST] Constraint violation: {}", e.toString(), e);
+
+        return ErrorResponses.of(
+            HttpStatus.BAD_REQUEST,
+            "요청 파라미터가 유효하지 않습니다.",
+            URI.create(req.getRequestURI()),
+            Map.of("violations", violations)
         );
     }
 
