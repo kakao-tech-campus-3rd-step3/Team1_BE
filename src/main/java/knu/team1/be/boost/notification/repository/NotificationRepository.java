@@ -31,4 +31,6 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
     long countByMember(Member member);
 
     long countByMemberAndIsReadFalse(Member member);
+
+    List<Notification> findByMemberAndIsReadFalse(Member member);
 }

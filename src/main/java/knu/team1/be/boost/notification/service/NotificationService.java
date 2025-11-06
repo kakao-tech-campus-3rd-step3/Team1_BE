@@ -98,6 +98,26 @@ public class NotificationService {
     }
 
     @Transactional
+    public void markAllAsRead(
+        UUID userId
+    ) {
+        Member member = memberRepository.findById(userId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.MEMBER_NOT_FOUND, "memberId: " + userId
+            ));
+
+        List<Notification> unreadNotifications = notificationRepository.findByMemberAndIsReadFalse(
+            member
+        );
+
+        if (unreadNotifications.isEmpty()) {
+            return;
+        }
+
+        unreadNotifications.forEach(Notification::markAsRead);
+    }
+
+    @Transactional
     public ProjectNotificationResponseDto setProjectNotification(
         UUID projectId,
         boolean enabled,
@@ -199,7 +219,7 @@ public class NotificationService {
 
         return NotificationCountResponseDto.from(totalCount, unreadCount);
     }
-    
+
     private boolean isCursorNotMine(Notification cursor, Member member) {
         return !cursor.getMember().equals(member);
     }
