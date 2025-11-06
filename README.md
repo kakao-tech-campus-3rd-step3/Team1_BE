@@ -10,6 +10,14 @@
 </div>
 
 <br/>
+<div align="center">
+  <a href="https://boost.ai.kr" target="_blank">
+    <img src="https://img.shields.io/badge/🌐%20서비스%20바로가기-Boost-blue?style=for-the-badge&logo=google-chrome&logoColor=white"/>
+  </a>
+</div>
+<br/>
+
+<br/>
 
 ## 👩‍💻 팀 멤버
 
