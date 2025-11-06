@@ -14,6 +14,7 @@ import knu.team1.be.boost.task.dto.TaskApproveResponseDto;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
 import knu.team1.be.boost.task.dto.TaskDetailResponseDto;
 import knu.team1.be.boost.task.dto.TaskMemberSectionResponseDto;
+import knu.team1.be.boost.task.dto.TaskReReviewResponseDto;
 import knu.team1.be.boost.task.dto.TaskResponseDto;
 import knu.team1.be.boost.task.dto.TaskSortBy;
 import knu.team1.be.boost.task.dto.TaskSortDirection;
@@ -167,13 +168,13 @@ public class TaskController implements TaskApi {
     }
 
     @Override
-    public ResponseEntity<Void> requestReReview(
+    public ResponseEntity<TaskReReviewResponseDto> requestReReview(
         @PathVariable UUID projectId,
         @PathVariable UUID taskId,
         @AuthenticationPrincipal UserPrincipalDto user
     ) {
-        taskService.requestReReview(projectId, taskId, user);
-        return ResponseEntity.ok().build();
+        TaskReReviewResponseDto response = taskService.requestReReview(projectId, taskId, user);
+        return ResponseEntity.ok(response);
     }
 
     @Override
