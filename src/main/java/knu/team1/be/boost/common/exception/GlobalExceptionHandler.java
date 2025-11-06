@@ -1,6 +1,7 @@
 package knu.team1.be.boost.common.exception;
 
 import io.jsonwebtoken.JwtException;
+import jakarta.persistence.OptimisticLockException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import java.net.URI;
@@ -11,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -212,6 +214,17 @@ public class GlobalExceptionHandler {
         log.warn("[{} {}] {}", status.value(), status.getReasonPhrase(), e.toString(), e);
 
         return ErrorResponses.of(status, e.getMessage(), instance(req));
+    }
+
+    // 409: 낙관적 락 충돌
+    @ExceptionHandler({
+        OptimisticLockException.class,
+        ObjectOptimisticLockingFailureException.class
+    })
+    public ProblemDetail handleOptimisticLock(Exception e, HttpServletRequest req) {
+        log.warn("[409 CONFLICT] Optimistic lock conflict detected: {}", e.getMessage());
+
+        return ErrorResponses.forBusiness(ErrorCode.OPTIMISTIC_LOCK_CONFLICT, instance(req));
     }
 
     // 500: 그외 모든 예외

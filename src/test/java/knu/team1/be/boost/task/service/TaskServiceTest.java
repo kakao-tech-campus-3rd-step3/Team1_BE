@@ -708,6 +708,32 @@ class TaskServiceTest {
                     .isInstanceOf(BusinessException.class)
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.MEMBER_NOT_FOUND);
             }
+
+            @Test
+            @DisplayName("성공 - 낙관적 락이 정상 동작함")
+            void optimisticLockWorking() {
+                // given
+                UUID taskId = baseTask.getId();
+                Task task = baseTask;
+                task.changeStatus(TaskStatus.REVIEW);
+
+                given(projectRepository.findById(projectId)).willReturn(Optional.of(project));
+                given(taskRepository.findById(taskId)).willReturn(Optional.of(task));
+                doNothing().when(accessPolicy).ensureProjectMember(projectId, user.id());
+
+                Member member = Fixtures.member(user.id(), "승인자");
+                given(memberRepository.findById(user.id())).willReturn(Optional.of(member));
+                given(projectMembershipRepository.findAllByProjectId(projectId))
+                    .willReturn(List.of(Fixtures.projectMembership(project, member)));
+
+                // when
+                var response = taskService.approveTask(projectId, taskId, user);
+
+                // then
+                assertThat(response.taskId()).isEqualTo(taskId);
+                assertThat(task.getApprovers()).hasSize(1);
+                assertThat(task.getApprovers()).contains(member);
+            }
         }
 
         @Nested
