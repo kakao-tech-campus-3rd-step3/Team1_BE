@@ -104,7 +104,7 @@ class CommentServiceTest {
         List<Comment> comments = List.of(testComment);
 
         doNothing().when(accessPolicy).ensureProjectMember(projectId, memberId);
-        when(commentRepository.findAllByTaskId(taskId)).thenReturn(comments);
+        when(commentRepository.findAllByTaskIdOrderByCreatedAtAsc(taskId)).thenReturn(comments);
 
         // when
         List<CommentResponseDto> result = commentService.findCommentsByTaskId(
@@ -121,7 +121,7 @@ class CommentServiceTest {
         assertThat(result.get(0).isAnonymous()).isFalse();
 
         verify(accessPolicy, times(1)).ensureProjectMember(projectId, memberId);
-        verify(commentRepository, times(1)).findAllByTaskId(taskId);
+        verify(commentRepository, times(1)).findAllByTaskIdOrderByCreatedAtAsc(taskId);
     }
 
     @Test

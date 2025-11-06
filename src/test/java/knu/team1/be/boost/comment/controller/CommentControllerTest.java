@@ -72,6 +72,8 @@ class CommentControllerTest {
 
     private static final UUID testUserId = TestSecurityConfig.testUserPrincipal.id();
 
+    private static final String testBackgroundColor = "#FF5733";
+
     private final UUID projectId = UUID.randomUUID();
     private final UUID taskId = UUID.randomUUID();
     private final UUID commentId = UUID.randomUUID();
@@ -120,7 +122,8 @@ class CommentControllerTest {
         CommentResponseDto.AuthorInfoResponseDto author = new CommentResponseDto.AuthorInfoResponseDto(
             testUserId,
             TestSecurityConfig.testUserPrincipal.name(),
-            TestSecurityConfig.testUserPrincipal.avatar()
+            TestSecurityConfig.testUserPrincipal.avatar(),
+            testBackgroundColor
         );
         return new CommentResponseDto(
             commentId, author, "테스트 댓글", Persona.BOO, false, null, LocalDateTime.now(),

@@ -17,6 +17,7 @@ import knu.team1.be.boost.member.dto.MemberResponseDto;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.entity.vo.OauthInfo;
 import knu.team1.be.boost.member.repository.MemberRepository;
+import knu.team1.be.boost.projectMembership.repository.ProjectMembershipRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,6 +33,9 @@ public class MemberServiceTest {
 
     @Mock
     private MemberRepository memberRepository;
+
+    @Mock
+    private ProjectMembershipRepository projectMembershipRepository;
 
     // 테스트용 임시 ID 및 데이터
     private final UUID testUserId = UUID.fromString("a1b2c3d4-e5f6-7890-1234-567890abcdef");
