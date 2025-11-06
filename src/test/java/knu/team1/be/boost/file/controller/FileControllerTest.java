@@ -347,7 +347,7 @@ class FileControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.projectId").value(projectId.toString()))
                 .andExpect(jsonPath("$.files[0].filename").value("회의록.pdf"))
-                .andExpect(jsonPath("$.files[1].filename").value("설계서.docx"))
+                .andExpect(jsonPath("$.files[1].filename").value("설계서.pdf"))
                 .andExpect(jsonPath("$.count").value(2))
                 .andExpect(jsonPath("$.hasNext").value(false));
         }
