@@ -29,6 +29,7 @@ import knu.team1.be.boost.file.dto.ProjectFileListResponseDto;
 import knu.team1.be.boost.file.dto.ProjectFileResponseDto;
 import knu.team1.be.boost.file.dto.ProjectFileSummaryResponseDto;
 import knu.team1.be.boost.file.entity.FileStatus;
+import knu.team1.be.boost.file.entity.FileType;
 import knu.team1.be.boost.file.service.FileService;
 import knu.team1.be.boost.security.filter.JwtAuthFilter;
 import org.junit.jupiter.api.DisplayName;
@@ -304,7 +305,7 @@ class FileControllerTest {
     class GetFilesByProject {
 
         @Test
-        @DisplayName("프로젝트 파일 목록 조회 성공 - 프로젝트 파일 목록 조회 (커서 X)")
+        @DisplayName("프로젝트 파일 목록 조회 성공 - (커서 X)")
         void success_withoutCursor() throws Exception {
             // given
             UUID projectId = UUID.randomUUID();
@@ -315,17 +316,17 @@ class FileControllerTest {
                 "회의록.pdf",
                 "application/pdf",
                 123456,
-                knu.team1.be.boost.file.entity.FileType.PDF,
+                FileType.PDF,
                 LocalDateTime.of(2025, 9, 9, 12, 30)
             );
 
             ProjectFileResponseDto f2 = new ProjectFileResponseDto(
                 UUID.randomUUID(),
                 UUID.randomUUID(),
-                "설계서.docx",
-                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "설계서.pdf",
+                "application/pdf",
                 345678,
-                knu.team1.be.boost.file.entity.FileType.PDF,
+                FileType.PDF,
                 LocalDateTime.of(2025, 9, 9, 14, 10)
             );
 
@@ -360,10 +361,10 @@ class FileControllerTest {
             ProjectFileResponseDto f1 = new ProjectFileResponseDto(
                 UUID.randomUUID(),
                 UUID.randomUUID(),
-                "발표자료.pptx",
-                "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                "발표자료.pdf",
+                "application/pdf",
                 567890,
-                knu.team1.be.boost.file.entity.FileType.PDF,
+                FileType.PDF,
                 LocalDateTime.of(2025, 9, 10, 10, 0)
             );
 
@@ -412,7 +413,7 @@ class FileControllerTest {
     class ProjectFileSummary {
 
         @Test
-        @DisplayName("프로젝트 파일 요약 조회 성공 - 프로젝트 파일 요약 조회")
+        @DisplayName("프로젝트 파일 요약 조회 성공")
         void success() throws Exception {
             UUID projectId = UUID.randomUUID();
             ProjectFileSummaryResponseDto response =
@@ -445,7 +446,7 @@ class FileControllerTest {
     class DeleteFile {
 
         @Test
-        @DisplayName("파일 삭제 성공 - 파일 삭제 (204 No Content)")
+        @DisplayName("파일 삭제 성공 - 204 (No Content)")
         void success() throws Exception {
             UUID fileId = UUID.randomUUID();
 
