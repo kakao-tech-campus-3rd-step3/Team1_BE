@@ -7,6 +7,7 @@ import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.notification.entity.Notification;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -33,4 +34,15 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
     long countByMemberAndIsReadFalse(Member member);
 
     List<Notification> findByMemberAndIsReadFalse(Member member);
+
+    @Modifying
+    @Query("""
+        UPDATE Notification n
+        SET n.isRead = true
+        WHERE n.member = :member
+            AND n.isRead = false
+            AND n.deleted = false
+        """
+    )
+    void markAllAsReadByMember(@Param("member") Member member);
 }

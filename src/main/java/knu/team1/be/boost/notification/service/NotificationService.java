@@ -106,15 +106,7 @@ public class NotificationService {
                 ErrorCode.MEMBER_NOT_FOUND, "memberId: " + userId
             ));
 
-        List<Notification> unreadNotifications = notificationRepository.findByMemberAndIsReadFalse(
-            member
-        );
-
-        if (unreadNotifications.isEmpty()) {
-            return;
-        }
-
-        unreadNotifications.forEach(Notification::markAsRead);
+        notificationRepository.markAllAsReadByMember(member);
     }
 
     @Transactional
