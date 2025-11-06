@@ -55,6 +55,7 @@
 <br/>
 
 ## 📊 ERD
+<img width="3276" height="3516" alt="image" src="https://github.com/user-attachments/assets/830aeacd-a3b1-4c07-bbfd-a400f5843e97" />
 
 <br/>
 
