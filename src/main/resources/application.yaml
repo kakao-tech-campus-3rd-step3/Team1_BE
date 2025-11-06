@@ -17,7 +17,7 @@ spring:
       backoff:
         initial-interval: 1s
         multiplier: 2
-      max-attempts: 5
+      max-attempts: 3
 
 
   security:
