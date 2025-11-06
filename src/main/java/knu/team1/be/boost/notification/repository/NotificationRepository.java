@@ -33,8 +33,6 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
 
     long countByMemberAndIsReadFalse(Member member);
 
-    List<Notification> findByMemberAndIsReadFalse(Member member);
-
     @Modifying
     @Query("""
         UPDATE Notification n
