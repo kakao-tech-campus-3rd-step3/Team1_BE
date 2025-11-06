@@ -10,6 +10,8 @@ public enum ErrorCode {
     // Member 관련
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "Member not found", "해당 사용자를 찾을 수 없습니다."),
     MEMBER_ALREADY_JOINED(HttpStatus.CONFLICT, "Member already joined", "이미 참여한 멤버입니다."),
+    MEMBER_HAS_OWNED_PROJECTS(HttpStatus.CONFLICT, "Member has owned projects",
+        "소유한 프로젝트가 있어 탈퇴할 수 없습니다. 프로젝트를 먼저 삭제해주세요."),
 
     // Project 관련
     PROJECT_NOT_FOUND(HttpStatus.NOT_FOUND, "Project not found", "해당 프로젝트를 찾을 수 없습니다."),
