@@ -108,10 +108,21 @@ class WebPushClientTest {
     }
 
     @Test
-    @DisplayName("404/410 응답 시 구독 삭제")
-    void delete_on404or410() {
+    @DisplayName("404 응답 시 구독 삭제")
+    void delete_on404() {
         given(webPushRepository.findByMemberId(member.getId())).willReturn(List.of(sub1));
         given(statusLine.getStatusCode()).willReturn(404);
+
+        webPushClient.sendNotification(member, "삭제 테스트", "본문");
+
+        verify(webPushRepository).delete(eq(sub1));
+    }
+
+    @Test
+    @DisplayName("410 응답 시 구독 삭제")
+    void delete_on410() {
+        given(webPushRepository.findByMemberId(member.getId())).willReturn(List.of(sub1));
+        given(statusLine.getStatusCode()).willReturn(410);
 
         webPushClient.sendNotification(member, "삭제 테스트", "본문");
 
