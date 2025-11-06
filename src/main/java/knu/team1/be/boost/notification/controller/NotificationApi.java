@@ -17,6 +17,7 @@ import knu.team1.be.boost.notification.dto.NotificationReadResponseDto;
 import knu.team1.be.boost.notification.dto.ProjectNotificationResponseDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Tag(name = "Notifications", description = "알림 관련 API")
 @RequestMapping("/api")
 @SecurityRequirement(name = "bearerAuth")
+@Validated
 public interface NotificationApi {
 
     @Operation(
