@@ -37,6 +37,7 @@ import knu.team1.be.boost.task.dto.TaskApproveResponseDto;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
 import knu.team1.be.boost.task.dto.TaskDetailResponseDto;
 import knu.team1.be.boost.task.dto.TaskMemberSectionResponseDto;
+import knu.team1.be.boost.task.dto.TaskReReviewResponseDto;
 import knu.team1.be.boost.task.dto.TaskResponseDto;
 import knu.team1.be.boost.task.dto.TaskSortBy;
 import knu.team1.be.boost.task.dto.TaskSortDirection;
@@ -577,7 +578,7 @@ public class TaskService {
     }
 
     @Transactional
-    public void requestReReview(
+    public TaskReReviewResponseDto requestReReview(
         UUID projectId,
         UUID taskId,
         UserPrincipalDto user
@@ -603,7 +604,13 @@ public class TaskService {
             );
         }
 
+        validateReReviewCooldown(task);
+
+        task.requestReReview();
+
         taskEventPublisher.publishTaskReReviewEvent(project.getId(), task.getId());
+
+        return TaskReReviewResponseDto.from(task.getReReviewRequestedAt());
     }
 
     private void validateCanMarkDone(Project project, Task task, TaskStatus newStatus) {
@@ -851,4 +858,19 @@ public class TaskService {
             }
         }
     }
+
+    private void validateReReviewCooldown(Task task) {
+        if (task.getReReviewRequestedAt() == null) {
+            return;
+        }
+
+        LocalDateTime lastRequestedAt = task.getReReviewRequestedAt();
+        if (lastRequestedAt.isAfter(LocalDateTime.now().minusMinutes(10))) {
+            throw new BusinessException(
+                ErrorCode.TASK_RE_REVIEW_COOLDOWN,
+                "재검토 요청은 10분 간격으로만 가능합니다. 마지막 요청 시각: " + lastRequestedAt
+            );
+        }
+    }
+
 }
