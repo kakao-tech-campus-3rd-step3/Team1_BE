@@ -41,6 +41,8 @@ public enum ErrorCode {
         "현재 상태에서는 재검토 요청을 보낼 수 없습니다."),
     TASK_RE_REVIEW_COOLDOWN(HttpStatus.BAD_REQUEST, "Task re-review cooldown",
         "재검토 요청은 10분 간격으로만 가능합니다."),
+    OPTIMISTIC_LOCK_CONFLICT(HttpStatus.CONFLICT, "Optimistic lock conflict",
+        "다른 사용자가 먼저 수정했습니다. 새로고침 후 다시 시도해주세요."),
 
     // Tag 관련
     TAG_NOT_FOUND(HttpStatus.NOT_FOUND, "Tag not found", "해당 태그를 찾을 수 없습니다."),
