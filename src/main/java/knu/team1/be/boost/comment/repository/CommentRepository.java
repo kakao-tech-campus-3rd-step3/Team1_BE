@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface CommentRepository extends JpaRepository<Comment, UUID> {
 
-    List<Comment> findAllByTaskId(UUID taskId);
+    List<Comment> findAllByTaskIdOrderByCreatedAtAsc(UUID taskId);
 
     @Query("SELECT COUNT(c) FROM Comment c WHERE c.task.id = :taskId")
     long countByTaskId(@Param("taskId") UUID taskId);

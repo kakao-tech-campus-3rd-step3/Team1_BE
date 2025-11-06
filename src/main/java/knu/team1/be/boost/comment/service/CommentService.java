@@ -42,7 +42,7 @@ public class CommentService {
     ) {
         accessPolicy.ensureProjectMember(projectId, memberId);
 
-        List<Comment> comments = commentRepository.findAllByTaskId(taskId);
+        List<Comment> comments = commentRepository.findAllByTaskIdOrderByCreatedAtAsc(taskId);
         return comments.stream()
             .map(CommentResponseDto::from)
             .collect(Collectors.toList());
