@@ -13,6 +13,12 @@ spring:
           model: gpt-4.1-mini
           temperature: 0.7
           max-tokens: 500
+    retry:
+      backoff:
+        initial-interval: 1s
+        multiplier: 2
+      max-attempts: 5
+
 
   security:
     oauth2:
