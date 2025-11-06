@@ -37,7 +37,6 @@ import knu.team1.be.boost.task.dto.TaskApproveResponseDto;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
 import knu.team1.be.boost.task.dto.TaskDetailResponseDto;
 import knu.team1.be.boost.task.dto.TaskMemberSectionResponseDto;
-import knu.team1.be.boost.task.dto.TaskReReviewResponseDto;
 import knu.team1.be.boost.task.dto.TaskResponseDto;
 import knu.team1.be.boost.task.dto.TaskSortBy;
 import knu.team1.be.boost.task.dto.TaskSortDirection;
@@ -580,7 +579,7 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskReReviewResponseDto requestReReview(
+    public void requestReReview(
         UUID projectId,
         UUID taskId,
         UserPrincipalDto user
@@ -611,8 +610,6 @@ public class TaskService {
         task.requestReReview(now);
 
         taskEventPublisher.publishTaskReReviewEvent(project.getId(), task.getId());
-
-        return TaskReReviewResponseDto.from(now);
     }
 
     private void validateCanMarkDone(Project project, Task task, TaskStatus newStatus) {
