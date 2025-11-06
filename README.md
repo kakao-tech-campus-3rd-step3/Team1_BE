@@ -22,7 +22,7 @@
 <br/>
 
 ## 📐 아키텍처
-![aws2 최종](https://github.com/user-attachments/assets/7cdb6a16-9cfe-4f79-ba67-a0ed6d1e5594)
+![마지막](https://github.com/user-attachments/assets/b41ee23d-0e2b-4100-9964-185109079706)
 
 <br/>
 
