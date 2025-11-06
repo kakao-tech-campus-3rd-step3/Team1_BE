@@ -11,6 +11,7 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -61,6 +62,9 @@ public class Task extends SoftDeletableEntity {
 
     @Column(name = "required_reviewer_count", nullable = false)
     private Integer requiredReviewerCount;
+
+    @Column(name = "re_review_requested_at")
+    private LocalDateTime reReviewRequestedAt;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
@@ -151,6 +155,10 @@ public class Task extends SoftDeletableEntity {
         }
 
         approvers.add(member);
+    }
+
+    public void requestReReview() {
+        this.reReviewRequestedAt = LocalDateTime.now();
     }
 
     public int getRequiredApprovalsCount(List<Member> projectMembers) {
