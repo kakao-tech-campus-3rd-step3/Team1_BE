@@ -68,7 +68,6 @@ class NotificationSchedulerTest {
             DueTask task2 = mock(DueTask.class);
             given(task2.getMemberId()).willReturn(memberId);
             given(task2.getProjectId()).willReturn(projectId);
-            given(task2.getProjectName()).willReturn("프로젝트A");
             given(task2.getTaskTitle()).willReturn("테스트 코드 작성");
 
             given(taskRepository.findDueTasksByMember(tomorrow))
@@ -106,8 +105,6 @@ class NotificationSchedulerTest {
             DueTask dueTask = mock(DueTask.class);
             given(dueTask.getMemberId()).willReturn(memberId);
             given(dueTask.getProjectId()).willReturn(projectId);
-            given(dueTask.getProjectName()).willReturn("프로젝트B");
-            given(dueTask.getTaskTitle()).willReturn("리팩토링");
 
             given(taskRepository.findDueTasksByMember(tomorrow))
                 .willReturn(List.of(dueTask));
