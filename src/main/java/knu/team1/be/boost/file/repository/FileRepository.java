@@ -57,4 +57,20 @@ public interface FileRepository extends JpaRepository<File, UUID> {
 
         Long getCount();
     }
+
+    @Query("""
+            SELECT COUNT(f)
+            FROM File f
+            WHERE f.task.project.id = :projectId
+              AND f.status = knu.team1.be.boost.file.entity.FileStatus.COMPLETED
+        """)
+    long countByProject(@Param("projectId") UUID projectId);
+
+    @Query("""
+            SELECT COALESCE(SUM(f.metadata.sizeBytes), 0)
+            FROM File f
+            WHERE f.task.project.id = :projectId
+              AND f.status = knu.team1.be.boost.file.entity.FileStatus.COMPLETED
+        """)
+    long sumSizeByProject(@Param("projectId") UUID projectId);
 }

@@ -12,6 +12,7 @@ import knu.team1.be.boost.file.dto.FileCompleteResponseDto;
 import knu.team1.be.boost.file.dto.FilePresignedUrlResponseDto;
 import knu.team1.be.boost.file.dto.FileRequestDto;
 import knu.team1.be.boost.file.dto.ProjectFileListResponseDto;
+import knu.team1.be.boost.file.dto.ProjectFileSummaryResponseDto;
 import knu.team1.be.boost.file.entity.File;
 import knu.team1.be.boost.file.entity.FileType;
 import knu.team1.be.boost.file.entity.vo.StorageKey;
@@ -193,6 +194,24 @@ public class FileService {
         );
 
         return ProjectFileListResponseDto.from(project.getId(), files, safeLimit);
+    }
+
+    @Transactional(readOnly = true)
+    public ProjectFileSummaryResponseDto getProjectFileSummary(
+        UUID projectId,
+        UUID userId
+    ) {
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
+            ));
+
+        accessPolicy.ensureProjectMember(project.getId(), userId);
+
+        long totalCount = fileRepository.countByProject(projectId);
+        long totalSize = fileRepository.sumSizeByProject(projectId);
+
+        return ProjectFileSummaryResponseDto.from(totalCount, totalSize);
     }
 
     @Transactional
