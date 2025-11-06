@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import java.util.UUID;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
+import knu.team1.be.boost.notification.dto.NotificationCountResponseDto;
 import knu.team1.be.boost.notification.dto.NotificationListResponseDto;
 import knu.team1.be.boost.notification.dto.NotificationReadResponseDto;
 import knu.team1.be.boost.notification.dto.ProjectNotificationResponseDto;
@@ -61,4 +62,12 @@ public class NotificationController implements NotificationApi {
         return ResponseEntity.ok(response);
     }
 
+    @Override
+    public ResponseEntity<NotificationCountResponseDto> getNotificationCount(
+        @AuthenticationPrincipal UserPrincipalDto user
+    ) {
+        NotificationCountResponseDto response = notificationService.getNotificationCount(user.id());
+        return ResponseEntity.ok(response);
+    }
+    
 }

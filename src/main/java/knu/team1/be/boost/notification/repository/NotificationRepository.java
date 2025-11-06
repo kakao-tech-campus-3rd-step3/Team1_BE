@@ -27,4 +27,8 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
         @Param("cursorId") UUID cursorId,
         Pageable pageable
     );
+
+    long countByMember(Member member);
+
+    long countByMemberAndIsReadFalse(Member member);
 }

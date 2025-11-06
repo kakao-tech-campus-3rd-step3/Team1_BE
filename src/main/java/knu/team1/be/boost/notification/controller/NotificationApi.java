@@ -11,6 +11,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import java.util.UUID;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
+import knu.team1.be.boost.notification.dto.NotificationCountResponseDto;
 import knu.team1.be.boost.notification.dto.NotificationListResponseDto;
 import knu.team1.be.boost.notification.dto.NotificationReadResponseDto;
 import knu.team1.be.boost.notification.dto.ProjectNotificationResponseDto;
@@ -91,4 +92,22 @@ public interface NotificationApi {
         @AuthenticationPrincipal UserPrincipalDto user
     );
 
+    @Operation(
+        summary = "내 알림 개수 조회",
+        description = "로그인한 사용자의 전체 알림 개수와 읽지 않은 알림 개수를 반환합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200",
+            description = "조회 성공",
+            content = @Content(schema = @Schema(implementation = NotificationCountResponseDto.class))
+        ),
+        @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
+        @ApiResponse(responseCode = "404", description = "존재하지 않는 멤버", content = @Content),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content)
+    })
+    @GetMapping("/notifications/count")
+    ResponseEntity<NotificationCountResponseDto> getNotificationCount(
+        @AuthenticationPrincipal UserPrincipalDto user
+    );
 }

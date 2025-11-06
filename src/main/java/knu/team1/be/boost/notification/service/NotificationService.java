@@ -8,6 +8,7 @@ import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.common.policy.AccessPolicy;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
+import knu.team1.be.boost.notification.dto.NotificationCountResponseDto;
 import knu.team1.be.boost.notification.dto.NotificationListResponseDto;
 import knu.team1.be.boost.notification.dto.NotificationReadResponseDto;
 import knu.team1.be.boost.notification.dto.ProjectNotificationResponseDto;
@@ -186,6 +187,19 @@ public class NotificationService {
         }
     }
 
+    @Transactional(readOnly = true)
+    public NotificationCountResponseDto getNotificationCount(UUID userId) {
+        Member member = memberRepository.findById(userId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.MEMBER_NOT_FOUND, "memberId: " + userId
+            ));
+
+        long totalCount = notificationRepository.countByMember(member);
+        long unreadCount = notificationRepository.countByMemberAndIsReadFalse(member);
+
+        return NotificationCountResponseDto.from(totalCount, unreadCount);
+    }
+    
     private boolean isCursorNotMine(Notification cursor, Member member) {
         return !cursor.getMember().equals(member);
     }
