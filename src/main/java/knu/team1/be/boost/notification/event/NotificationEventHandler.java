@@ -48,9 +48,12 @@ public class NotificationEventHandler {
             event.projectId(),
             event.taskId(),
             event.commenterId(),
-            event.commentContent()
+            event.commentContent(),
+            event.isAnonymous(),
+            event.personaName()
         );
     }
+
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)

@@ -16,14 +16,18 @@ public class CommentEventPublisher {
         UUID projectId,
         UUID taskId,
         UUID commenterId,
-        String commentContent
+        String commentContent,
+        boolean isAnonymous,
+        String personaName
     ) {
         eventPublisher.publishEvent(
             CommentCreatedEvent.from(
                 projectId,
                 taskId,
                 commenterId,
-                commentContent
+                commentContent,
+                isAnonymous,
+                personaName
             )
         );
     }

@@ -6,15 +6,26 @@ public record CommentCreatedEvent(
     UUID projectId,
     UUID taskId,
     UUID commenterId,
-    String commentContent
+    String commentContent,
+    boolean isAnonymous,
+    String personaName
 ) {
 
     public static CommentCreatedEvent from(
         UUID projectId,
         UUID taskId,
         UUID commenterId,
-        String commentContent
+        String commentContent,
+        boolean isAnonymous,
+        String personaName
     ) {
-        return new CommentCreatedEvent(projectId, taskId, commenterId, commentContent);
+        return new CommentCreatedEvent(
+            projectId,
+            taskId,
+            commenterId,
+            commentContent,
+            isAnonymous,
+            personaName
+        );
     }
 }

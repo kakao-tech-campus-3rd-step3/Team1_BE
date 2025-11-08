@@ -87,9 +87,11 @@ public class CommentService {
             projectId,
             taskId,
             memberId,
-            requestDto.content()
+            requestDto.content(),
+            requestDto.isAnonymous(),
+            requestDto.persona() != null ? requestDto.persona().name() : null
         );
-        
+
         return CommentResponseDto.from(savedComment);
     }
 

@@ -221,7 +221,9 @@ public class NotificationService {
         UUID projectId,
         UUID taskId,
         UUID commenterId,
-        String commentContent
+        String commentContent,
+        boolean isAnonymous,
+        String personaName
     ) {
         Project project = projectRepository.findByIdWithMemberships(projectId)
             .orElseThrow(() -> new BusinessException(
@@ -239,6 +241,8 @@ public class NotificationService {
                 ErrorCode.MEMBER_NOT_FOUND, "memberId: " + commenterId
             ));
 
+        String displayName = resolveDisplayName(isAnonymous, personaName, commenter);
+
         List<Member> assignees = project.getProjectMemberships().stream()
             .filter(
                 pm -> pm.isNotificationEnabled() && task.getAssignees().contains(pm.getMember()))
@@ -252,7 +256,9 @@ public class NotificationService {
                     assignee,
                     NotificationType.COMMENT_CREATED.title(),
                     NotificationType.COMMENT_CREATED.message(
-                        task.getTitle(), commenter.getName(), commentContent
+                        task.getTitle(),
+                        displayName,
+                        commentContent
                     )
                 );
             } catch (Exception e) {
@@ -264,5 +270,17 @@ public class NotificationService {
     private boolean isCursorNotMine(Notification cursor, Member member) {
         return !cursor.getMember().equals(member);
     }
+
+    private String resolveDisplayName(boolean isAnonymous, String personaName, Member commenter) {
+        if (isAnonymous) {
+            if (personaName != null && !personaName.isBlank()) {
+                return personaName;
+            }
+            return "익명";
+        }
+
+        return commenter.getName();
+    }
+
 
 }
