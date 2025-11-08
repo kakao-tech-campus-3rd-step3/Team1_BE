@@ -880,7 +880,7 @@ public class TaskService {
         if (lastRequestedAt.isAfter(now.minusMinutes(RE_REVIEW_COOLDOWN_MINUTES))) {
             throw new BusinessException(
                 ErrorCode.TASK_RE_REVIEW_COOLDOWN,
-                "userId: " + userId
+                "userId: " + userId + ", lastRequestedAt: " + lastRequestedAt
             );
         }
     }
@@ -896,7 +896,7 @@ public class TaskService {
 
         if (requiredReviewerCount > availableReviewers) {
             throw new BusinessException(
-                ErrorCode.INVALID_REQUIRED_REVIEWER_COUNT, ", userId: " + userId
+                ErrorCode.INVALID_REQUIRED_REVIEWER_COUNT, "userId: " + userId
             );
         }
     }
