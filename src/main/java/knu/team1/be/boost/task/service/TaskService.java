@@ -90,6 +90,13 @@ public class TaskService {
 
         accessPolicy.ensureAssigneesAreProjectMembers(project.getId(), assignees);
 
+        validateRequiredReviewerCount(
+            project.getId(),
+            assignees.size(),
+            request.requiredReviewerCount(),
+            user.id()
+        );
+
         Task task = Task.create(
             project,
             request.title(),
@@ -136,6 +143,12 @@ public class TaskService {
 
         accessPolicy.ensureAssigneesAreProjectMembers(project.getId(), assignees);
 
+        validateRequiredReviewerCount(
+            project.getId(),
+            assignees.size(),
+            request.requiredReviewerCount(),
+            user.id()
+        );
         validateCanMarkDone(project, task, request.status());
 
         task.update(
@@ -606,7 +619,7 @@ public class TaskService {
         }
 
         LocalDateTime now = LocalDateTime.now();
-        validateReReviewCooldown(task, now);
+        validateReReviewCooldown(task, now, user.id());
         task.requestReReview(now);
 
         taskEventPublisher.publishTaskReReviewEvent(project.getId(), task.getId());
@@ -858,7 +871,7 @@ public class TaskService {
         }
     }
 
-    private void validateReReviewCooldown(Task task, LocalDateTime now) {
+    private void validateReReviewCooldown(Task task, LocalDateTime now, UUID userId) {
         if (task.getReReviewRequestedAt() == null) {
             return;
         }
@@ -867,7 +880,23 @@ public class TaskService {
         if (lastRequestedAt.isAfter(now.minusMinutes(RE_REVIEW_COOLDOWN_MINUTES))) {
             throw new BusinessException(
                 ErrorCode.TASK_RE_REVIEW_COOLDOWN,
-                "재검토 요청은 10분 간격으로만 가능합니다. 마지막 요청 시각: " + lastRequestedAt
+                "userId: " + userId + ", lastRequestedAt: " + lastRequestedAt
+            );
+        }
+    }
+
+    private void validateRequiredReviewerCount(
+        UUID projectId,
+        int assigneeCount,
+        int requiredReviewerCount,
+        UUID userId
+    ) {
+        int totalMembers = projectMembershipRepository.countByProjectId(projectId);
+        int availableReviewers = totalMembers - assigneeCount;
+
+        if (requiredReviewerCount > availableReviewers) {
+            throw new BusinessException(
+                ErrorCode.INVALID_REQUIRED_REVIEWER_COUNT, "userId: " + userId
             );
         }
     }
