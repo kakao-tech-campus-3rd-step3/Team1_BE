@@ -205,7 +205,12 @@ class WebPushServiceTest {
             webPushService.registerSubscription(req);
 
             verify(subscription)
-                .updateSubscription(eq(req.webPushUrl()), eq(req.publicKey()), eq(req.authKey()));
+                .updateSubscription(
+                    eq(req.token()),
+                    eq(req.webPushUrl()),
+                    eq(req.publicKey()),
+                    eq(req.authKey())
+                );
             verify(webPushRepository, never()).save(any());
         }
 
