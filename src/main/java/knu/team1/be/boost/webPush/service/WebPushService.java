@@ -103,6 +103,7 @@ public class WebPushService {
                 // 이미 soft delete 된 구독이라면 재활성화
                 existing.reactivate();
                 existing.updateSubscription(
+                    registerDto.token(),
                     registerDto.webPushUrl(),
                     registerDto.publicKey(),
                     registerDto.authKey()
@@ -110,6 +111,7 @@ public class WebPushService {
             } else {
                 // 이미 활성화된 상태라면 그냥 업데이트 (또는 예외로 바꿔도 OK)
                 existing.updateSubscription(
+                    registerDto.token(),
                     registerDto.webPushUrl(),
                     registerDto.publicKey(),
                     registerDto.authKey()

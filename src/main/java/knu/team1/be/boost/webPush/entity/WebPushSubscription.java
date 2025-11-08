@@ -49,7 +49,13 @@ public class WebPushSubscription extends SoftDeletableEntity {
     @Column(name = "auth_key", nullable = false)
     private String authKey;
 
-    public void updateSubscription(String webPushUrl, String publicKey, String authKey) {
+    public void updateSubscription(
+        String token,
+        String webPushUrl,
+        String publicKey,
+        String authKey
+    ) {
+        this.token = token;
         this.webPushUrl = webPushUrl;
         this.publicKey = publicKey;
         this.authKey = authKey;
