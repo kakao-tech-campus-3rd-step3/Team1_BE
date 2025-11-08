@@ -50,5 +50,5 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
         SET n.deleted = true, n.deletedAt = CURRENT_TIMESTAMP
         WHERE n.member.id = :memberId AND n.deleted = false
         """)
-    void softDeleteAllByMemberId(UUID memberId);
+    void softDeleteAllByMemberId(@Param("memberId") UUID memberId);
 }
