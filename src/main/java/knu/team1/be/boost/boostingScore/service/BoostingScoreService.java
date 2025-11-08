@@ -49,12 +49,36 @@ public class BoostingScoreService {
 
         List<BoostingScore> scores = boostingScoreRepository.findLatestByProjectId(projectId);
 
-        return scores.stream()
-            .map(score -> BoostingScoreResponseDto.from(
-                score,
-                scores.indexOf(score) + 1
-            ))
+        return calculateRankingsWithTies(scores);
+    }
+
+    private List<BoostingScoreResponseDto> calculateRankingsWithTies(List<BoostingScore> scores) {
+        if (scores.isEmpty()) {
+            return List.of();
+        }
+
+        List<BoostingScore> sortedScores = scores.stream()
+            .sorted((s1, s2) -> Integer.compare(s2.getTotalScore(), s1.getTotalScore()))
             .toList();
+
+        List<BoostingScoreResponseDto> result = new java.util.ArrayList<>();
+
+        int currentRank = 1;
+        Integer previousScore = null;
+
+        for (int i = 0; i < sortedScores.size(); i++) {
+            BoostingScore score = sortedScores.get(i);
+            Integer totalScore = score.getTotalScore();
+
+            if (previousScore != null && !previousScore.equals(totalScore)) {
+                currentRank = i + 1;
+            }
+
+            result.add(BoostingScoreResponseDto.from(score, currentRank));
+            previousScore = totalScore;
+        }
+
+        return result;
     }
 
     @Transactional
