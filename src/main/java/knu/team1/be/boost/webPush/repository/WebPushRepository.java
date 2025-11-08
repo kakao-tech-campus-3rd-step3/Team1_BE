@@ -35,5 +35,5 @@ public interface WebPushRepository extends JpaRepository<WebPushSubscription, UU
         SET w.deleted = true, w.deletedAt = CURRENT_TIMESTAMP
         WHERE w.member.id = :memberId AND w.deleted = false
         """)
-    void softDeleteAllByMemberId(UUID memberId);
+    void softDeleteAllByMemberId(@Param("memberId") UUID memberId);
 }
