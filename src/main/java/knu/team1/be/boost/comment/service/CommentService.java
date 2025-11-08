@@ -10,6 +10,7 @@ import knu.team1.be.boost.comment.dto.CommentUpdateRequestDto;
 import knu.team1.be.boost.comment.dto.FileInfoRequestDto;
 import knu.team1.be.boost.comment.entity.Comment;
 import knu.team1.be.boost.comment.entity.vo.FileInfo;
+import knu.team1.be.boost.comment.event.CommentEventPublisher;
 import knu.team1.be.boost.comment.repository.CommentRepository;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
@@ -34,6 +35,8 @@ public class CommentService {
     private final FileRepository fileRepository;
 
     private final AccessPolicy accessPolicy;
+
+    private final CommentEventPublisher commentEventPublisher;
 
     public List<CommentResponseDto> findCommentsByTaskId(
         UUID projectId,
@@ -79,6 +82,14 @@ public class CommentService {
             .build();
 
         Comment savedComment = commentRepository.save(comment);
+
+        commentEventPublisher.publishCommentCreatedEvent(
+            projectId,
+            taskId,
+            memberId,
+            requestDto.content()
+        );
+        
         return CommentResponseDto.from(savedComment);
     }
 
