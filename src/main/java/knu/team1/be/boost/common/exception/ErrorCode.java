@@ -43,6 +43,8 @@ public enum ErrorCode {
         "재검토 요청은 10분 간격으로만 가능합니다."),
     OPTIMISTIC_LOCK_CONFLICT(HttpStatus.CONFLICT, "Optimistic lock conflict",
         "다른 사용자가 먼저 수정했습니다. 새로고침 후 다시 시도해주세요."),
+    INVALID_REQUIRED_REVIEWER_COUNT(HttpStatus.BAD_REQUEST, "Invalid required reviewer count",
+        "요청한 리뷰어 수가 가능한 인원을 초과했습니다."),
 
     // Tag 관련
     TAG_NOT_FOUND(HttpStatus.NOT_FOUND, "Tag not found", "해당 태그를 찾을 수 없습니다."),

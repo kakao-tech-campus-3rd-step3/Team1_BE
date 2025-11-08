@@ -30,11 +30,13 @@ public interface ProjectMembershipRepository extends JpaRepository<ProjectMember
 
     int countByProjectIdAndMemberIdIn(UUID projectId, Collection<UUID> memberIds);
 
+    int countByProjectId(UUID projectId);
+
     boolean existsByProjectIdAndMemberIdAndRole(UUID projectId, UUID memberId, ProjectRole role);
 
     @EntityGraph(attributePaths = {"project"})
     List<ProjectMembership> findAllByMemberId(UUID memberId);
-    
+
     @EntityGraph(attributePaths = {"member"})
     List<ProjectMembership> findAllByProjectId(UUID projectId);
 
