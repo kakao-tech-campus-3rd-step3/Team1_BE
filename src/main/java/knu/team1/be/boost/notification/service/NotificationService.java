@@ -158,10 +158,12 @@ public class NotificationService {
             .orElseThrow(() -> new BusinessException(
                 ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
             ));
-        Task task = taskRepository.findById(taskId)
-            .orElseThrow(() -> new BusinessException(
-                ErrorCode.TASK_NOT_FOUND, "taskId: " + taskId
-            ));
+
+        Task task = taskRepository.findByIdWithAssignees(taskId)
+            .orElseThrow(
+                () -> new BusinessException(
+                    ErrorCode.TASK_NOT_FOUND, "taskId: " + taskId
+                ));
 
         List<Member> members = project.getProjectMemberships().stream()
             .filter(ProjectMembership::isNotificationEnabled)
@@ -188,10 +190,12 @@ public class NotificationService {
             .orElseThrow(() -> new BusinessException(
                 ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
             ));
-        Task task = taskRepository.findById(taskId)
-            .orElseThrow(() -> new BusinessException(
-                ErrorCode.TASK_NOT_FOUND, "taskId: " + taskId
-            ));
+
+        Task task = taskRepository.findByIdWithAssignees(taskId)
+            .orElseThrow(
+                () -> new BusinessException(
+                    ErrorCode.TASK_NOT_FOUND, "taskId: " + taskId
+                ));
 
         List<Member> assignees = project.getProjectMemberships().stream()
             .filter(
@@ -224,10 +228,11 @@ public class NotificationService {
                 ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
             ));
 
-        Task task = taskRepository.findById(taskId)
-            .orElseThrow(() -> new BusinessException(
-                ErrorCode.TASK_NOT_FOUND, "taskId: " + taskId
-            ));
+        Task task = taskRepository.findByIdWithAssignees(taskId)
+            .orElseThrow(
+                () -> new BusinessException(
+                    ErrorCode.TASK_NOT_FOUND, "taskId: " + taskId
+                ));
 
         Member commenter = memberRepository.findById(commenterId)
             .orElseThrow(() -> new BusinessException(
