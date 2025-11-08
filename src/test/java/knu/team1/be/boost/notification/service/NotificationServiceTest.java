@@ -265,7 +265,7 @@ class NotificationServiceTest {
 
             given(projectRepository.findByIdWithMemberships(projectId)).willReturn(
                 Optional.of(project));
-            given(taskRepository.findById(task.getId())).willReturn(Optional.of(task));
+            given(taskRepository.findByIdWithAssignees(task.getId())).willReturn(Optional.of(task));
 
             notificationService.notifyTaskReview(projectId, task.getId(),
                 NotificationType.REVIEW);
@@ -290,9 +290,11 @@ class NotificationServiceTest {
         @Test
         @DisplayName("작업 리뷰 알림 전송 실패 - TASK_NOT_FOUND")
         void fail_taskNotFound() {
-            given(projectRepository.findByIdWithMemberships(projectId)).willReturn(
-                Optional.of(project));
-            given(taskRepository.findById(any())).willReturn(Optional.empty());
+            given(projectRepository.findByIdWithMemberships(projectId))
+                .willReturn(Optional.of(project));
+            given(taskRepository.findByIdWithAssignees(any()))
+                .willReturn(Optional.empty());
+
             assertThatThrownBy(
                 () -> notificationService.notifyTaskReview(projectId, UUID.randomUUID(),
                     NotificationType.REVIEW))
@@ -317,7 +319,7 @@ class NotificationServiceTest {
 
             given(projectRepository.findByIdWithMemberships(projectId)).willReturn(
                 Optional.of(project));
-            given(taskRepository.findById(task.getId())).willReturn(Optional.of(task));
+            given(taskRepository.findByIdWithAssignees(task.getId())).willReturn(Optional.of(task));
 
             notificationService.notifyTaskApprove(projectId, task.getId());
 
