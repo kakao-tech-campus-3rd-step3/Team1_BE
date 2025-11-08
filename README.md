@@ -1,37 +1,58 @@
 # Team1_BE
+<div align="center">
+  <img src="https://github.com/daaoooy/boost-assets/blob/main/assets/thumbnail/default-thumbnail.png" alt="썸네일" width="100%" style="max-width: 1200px; margin-bottom: 30px;"/>
+</div>
+
+<br/>
+<br/>
+<br/>
+<br/>
+
+<div aria-label="why-boost" align="center" >
+  <h1>💙 왜 BOOST인가? 💙</h1>
+  
+  <br/>
+
+  <img src="https://github.com/daaoooy/boost-assets/blob/main/assets/charactor/boo-front.png" alt="boo-front" width="150"/> 
+ 
+  <br/>
+  <br/>
+
+  <div>
+
+| 💡 **B**etter       | 💬 **O**pinion   | 📂 **O**rganize    | ✨ **S**imple         | 🤝 **T**ogether       |
+| ------------------- | ---------------- | ------------------ | --------------------- | --------------------- |
+| 더 나은 성장과 개선 | 솔직한 의견 공유 | 체계적 관리와 정리 | 누구나 쉽게 사용 가능 | 함께 만드는 협업 경험 |
+
+  <p>BOOST는 대학생 팀 프로젝트에서 더 나은 성장을 돕고, 솔직한 의견을 자유롭게 나누며, <br/> 체계적인 관리와 누구나 쉽게 접근 가능한 환경 속에서 팀원 모두가 함께 협업할 수 있게 만들어주는 협업 툴입니다.</p>
+  </div>
+</div>
+
+<br/>
+<br/>
+<br/>
+<br/>
 
 ## 🚀 프로젝트 소개
 
-<div align="center">
-  <img src="https://i.imgur.com/j1KZAFN.png" width="200" />
-</div>
-<div align="center">
-대학생을 위한 팀 프로젝트 매니저 <strong>🚀 Boost</strong>의 <strong>Back-end 프로젝트</strong>입니다!
-</div>
-
-<br/>
-<div align="center">
-  <a href="https://boost.ai.kr" target="_blank">
-    <img src="https://img.shields.io/badge/🌐%20서비스%20바로가기-Boost-blue?style=for-the-badge&logo=google-chrome&logoColor=white"/>
-  </a>
-</div>
-<br/>
+- 대학생 팀 프로젝트를 보다 효율적이고 체계적으로 관리할 수 있도록 돕는 협업 툴입니다.
+- 칸반(Kanban) 보드 형태의 직관적인 인터페이스를 제공하여, 팀원들은 할 일을 쉽게 테스크(Task)로 만들고 담당자를 지정할 수 있습니다.
+- 작업물이 업로드되면 팀원들이 확인하고 승인할 수 있으며, 원하는 부분에 마커를 달아 구체적인 피드백을 남길 수도 있습니다.
+- 복잡한 일정 관리 없이도 팀 프로젝트의 진행 상황을 한눈에 확인하고, 원활한 협업을 경험할 수 있습니다.
 
 <br/>
 
-## 👥 팀 멤버
+## 🗓️ 개발 기간
 
-|                                                                     깃허브                                                                     | 이름  | 역할 |
-|:-------------------------------------------------------------------------------------------------------------------------------------------:|:---:|:--:|
-|  <div align="center">[<img src="https://avatars.githubusercontent.com/u/76112855?v=4" width="60"/>](https://github.com/treasure-sky)</div>  | 이진호 | BE |
-|     <div align="center">[<img src="https://avatars.githubusercontent.com/u/105961568?v=4" width="60"/>](https://github.com/kmwh)</div>      | 김원호 | BE |
-| <div align="center">[<img src="https://avatars.githubusercontent.com/u/135246488?v=4" width="60"/>](https://github.com/seoyoungjin23)</div> | 서영진 | BE |
+2025/09 ~ 2025/11 (약 3개월)
 
 <br/>
 
-## 🏗️ 아키텍처
-<img width="1101" height="798" alt="강원대 BE1팀 아키텍처" src="https://github.com/user-attachments/assets/a4aba8ad-d6e3-439a-8575-a73834c1899c" />
+## 🔗 배포 주소
+🌐 **[BOOST 메인 서비스](https://boost.ai.kr)**  
+📘 **[BOOST API Swagger 문서](https://api.boost.ai.kr/swagger-ui/index.html)**  
 
+<br/>
 <br/>
 
 ## 🛠️ 기술 스택 (Spring Backend)
@@ -53,35 +74,140 @@
 | **협업 도구**     | ![Notion](https://img.shields.io/badge/Notion-000000?style=for-the-badge&logo=notion&logoColor=white) ![Figma](https://img.shields.io/badge/Figma-F24E1E?style=for-the-badge&logo=figma&logoColor=white)                                                                                                                     |
 
 <br/>
+<br/>
+
+## 📐 아키텍처
+<img width="1101" height="798" alt="강원대 BE1팀 아키텍처" src="https://github.com/user-attachments/assets/a4aba8ad-d6e3-439a-8575-a73834c1899c" />
+
+<br/>
+<br/>
+
+## ✨ 주요 기능
+
+### 1. 간편한 카카오 로그인
+<img width="1919" height="976" alt="로그인페이지" src="https://github.com/daaoooy/boost-assets/blob/main/assets/demo/login-page.png" />
+
+<br/>
+<br/>
+
+### 2. 나의 할 일 관리 
+- 개인 칸반보드 형태로 직관적인 작업 생성 및 관리 가능
+- 프로젝트별 개인 테스크를 한눈에 확인하고, 우선순위에 따라 효율적으로 정리
+- 상태(진행 전 / 진행 중 / 검토 중 / 완료) 변경을 통해 작업 현황을 명확하게 관리
+<img width="1918" height="982" alt="나의 할일보드" src="https://github.com/daaoooy/boost-assets/blob/main/assets/demo/my-task-page.gif" />
+<img width="1918" height="982" alt="할 일 생성" src="https://github.com/daaoooy/boost-assets/blob/main/assets/demo/my-task-create.gif" />
+
+
+<br/>
+<br/>
+
+### 3. 프로젝트 할 일 관리
+- 팀 단위 칸반보드를 통해 팀원들과 실시간으로 작업 진행 상황을 공유
+- 각 작업의 담당자, 진행 상태, 마감일 등을 한곳에서 관리하여 협업 효율 극대화
+- 상태 변경 시 팀원들이 즉시 확인할 수 있어 투명한 협업 환경 구축
+
+<img width="1918" height="982" alt="프로젝트 페이지" src="https://github.com/daaoooy/boost-assets/blob/main/assets/demo/project-page.gif" />
+
+<br/>
+<br/>
+
+
+### 4. 손쉬운 프로젝트 생성 / 참여 코드 기반 프로젝트 참여
+- 참여 코드를 통해 안전하게 프로젝트 참여 가능
+- 24시간마다 코드가 리프레시되어 보안 유지
+- 코드 공유로 간편하게 팀원 초대
+<img width="1919" height="982" alt="프로젝트참여생성" src="https://github.com/daaoooy/boost-assets/blob/main/assets/demo/project-create-join.gif" />
+
+<br/>
+<br/>
+
+### 5. 팀원 보드 및 공헌도 시스템
+- 각 팀원의 작업 상태 한눈에 확인 가능
+- 점수가 가장 높은 팀원에게 왕관 아이콘 부여
+- 개인의 기여도를 시각적으로 표시하여 협업 동기 부여
+<img width="1918" height="979" alt="팀원보드" src="https://github.com/daaoooy/boost-assets/blob/main/assets/demo/team-board.gif" />
+
+<br/>
+<br/>
+
+### 6. 팀원 간 작업에 댓글로 피드백
+- 팀원의 작업물에 댓글 가능 
+- 피드백 작성 시 원하는 위치에 마커 지정 후 댓글 작성 기능
+<img width="1919" height="981" alt="image" src="https://github.com/daaoooy/boost-assets/blob/main/assets/demo/comment.gif" />
+
+
+<br/>
+<br/>
+
+### 7. 솔직한 의견 공유를 위한 AI 댓글 변환 기능
+- 거친 표현이나 세게 들릴 수 있는 말투를 AI가 자연스럽고 부드럽게 변환
+- 솔직한 피드백은 그대로 유지하면서, 상대방이 기분 좋게 받아들일 수 있도록 조정
+- 팀 내 건강한 커뮤니케이션 문화 형성에 도움
+<img width="1919" height="981" alt="image" src="https://github.com/daaoooy/boost-assets/blob/main/assets/demo/ai-transform.gif" />
+
+
+<br/>
+<br/>
+
+### 8. 작업물 검토 요청 및 승인 시스템
+- 업로드된 작업물 확인 및 승인
+- 리뷰 요청 시 검토 중으로 할 일이 이동하고, 모든 승인을 다 받으면 완료 처리 가능
+<img width="1919" height="981" alt="image" src="https://github.com/daaoooy/boost-assets/blob/main/assets/demo/review-request.gif" />
+<img width="1919" height="981" alt="image" src="https://github.com/daaoooy/boost-assets/blob/main/assets/demo/task-approve.gif" />
+
+
+<br/>
+<br/>
+
+### 9. 웹 푸시 알림 기능
+- 마감일이 얼마 남지 않은 작업 알림
+- 검토가 필요한 작업 발생 시 알림
+- 모든 승인 완료 시 알림
+- 팀원들이 중요한 일정을 놓치지 않도록 실시간으로 안내
+<img width="400" height="1800" alt="image" src="https://github.com/daaoooy/boost-assets/blob/main/assets/demo/phone-alarm.png" />
+<img width="1919" height="983" alt="image" src="https://github.com/daaoooy/boost-assets/blob/main/assets/demo/computer-alarm.png" />
+
+<br/>
+<br/>
+
+### 10. 사용자 친화적 UI/UX, 아바타 커스터마이징
+- 직관적인 인터페이스로 누구나 쉽게 사용 가능
+- 귀여운 아바타 지정 가능 
+<img width="1919" height="981" alt="아바타 선택 페이지" src="https://github.com/daaoooy/boost-assets/blob/main/assets/demo/avatar-change.gif" />
+
+<br/>
+<br/>
+
+### 11. 프로젝트에서 작업한 파일들을 모아보는 기능
+- 프로젝트를 진행하면서 나온 작업 파일들을 한곳에서 모아보기 가능
+<img width="1919" height="981" alt="image" src="https://github.com/daaoooy/boost-assets/blob/main/assets/demo/file-page.gif" />
+
+<br/>
+<br/>
+
+### 12. 메모 페이지
+- 팀원 간 공유용 자유로운 메모 작성 가능
+- 프로젝트 관련 아이디어, 링크, 참고 자료 정리
+- 간단한 개인 기록용으로도 사용 가능
+<img width="1919" height="983" alt="image" src="https://github.com/daaoooy/boost-assets/blob/main/assets/demo/memo-page.gif" />
+
+<br/>
+<br/>
 
 ## 📊 ERD
 <img width="3276" height="3516" alt="image" src="https://github.com/user-attachments/assets/830aeacd-a3b1-4c07-bbfd-a400f5843e97" />
 
 <br/>
+<br/>
 
-## ✨ 주요 기능
+## ⚙️ CI/CD 파이프라인
 
-> - **참여코드 기반 프로젝트 참여**
->   - 팀원이 **참여코드를 입력**해서 간편하게 프로젝트에 가입 가능
+<br/>
+<br/>
 
-> - **칸반 보드 기반 업무 관리**
->   - 작업 상태를 **`할 일 → 진행중 → 검토중 → 완료`** 4단계로 관리
->   - 프로젝트별 할 일과 진행 상황, 팀원별 진행 업무를 한눈에 확인 가능
+## 📂 폴더 구조
 
-> - **검토·승인 기반 워크플로우**
->   - 각 작업마다 **필요 검토 인원 수 설정** 가능
->   - 설정한 인원이 모두 검토·승인해야만 다음 단계로 상태 변경
->   - 실제로 검토된 작업만 **‘완료’ 상태로 이동**되도록 보장
-
-> - **웹 푸시 알림 & 모바일 연동**
->   - QR 코드를 통해 **모바일과 프로젝트를 연동**하여 웹 푸시 알림 수신 가능
->   - 마감 임박 작업이나 **검토가 필요한 상태로 변경**되었을 때 등, 협업이 필요한 시점에 적절한 알림 발송
-
-> - **코멘트/AI 피드백 시스템**
->   - 할 일 등록/수정 시 **파일 업로드** 지원
->   - 업로드된 파일 위에 **핀을 찍어 특정 위치에 코멘트 작성** 가능해, 결과물 위에서 바로 피드백 공유
->   - 일반/익명 댓글 모두 지원하며, **필요시 AI가 댓글 표현을 부드럽게 순화**해 보다 안정적인 피드백 전달을 돕는 **협업 친화적인 코멘트 시스템**
-
+<br/>
 <br/>
 
 ## 🧪 Test Coverage (Jacoco)
@@ -90,22 +216,91 @@
   <img width="1205" height="797" alt="image" src="https://github.com/user-attachments/assets/32cb5869-d0c8-4742-941c-dc1ab59468e9" />
 
 > Jacoco를 활용하여 테스트 코드 커버리지를 측정하고 관리하여 코드의 품질을 향상시켰고 84%의 테스트 커버리지를 달성하였습니다.
-> - 단위 테스트, E2E 테스트 기반 커버리지 측정
-> - 커버리지 리포트 자동 생성 (`build/reports/jacoco/test/html`)
+> - 단위 테스트 기반 커버리지 측정
+
+<br/>
+<br/>
+
+## 🔃 협업 룰, 컨벤션, 브랜치 전략 (Rule, Convention, Git Branch Strategy)
+
+### 협업 룰
+
+- 작업 시에는 반드시 **이슈 템플릿**에 맞게 이슈를 생성하고 작업을 진행한다.
+- PR 제목은 **커밋 컨벤션 + 간단 설명** 형식
+- 코드 리뷰 시 **Approve / Request Changes**로 피드백
+- 기능 구현 시 **작은 단위로 commit & PR**
+- 코드 스타일과 포맷은 **Google Java style guide** 기준 준수
 
 <br/>
 
-## ⚙️ 프로젝트 초기 설정
+### 리뷰 규칙 (Pn 룰)
 
-https://github.com/google/styleguide/blob/gh-pages/intellij-java-google-style.xml
+```
+### 😊 리뷰 규칙을 지킵시다
+코드 리뷰는 `Pn`룰에 따라 작성하기.
+Reviewer가 피드백을 남길 때 Assignee에게 얼마나 해당 피드백에 대해 강조하고 싶은 지 표현하기 위한 규칙입니다.
+- `P1` : 꼭 반영해 주세요 (Request Changes) - 이슈가 발생하거나 취약점이 발견되는 케이스 등
+- `P2` : 반영을 적극적으로 고려해 주시면 좋을 것 같아요 (Comment)
+- `P3` : 이런 방법도 있을 것 같아요~ 등의 사소한 의견입니다 (Chore)
+```
 
-- 위 링크에서 intellij-java-google-style.xml 을 다운받는다.
-- intellij의 Settings > Editor > Code Style로 들어간다.
-- Import Scheme > IntelliJ IDEA code style xml을 선택한다.
-- 다운 받은 intellij-java-google-style.xml 을 선택한다.
-- Editor > Code Style > JAVA 에서 Tab size를 4로 변경한다.
-- Settigs > Tools > Actions on save 에서 Reformat code 및 Optimize imports를 활성화 한다.
+<br/>
 
-### ⚠️ 유의 사항
+### 커밋 컨벤션
 
-반드시 저장을 해서 코드를 reformat 및 import 정리를 한 뒤 커밋한다.
+> [Gitmoji](https://gitmoji.dev/)
+
+```
+<Gitmoji>(#이슈번호) <작업 요약>
+
+<상세 설명>
+```
+
+| 이모지 | 의미                  | 예시                            |
+| ------ | --------------------- | ----------------------------    |
+| ✨     | 새로운 기능 추가      | `✨ 팀원 API 추가`              |
+| 🐛     | 버그 수정             | `🐛 알람 기능 버그 수정`        |
+| ♻️     | 리팩토링              | `♻️ 메소드 분리`                |
+| 🎨     | 코드 스타일 변경      | `🎨 코드 스타일 적용`           |
+| 📝     | 문서 파일 추가 및 수정| `📝 README 업데이트`            |
+| ✏️     | 단순 오타 수정        | `✏️ typo 수정`                  |
+| ✅     | 테스트 추가           | `✅ TaskDetail 테스트 추가`     |
+| 🔥     | 코드 제거             | `🔥 사용하지 않는 메소드 제거`  |
+| 🩹     | 단순한 에러 수정      | `🩹 API 응답 메시지 오류 수정`  |
+| 🚑️     | 핫픽스                | `🚑️ 특정 에러 핫픽스`           |
+| 🔧     | 설정 변경             | `🔧 Config 파일 수정`           |
+| 🚀     | 배포 관련 수정        | `🚀 CI/CD workflow 작성`        |
+
+<br/>
+
+### **브랜치 전략**
+
+| 브랜치                  | 용도               | 설명                            |
+| ----------------------- | ------------------ | ------------------------------- |
+| `main`                  | 배포용             | 항상 안정된 버전 유지           |
+| `develop`               | 개발 통합          | 기능 완료 후 merge              |
+| `feat/#이슈-<이름>`  | 기능 개발          | 새로운 기능 개발 시 사용        |
+| `refactor/#이슈-<이름>` | 코드 리팩토링      | 코드 리팩토링 시 사용           |
+| `fix/#이슈-<이름>`      | 버그 수정          | 버그 발생 해결 시 사용          |
+| `deploy/#이슈-<이름>`   | 배포 관련          | 배포 관련 작업 시 사용          |
+
+> 💡 PR은 반드시 리뷰 후 merge 진행
+
+<br/>
+<br/>
+
+
+## 👥 BOOST 팀원 소개
+
+<div align="center">
+
+| **이진호** | **김원호** | **김혜민** | **서영진** | **유다연** |
+| :------: |  :------: | :------: | :------: | :------: |
+| [<img src="https://github.com/daaoooy/boost-assets/blob/main/assets/members-avatar/be-ljh.png" height=150 width=150> <br/> @treasure-sky](https://github.com/treasure-sky) | [<img src="https://github.com/daaoooy/boost-assets/blob/main/assets/members-avatar/be-kwh.png" height=150 width=150> <br/> @kmwh](https://github.com/kmwh) | [<img src="https://github.com/daaoooy/boost-assets/blob/main/assets/members-avatar/fe-khm.png" height=150 width=150> <br/> @hyemomo](https://github.com/hyemomo) | [<img src="https://github.com/daaoooy/boost-assets/blob/main/assets/members-avatar/bg-syj.png" height=150 width=150> <br/> @seoyoungjin23](https://github.com/seoyoungjin23) | [<img src="https://github.com/daaoooy/boost-assets/blob/main/assets/members-avatar/fe-ydy.png" height=150 width=150> <br/> @daaoooy](https://github.com/daaoooy) |
+| **Backend** | **Backend** | **Frontend** | **Backend** | **Frontend** |
+
+</div>
+
+<br/>
+<br/>
+<br/>
