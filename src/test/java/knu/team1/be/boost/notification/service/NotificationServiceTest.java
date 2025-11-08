@@ -39,6 +39,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Pageable;
@@ -131,6 +132,33 @@ class NotificationServiceTest {
                 () -> notificationService.getNotifications(cursor.getId(), 10, userId))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_CURSOR);
+        }
+    }
+
+    @Nested
+    @DisplayName("알림 개수 조회")
+    class GetNotificationCount {
+
+        @Test
+        @DisplayName("알림 개수 조회 성공 - 정상 개수 반환")
+        void success() {
+            given(memberRepository.findById(userId)).willReturn(Optional.of(member));
+            given(notificationRepository.countByMember(member)).willReturn(5L);
+            given(notificationRepository.countByMemberAndIsReadFalse(member)).willReturn(2L);
+
+            NotificationCountResponseDto res = notificationService.getNotificationCount(userId);
+
+            assertThat(res.totalCount()).isEqualTo(5);
+            assertThat(res.unreadCount()).isEqualTo(2);
+        }
+
+        @Test
+        @DisplayName("알림 개수 조회 실패 - MEMBER_NOT_FOUND")
+        void fail_memberNotFound() {
+            given(memberRepository.findById(userId)).willReturn(Optional.empty());
+            assertThatThrownBy(() -> notificationService.getNotificationCount(userId))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.MEMBER_NOT_FOUND);
         }
     }
 
@@ -265,7 +293,7 @@ class NotificationServiceTest {
 
             given(projectRepository.findByIdWithMemberships(projectId)).willReturn(
                 Optional.of(project));
-            given(taskRepository.findById(task.getId())).willReturn(Optional.of(task));
+            given(taskRepository.findByIdWithAssignees(task.getId())).willReturn(Optional.of(task));
 
             notificationService.notifyTaskReview(projectId, task.getId(),
                 NotificationType.REVIEW);
@@ -290,9 +318,11 @@ class NotificationServiceTest {
         @Test
         @DisplayName("작업 리뷰 알림 전송 실패 - TASK_NOT_FOUND")
         void fail_taskNotFound() {
-            given(projectRepository.findByIdWithMemberships(projectId)).willReturn(
-                Optional.of(project));
-            given(taskRepository.findById(any())).willReturn(Optional.empty());
+            given(projectRepository.findByIdWithMemberships(projectId))
+                .willReturn(Optional.of(project));
+            given(taskRepository.findByIdWithAssignees(any()))
+                .willReturn(Optional.empty());
+
             assertThatThrownBy(
                 () -> notificationService.notifyTaskReview(projectId, UUID.randomUUID(),
                     NotificationType.REVIEW))
@@ -317,7 +347,7 @@ class NotificationServiceTest {
 
             given(projectRepository.findByIdWithMemberships(projectId)).willReturn(
                 Optional.of(project));
-            given(taskRepository.findById(task.getId())).willReturn(Optional.of(task));
+            given(taskRepository.findByIdWithAssignees(task.getId())).willReturn(Optional.of(task));
 
             notificationService.notifyTaskApprove(projectId, task.getId());
 
@@ -339,27 +369,177 @@ class NotificationServiceTest {
     }
 
     @Nested
-    @DisplayName("알림 개수 조회")
-    class GetNotificationCount {
+    @DisplayName("댓글 생성 알림 전송")
+    class NotifyCommentCreated {
 
         @Test
-        @DisplayName("알림 개수 조회 성공 - 정상 개수 반환")
-        void success() {
-            given(memberRepository.findById(userId)).willReturn(Optional.of(member));
-            given(notificationRepository.countByMember(member)).willReturn(5L);
-            given(notificationRepository.countByMemberAndIsReadFalse(member)).willReturn(2L);
+        @DisplayName("댓글 생성 알림 전송 성공 - 비익명 댓글 (작성자 이름 노출)")
+        void success_nonAnonymous() {
+            // given
+            UUID taskId = UUID.randomUUID();
+            Task task = Fixtures.task(taskId, project);
+            Member commenter = Fixtures.member(UUID.randomUUID(), "홍길동");
+            Member assignee = Fixtures.member(UUID.randomUUID(), "담당자");
+            task.getAssignees().add(assignee);
+            project.getProjectMemberships().add(Fixtures.projectMembership(project, assignee));
 
-            NotificationCountResponseDto res = notificationService.getNotificationCount(userId);
+            given(projectRepository.findByIdWithMemberships(projectId))
+                .willReturn(Optional.of(project));
+            given(taskRepository.findByIdWithAssignees(taskId))
+                .willReturn(Optional.of(task));
+            given(memberRepository.findById(commenter.getId()))
+                .willReturn(Optional.of(commenter));
 
-            assertThat(res.totalCount()).isEqualTo(5);
-            assertThat(res.unreadCount()).isEqualTo(2);
+            // when
+            notificationService.notifyCommentCreated(
+                projectId, taskId, commenter.getId(),
+                "테스트 댓글입니다.", false, null
+            );
+
+            // then
+            ArgumentCaptor<String> messageCaptor = ArgumentCaptor.forClass(String.class);
+            verify(notificationSenderService).saveAndSendNotification(
+                eq(assignee),
+                eq(NotificationType.COMMENT_CREATED.title()),
+                messageCaptor.capture()
+            );
+
+            String sentMessage = messageCaptor.getValue();
+            assertThat(sentMessage).contains("홍길동");
         }
 
         @Test
-        @DisplayName("알림 개수 조회 실패 - MEMBER_NOT_FOUND")
+        @DisplayName("댓글 생성 알림 전송 성공 - 익명 + 페르소나 없음 (익명으로 표시)")
+        void success_anonymousNoPersona() {
+            UUID taskId = UUID.randomUUID();
+            Task task = Fixtures.task(taskId, project);
+            Member commenter = Fixtures.member(UUID.randomUUID(), "익명테스터");
+            Member assignee = Fixtures.member(UUID.randomUUID(), "담당자");
+            task.getAssignees().add(assignee);
+            project.getProjectMemberships().add(Fixtures.projectMembership(project, assignee));
+
+            given(projectRepository.findByIdWithMemberships(projectId))
+                .willReturn(Optional.of(project));
+            given(taskRepository.findByIdWithAssignees(taskId))
+                .willReturn(Optional.of(task));
+            given(memberRepository.findById(commenter.getId()))
+                .willReturn(Optional.of(commenter));
+
+            notificationService.notifyCommentCreated(
+                projectId, taskId, commenter.getId(),
+                "익명 댓글입니다.", true, null
+            );
+
+            ArgumentCaptor<String> messageCaptor = ArgumentCaptor.forClass(String.class);
+            verify(notificationSenderService).saveAndSendNotification(
+                eq(assignee),
+                eq(NotificationType.COMMENT_CREATED.title()),
+                messageCaptor.capture()
+            );
+
+            String sentMessage = messageCaptor.getValue();
+            assertThat(sentMessage).contains("익명");
+        }
+
+        @Test
+        @DisplayName("댓글 생성 알림 전송 성공 - 익명 + 페르소나 지정 (BOO로 표시)")
+        void success_anonymousWithPersona() {
+            UUID taskId = UUID.randomUUID();
+            Task task = Fixtures.task(taskId, project);
+            Member commenter = Fixtures.member(UUID.randomUUID(), "작성자");
+            Member assignee = Fixtures.member(UUID.randomUUID(), "담당자");
+            task.getAssignees().add(assignee);
+            project.getProjectMemberships().add(Fixtures.projectMembership(project, assignee));
+
+            given(projectRepository.findByIdWithMemberships(projectId))
+                .willReturn(Optional.of(project));
+            given(taskRepository.findByIdWithAssignees(taskId))
+                .willReturn(Optional.of(task));
+            given(memberRepository.findById(commenter.getId()))
+                .willReturn(Optional.of(commenter));
+
+            notificationService.notifyCommentCreated(
+                projectId, taskId, commenter.getId(),
+                "익명 댓글입니다.", true, "BOO"
+            );
+
+            ArgumentCaptor<String> messageCaptor = ArgumentCaptor.forClass(String.class);
+            verify(notificationSenderService).saveAndSendNotification(
+                eq(assignee),
+                eq(NotificationType.COMMENT_CREATED.title()),
+                messageCaptor.capture()
+            );
+
+            String sentMessage = messageCaptor.getValue();
+            assertThat(sentMessage).contains("BOO");
+        }
+
+
+        @Test
+        @DisplayName("댓글 생성 알림 전송 실패 - PROJECT_NOT_FOUND")
+        void fail_projectNotFound() {
+            given(projectRepository.findByIdWithMemberships(projectId))
+                .willReturn(Optional.empty());
+
+            assertThatThrownBy(() ->
+                notificationService.notifyCommentCreated(
+                    projectId,
+                    UUID.randomUUID(),
+                    UUID.randomUUID(),
+                    "내용",
+                    false,
+                    null
+                )
+            )
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.PROJECT_NOT_FOUND);
+        }
+
+        @Test
+        @DisplayName("댓글 생성 알림 전송 실패 - TASK_NOT_FOUND")
+        void fail_taskNotFound() {
+            given(projectRepository.findByIdWithMemberships(projectId))
+                .willReturn(Optional.of(project));
+            given(taskRepository.findByIdWithAssignees(any()))
+                .willReturn(Optional.empty());
+
+            assertThatThrownBy(() ->
+                notificationService.notifyCommentCreated(
+                    projectId,
+                    UUID.randomUUID(),
+                    UUID.randomUUID(),
+                    "내용",
+                    false,
+                    null
+                )
+            )
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.TASK_NOT_FOUND);
+        }
+
+        @Test
+        @DisplayName("댓글 생성 알림 전송 실패 - MEMBER_NOT_FOUND")
         void fail_memberNotFound() {
-            given(memberRepository.findById(userId)).willReturn(Optional.empty());
-            assertThatThrownBy(() -> notificationService.getNotificationCount(userId))
+            UUID taskId = UUID.randomUUID();
+            Task task = Fixtures.task(taskId, project);
+
+            given(projectRepository.findByIdWithMemberships(projectId))
+                .willReturn(Optional.of(project));
+            given(taskRepository.findByIdWithAssignees(taskId))
+                .willReturn(Optional.of(task));
+            given(memberRepository.findById(any()))
+                .willReturn(Optional.empty());
+
+            assertThatThrownBy(() ->
+                notificationService.notifyCommentCreated(
+                    projectId,
+                    taskId,
+                    UUID.randomUUID(),
+                    "내용",
+                    false,
+                    null
+                )
+            )
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.MEMBER_NOT_FOUND);
         }

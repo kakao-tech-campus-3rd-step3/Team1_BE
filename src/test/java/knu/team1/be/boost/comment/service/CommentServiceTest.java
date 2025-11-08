@@ -3,6 +3,8 @@ package knu.team1.be.boost.comment.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
@@ -21,6 +23,7 @@ import knu.team1.be.boost.comment.dto.FileInfoRequestDto;
 import knu.team1.be.boost.comment.entity.Comment;
 import knu.team1.be.boost.comment.entity.Persona;
 import knu.team1.be.boost.comment.entity.vo.FileInfo;
+import knu.team1.be.boost.comment.event.CommentEventPublisher;
 import knu.team1.be.boost.comment.repository.CommentRepository;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
@@ -55,6 +58,8 @@ class CommentServiceTest {
     private FileRepository fileRepository;
     @Mock
     private AccessPolicy accessPolicy;
+    @Mock
+    private CommentEventPublisher commentEventPublisher;
 
     // 테스트용 상수 데이터
     private final UUID projectId = UUID.randomUUID();
@@ -223,6 +228,53 @@ class CommentServiceTest {
 
         verify(fileRepository, times(1)).findById(fileId);
         verify(commentRepository, times(1)).save(any(Comment.class));
+    }
+
+    @Test
+    @DisplayName("createComment: 댓글 생성 시 CommentEventPublisher 호출됨")
+    void createComment_PublishesEvent() {
+        // given
+        CommentCreateRequestDto requestDto = new CommentCreateRequestDto(
+            "이벤트 테스트 댓글",
+            Persona.BOO,
+            false,
+            null
+        );
+
+        Comment savedComment = Comment.builder()
+            .id(UUID.randomUUID())
+            .member(testMember)
+            .task(testTask)
+            .content(requestDto.content())
+            .persona(requestDto.persona())
+            .isAnonymous(requestDto.isAnonymous())
+            .createdAt(LocalDateTime.now())
+            .updatedAt(LocalDateTime.now())
+            .build();
+
+        doNothing().when(accessPolicy).ensureProjectMember(projectId, memberId);
+        when(taskRepository.findById(taskId)).thenReturn(Optional.of(testTask));
+        when(memberRepository.findById(memberId)).thenReturn(Optional.of(testMember));
+        when(commentRepository.save(any(Comment.class))).thenReturn(savedComment);
+        doNothing().when(commentEventPublisher)
+            .publishCommentCreatedEvent(any(), any(), any(), any(), anyBoolean(), any());
+
+        // when
+        CommentResponseDto result = commentService.createComment(projectId, taskId, memberId,
+            requestDto);
+
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.content()).isEqualTo("이벤트 테스트 댓글");
+
+        verify(commentEventPublisher, times(1)).publishCommentCreatedEvent(
+            eq(projectId),
+            eq(taskId),
+            eq(memberId),
+            eq(requestDto.content()),
+            eq(requestDto.isAnonymous()),
+            eq(requestDto.persona() != null ? requestDto.persona().name() : null)
+        );
     }
 
     @Test
