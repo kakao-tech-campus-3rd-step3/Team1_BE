@@ -30,7 +30,7 @@
 <br/>
 
 ## 🏗️ 아키텍처
-![마지막](https://github.com/user-attachments/assets/b41ee23d-0e2b-4100-9964-185109079706)
+<img width="1101" height="798" alt="강원대 BE1팀 아키텍처" src="https://github.com/user-attachments/assets/a4aba8ad-d6e3-439a-8575-a73834c1899c" />
 
 <br/>
 
