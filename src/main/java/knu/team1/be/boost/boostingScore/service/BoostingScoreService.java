@@ -1,6 +1,7 @@
 package knu.team1.be.boost.boostingScore.service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -65,7 +66,7 @@ public class BoostingScoreService {
             ))
             .toList();
 
-        List<BoostingScoreResponseDto> result = new java.util.ArrayList<>();
+        List<BoostingScoreResponseDto> result = new ArrayList<>();
 
         int currentRank = 1;
         Integer previousScore = null;
