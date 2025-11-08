@@ -1,5 +1,6 @@
 package knu.team1.be.boost.notification.event;
 
+import knu.team1.be.boost.comment.event.dto.CommentCreatedEvent;
 import knu.team1.be.boost.notification.event.dto.NotificationSavedEvent;
 import knu.team1.be.boost.notification.event.dto.NotificationType;
 import knu.team1.be.boost.notification.service.NotificationService;
@@ -38,6 +39,17 @@ public class NotificationEventHandler {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleTaskApproveEvent(TaskApproveEvent event) {
         notificationService.notifyTaskApprove(event.projectId(), event.taskId());
+    }
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleCommentCreatedEvent(CommentCreatedEvent event) {
+        notificationService.notifyCommentCreated(
+            event.projectId(),
+            event.taskId(),
+            event.commenterId(),
+            event.commentContent()
+        );
     }
 
     @Async
