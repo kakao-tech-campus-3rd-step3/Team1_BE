@@ -3,6 +3,8 @@ package knu.team1.be.boost.comment.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
@@ -255,19 +257,23 @@ class CommentServiceTest {
         when(memberRepository.findById(memberId)).thenReturn(Optional.of(testMember));
         when(commentRepository.save(any(Comment.class))).thenReturn(savedComment);
         doNothing().when(commentEventPublisher)
-            .publishCommentCreatedEvent(any(), any(), any(), any());
+            .publishCommentCreatedEvent(any(), any(), any(), any(), anyBoolean(), any());
 
+        // when
         CommentResponseDto result = commentService.createComment(projectId, taskId, memberId,
             requestDto);
 
+        // then
         assertThat(result).isNotNull();
         assertThat(result.content()).isEqualTo("이벤트 테스트 댓글");
 
         verify(commentEventPublisher, times(1)).publishCommentCreatedEvent(
-            projectId,
-            taskId,
-            memberId,
-            requestDto.content()
+            eq(projectId),
+            eq(taskId),
+            eq(memberId),
+            eq(requestDto.content()),
+            eq(requestDto.isAnonymous()),
+            eq(requestDto.persona() != null ? requestDto.persona().name() : null)
         );
     }
 
