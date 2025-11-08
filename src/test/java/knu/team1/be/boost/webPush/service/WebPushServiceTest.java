@@ -163,16 +163,16 @@ class WebPushServiceTest {
     class RegisterSubscription {
 
         @Test
-        @DisplayName("푸시 구독 등록 성공 - CONNECTED 상태에서 REGISTERED로 변경 후 저장")
-        void success() {
+        @DisplayName("새로운 구독 생성 성공 (CONNECTED → REGISTERED)")
+        void success_newSubscription() {
             String token = UUID.randomUUID().toString();
-            WebPushSession existing = Fixtures.session(token, userId,
-                WebPushSessionStatus.CONNECTED, "device-1");
+            WebPushSession existing =
+                Fixtures.session(token, userId, WebPushSessionStatus.CONNECTED, "device-1");
             given(cacheService.getSession(token)).willReturn(existing);
 
             Member member = Fixtures.member(userId, "테스트유저");
             given(memberRepository.findById(userId)).willReturn(Optional.of(member));
-            given(webPushRepository.findByMemberIdAndDeviceInfo(userId, "device-1"))
+            given(webPushRepository.findByMemberIdAndDeviceInfoIncludingDeleted(userId, "device-1"))
                 .willReturn(Optional.empty());
             given(webPushRepository.save(any(WebPushSubscription.class)))
                 .willAnswer(inv -> inv.getArgument(0));
@@ -187,27 +187,30 @@ class WebPushServiceTest {
         }
 
         @Test
-        @DisplayName("푸시 구독 등록 성공 - 이미 등록된 디바이스면 updateSubscription 호출")
+        @DisplayName("기존 구독 존재 → updateSubscription 호출")
         void success_updateExistingSubscription() {
             String token = UUID.randomUUID().toString();
-            WebPushSession existing = Fixtures.session(token, userId,
-                WebPushSessionStatus.CONNECTED, "device-1");
+            WebPushSession existing =
+                Fixtures.session(token, userId, WebPushSessionStatus.CONNECTED, "device-1");
             given(cacheService.getSession(token)).willReturn(existing);
 
             Member member = Fixtures.member(userId, "비버");
             given(memberRepository.findById(userId)).willReturn(Optional.of(member));
 
             WebPushSubscription subscription = mock(WebPushSubscription.class);
-            given(webPushRepository.findByMemberIdAndDeviceInfo(userId, "device-1"))
+            given(webPushRepository.findByMemberIdAndDeviceInfoIncludingDeleted(userId, "device-1"))
                 .willReturn(Optional.of(subscription));
 
             WebPushRegisterDto req = Fixtures.reqRegister(token);
-
             webPushService.registerSubscription(req);
 
-            verify(subscription).updateSubscription(
-                eq(req.webPushUrl()), eq(req.publicKey()), eq(req.authKey())
-            );
+            verify(subscription)
+                .updateSubscription(
+                    eq(req.token()),
+                    eq(req.webPushUrl()),
+                    eq(req.publicKey()),
+                    eq(req.authKey())
+                );
             verify(webPushRepository, never()).save(any());
         }
 

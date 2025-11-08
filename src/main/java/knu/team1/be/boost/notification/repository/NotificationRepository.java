@@ -43,4 +43,12 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
         """
     )
     void markAllAsReadByMember(@Param("member") Member member);
+
+    @Modifying
+    @Query("""
+        UPDATE Notification n
+        SET n.deleted = true, n.deletedAt = CURRENT_TIMESTAMP
+        WHERE n.member.id = :memberId AND n.deleted = false
+        """)
+    void softDeleteAllByMemberId(@Param("memberId") UUID memberId);
 }

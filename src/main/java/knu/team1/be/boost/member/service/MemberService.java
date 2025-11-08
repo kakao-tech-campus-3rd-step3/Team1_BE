@@ -9,8 +9,10 @@ import knu.team1.be.boost.member.dto.MemberNotificationResponseDto;
 import knu.team1.be.boost.member.dto.MemberResponseDto;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
+import knu.team1.be.boost.notification.repository.NotificationRepository;
 import knu.team1.be.boost.projectMembership.entity.ProjectRole;
 import knu.team1.be.boost.projectMembership.repository.ProjectMembershipRepository;
+import knu.team1.be.boost.webPush.repository.WebPushRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final WebPushRepository webPushRepository;
+    private final NotificationRepository notificationRepository;
     private final ProjectMembershipRepository projectMembershipRepository;
 
     public MemberResponseDto getMember(UUID memberId) {
@@ -83,6 +87,8 @@ public class MemberService {
         }
 
         projectMembershipRepository.softDeleteAllByMemberId(memberId);
+        notificationRepository.softDeleteAllByMemberId(memberId);
+        webPushRepository.softDeleteAllByMemberId(memberId);
 
         memberRepository.delete(member);
     }
