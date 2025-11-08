@@ -130,6 +130,8 @@ class TaskServiceTest {
                 .willReturn(
                     List.of(Fixtures.tag(t1, "태그1", project), Fixtures.tag(t2, "태그2", project)));
 
+            given(projectMembershipRepository.countByProjectId(projectId)).willReturn(4);
+
             TaskCreateRequestDto request = Fixtures.reqCreate(
                 "1회차 기술 멘토링 피드백 반영",
                 "기술 멘토링에서 나온 멘토님의 피드백을 반영한다.",
@@ -257,6 +259,84 @@ class TaskServiceTest {
             verify(taskRepository, never()).save(any());
         }
 
+        @Test
+        @DisplayName("할 일 생성 성공 - 필수 리뷰어 수가 가능한 리뷰어 수와 같음")
+        void test5() {
+            // given
+            given(projectRepository.findById(projectId)).willReturn(Optional.of(project));
+
+            UUID m1 = UUID.randomUUID();
+            UUID m2 = UUID.randomUUID();
+            given(memberRepository.findAllById(anyList()))
+                .willReturn(List.of(Fixtures.member(m1, "영진"), Fixtures.member(m2, "비버")));
+
+            doNothing().when(accessPolicy)
+                .ensureProjectMember(eq(projectId), eq(userId));
+            doNothing().when(accessPolicy)
+                .ensureAssigneesAreProjectMembers(eq(projectId), any(Set.class));
+
+            given(projectMembershipRepository.countByProjectId(projectId)).willReturn(4);
+
+            TaskCreateRequestDto request = Fixtures.reqCreate(
+                "리뷰어 수 경계 테스트",
+                "필수 리뷰어 수가 가능한 리뷰어 수와 같을 때 성공",
+                TaskStatus.TODO,
+                Fixtures.DUE,
+                false,
+                2,
+                List.of(),
+                List.of(m1, m2)
+            );
+
+            given(taskRepository.save(any(Task.class))).willAnswer(
+                invocation -> invocation.getArgument(0));
+
+            // when
+            TaskResponseDto res = taskService.createTask(projectId, request, user);
+
+            // then
+            assertThat(res.requiredReviewerCount()).isEqualTo(2);
+            verify(taskRepository).save(any(Task.class));
+        }
+
+        @Test
+        @DisplayName("할 일 생성 실패 - 필수 리뷰어 수가 가능한 리뷰어 수보다 많음")
+        void test6() {
+            // given
+            given(projectRepository.findById(projectId)).willReturn(Optional.of(project));
+
+            UUID m1 = UUID.randomUUID();
+            UUID m2 = UUID.randomUUID();
+            given(memberRepository.findAllById(anyList()))
+                .willReturn(List.of(Fixtures.member(m1, "영진"), Fixtures.member(m2, "비버")));
+
+            doNothing().when(accessPolicy)
+                .ensureProjectMember(eq(projectId), eq(userId));
+            doNothing().when(accessPolicy)
+                .ensureAssigneesAreProjectMembers(eq(projectId), any(Set.class));
+
+            given(projectMembershipRepository.countByProjectId(projectId)).willReturn(3);
+
+            TaskCreateRequestDto request = Fixtures.reqCreate(
+                "리뷰어 수 초과 테스트",
+                "필수 리뷰어 수가 가능한 리뷰어 수보다 많으면 예외 발생",
+                TaskStatus.TODO,
+                Fixtures.DUE,
+                false,
+                2,
+                List.of(),
+                List.of(m1, m2)
+            );
+
+            // when & then
+            assertThatThrownBy(() -> taskService.createTask(projectId, request, user))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode",
+                    ErrorCode.INVALID_REQUIRED_REVIEWER_COUNT);
+
+            verify(taskRepository, never()).save(any());
+        }
+
     }
 
     @Nested
@@ -279,6 +359,8 @@ class TaskServiceTest {
             UUID t1 = UUID.randomUUID();
             given(tagRepository.findAllById(anyList()))
                 .willReturn(List.of(Fixtures.tag(t1, "태그1", project)));
+
+            given(projectMembershipRepository.countByProjectId(projectId)).willReturn(4);
 
             doNothing().when(accessPolicy)
                 .ensureProjectMember(eq(projectId), eq(userId));
@@ -419,6 +501,8 @@ class TaskServiceTest {
             given(commentRepository.countByTaskId(taskId)).willReturn(5L);
             given(fileRepository.countByTaskId(taskId)).willReturn(3L);
 
+            given(projectMembershipRepository.countByProjectId(projectId)).willReturn(4);
+
             TaskUpdateRequestDto request = Fixtures.reqUpdate(
                 "수정제목",
                 "수정설명",
@@ -473,6 +557,48 @@ class TaskServiceTest {
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.TAG_NOT_IN_PROJECT);
 
+            verify(commentRepository, never()).countByTaskId(any());
+            verify(fileRepository, never()).countByTaskId(any());
+        }
+
+        @Test
+        @DisplayName("할 일 수정 실패 - 필수 리뷰어 수가 가능한 리뷰어 수보다 많음")
+        void testInvalidRequiredReviewerCount() {
+            // given
+            UUID taskId = baseTask.getId();
+
+            given(projectRepository.findById(projectId)).willReturn(Optional.of(project));
+            given(taskRepository.findById(taskId)).willReturn(Optional.of(baseTask));
+
+            doNothing().when(accessPolicy).ensureProjectMember(eq(projectId), eq(userId));
+            doNothing().when(accessPolicy).ensureTaskAssignee(eq(taskId), eq(userId));
+            doNothing().when(accessPolicy).ensureAssigneesAreProjectMembers(eq(projectId), any());
+
+            given(projectMembershipRepository.countByProjectId(projectId)).willReturn(3);
+
+            UUID m1 = UUID.randomUUID();
+            UUID m2 = UUID.randomUUID();
+            given(memberRepository.findAllById(anyList()))
+                .willReturn(List.of(Fixtures.member(m1, "영진"), Fixtures.member(m2, "비버")));
+
+            TaskUpdateRequestDto request = Fixtures.reqUpdate(
+                "리뷰어 수 초과 수정",
+                "필수 리뷰어 수가 가능한 리뷰어 수보다 많으면 예외 발생",
+                TaskStatus.TODO,
+                Fixtures.DUE2,
+                false,
+                2,
+                List.of(),
+                List.of(m1, m2)
+            );
+
+            // when & then
+            assertThatThrownBy(() -> taskService.updateTask(projectId, taskId, request, user))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode",
+                    ErrorCode.INVALID_REQUIRED_REVIEWER_COUNT);
+
+            verify(taskRepository, never()).save(any());
             verify(commentRepository, never()).countByTaskId(any());
             verify(fileRepository, never()).countByTaskId(any());
         }
