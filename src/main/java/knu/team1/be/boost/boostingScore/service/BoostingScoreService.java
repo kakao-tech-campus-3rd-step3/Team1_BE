@@ -1,6 +1,8 @@
 package knu.team1.be.boost.boostingScore.service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import knu.team1.be.boost.boostingScore.config.BoostingScoreConfig;
@@ -49,12 +51,39 @@ public class BoostingScoreService {
 
         List<BoostingScore> scores = boostingScoreRepository.findLatestByProjectId(projectId);
 
-        return scores.stream()
-            .map(score -> BoostingScoreResponseDto.from(
-                score,
-                scores.indexOf(score) + 1
+        return calculateRankingsWithTies(scores);
+    }
+
+    private List<BoostingScoreResponseDto> calculateRankingsWithTies(List<BoostingScore> scores) {
+        if (scores.isEmpty()) {
+            return List.of();
+        }
+
+        List<BoostingScore> sortedScores = scores.stream()
+            .sorted(Comparator.comparing(
+                BoostingScore::getTotalScore,
+                Comparator.nullsLast(Comparator.reverseOrder())
             ))
             .toList();
+
+        List<BoostingScoreResponseDto> result = new ArrayList<>();
+
+        int currentRank = 1;
+        Integer previousScore = null;
+
+        for (int i = 0; i < sortedScores.size(); i++) {
+            BoostingScore score = sortedScores.get(i);
+            Integer totalScore = score.getTotalScore();
+
+            if (previousScore != null && !previousScore.equals(totalScore)) {
+                currentRank = i + 1;
+            }
+
+            result.add(BoostingScoreResponseDto.from(score, currentRank));
+            previousScore = totalScore;
+        }
+
+        return result;
     }
 
     @Transactional
