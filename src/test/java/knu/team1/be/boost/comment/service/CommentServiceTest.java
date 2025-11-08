@@ -271,7 +271,6 @@ class CommentServiceTest {
         );
     }
 
-
     @Test
     @DisplayName("createComment: 댓글 생성 실패 - FileInfo의 File ID 없음")
     void createComment_Fail_FileNotFoundInFileInfo() {
