@@ -1,6 +1,7 @@
 package knu.team1.be.boost.boostingScore.service;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import knu.team1.be.boost.boostingScore.config.BoostingScoreConfig;
@@ -58,7 +59,10 @@ public class BoostingScoreService {
         }
 
         List<BoostingScore> sortedScores = scores.stream()
-            .sorted((s1, s2) -> Integer.compare(s2.getTotalScore(), s1.getTotalScore()))
+            .sorted(Comparator.comparing(
+                BoostingScore::getTotalScore,
+                Comparator.nullsLast(Comparator.reverseOrder())
+            ))
             .toList();
 
         List<BoostingScoreResponseDto> result = new java.util.ArrayList<>();
