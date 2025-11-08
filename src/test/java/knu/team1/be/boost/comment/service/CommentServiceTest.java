@@ -21,6 +21,7 @@ import knu.team1.be.boost.comment.dto.FileInfoRequestDto;
 import knu.team1.be.boost.comment.entity.Comment;
 import knu.team1.be.boost.comment.entity.Persona;
 import knu.team1.be.boost.comment.entity.vo.FileInfo;
+import knu.team1.be.boost.comment.event.CommentEventPublisher;
 import knu.team1.be.boost.comment.repository.CommentRepository;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
@@ -55,6 +56,8 @@ class CommentServiceTest {
     private FileRepository fileRepository;
     @Mock
     private AccessPolicy accessPolicy;
+    @Mock
+    private CommentEventPublisher commentEventPublisher;
 
     // 테스트용 상수 데이터
     private final UUID projectId = UUID.randomUUID();
@@ -224,6 +227,50 @@ class CommentServiceTest {
         verify(fileRepository, times(1)).findById(fileId);
         verify(commentRepository, times(1)).save(any(Comment.class));
     }
+
+    @Test
+    @DisplayName("createComment: 댓글 생성 시 CommentEventPublisher 호출됨")
+    void createComment_PublishesEvent() {
+        // given
+        CommentCreateRequestDto requestDto = new CommentCreateRequestDto(
+            "이벤트 테스트 댓글",
+            Persona.BOO,
+            false,
+            null
+        );
+
+        Comment savedComment = Comment.builder()
+            .id(UUID.randomUUID())
+            .member(testMember)
+            .task(testTask)
+            .content(requestDto.content())
+            .persona(requestDto.persona())
+            .isAnonymous(requestDto.isAnonymous())
+            .createdAt(LocalDateTime.now())
+            .updatedAt(LocalDateTime.now())
+            .build();
+
+        doNothing().when(accessPolicy).ensureProjectMember(projectId, memberId);
+        when(taskRepository.findById(taskId)).thenReturn(Optional.of(testTask));
+        when(memberRepository.findById(memberId)).thenReturn(Optional.of(testMember));
+        when(commentRepository.save(any(Comment.class))).thenReturn(savedComment);
+        doNothing().when(commentEventPublisher)
+            .publishCommentCreatedEvent(any(), any(), any(), any());
+
+        CommentResponseDto result = commentService.createComment(projectId, taskId, memberId,
+            requestDto);
+
+        assertThat(result).isNotNull();
+        assertThat(result.content()).isEqualTo("이벤트 테스트 댓글");
+
+        verify(commentEventPublisher, times(1)).publishCommentCreatedEvent(
+            projectId,
+            taskId,
+            memberId,
+            requestDto.content()
+        );
+    }
+
 
     @Test
     @DisplayName("createComment: 댓글 생성 실패 - FileInfo의 File ID 없음")
