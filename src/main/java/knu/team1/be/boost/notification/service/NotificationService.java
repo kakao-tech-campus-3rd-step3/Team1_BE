@@ -81,6 +81,19 @@ public class NotificationService {
         return NotificationListResponseDto.from(notifications, safeLimit);
     }
 
+    @Transactional(readOnly = true)
+    public NotificationCountResponseDto getNotificationCount(UUID userId) {
+        Member member = memberRepository.findById(userId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.MEMBER_NOT_FOUND, "memberId: " + userId
+            ));
+
+        long totalCount = notificationRepository.countByMember(member);
+        long unreadCount = notificationRepository.countByMemberAndIsReadFalse(member);
+
+        return NotificationCountResponseDto.from(totalCount, unreadCount);
+    }
+
     @Transactional
     public NotificationReadResponseDto markAsRead(
         UUID notificationId,
@@ -200,16 +213,47 @@ public class NotificationService {
     }
 
     @Transactional(readOnly = true)
-    public NotificationCountResponseDto getNotificationCount(UUID userId) {
-        Member member = memberRepository.findById(userId)
+    public void notifyCommentCreated(
+        UUID projectId,
+        UUID taskId,
+        UUID commenterId,
+        String commentContent
+    ) {
+        Project project = projectRepository.findByIdWithMemberships(projectId)
             .orElseThrow(() -> new BusinessException(
-                ErrorCode.MEMBER_NOT_FOUND, "memberId: " + userId
+                ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
             ));
 
-        long totalCount = notificationRepository.countByMember(member);
-        long unreadCount = notificationRepository.countByMemberAndIsReadFalse(member);
+        Task task = taskRepository.findById(taskId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.TASK_NOT_FOUND, "taskId: " + taskId
+            ));
 
-        return NotificationCountResponseDto.from(totalCount, unreadCount);
+        Member commenter = memberRepository.findById(commenterId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.MEMBER_NOT_FOUND, "memberId: " + commenterId
+            ));
+
+        List<Member> assignees = project.getProjectMemberships().stream()
+            .filter(
+                pm -> pm.isNotificationEnabled() && task.getAssignees().contains(pm.getMember()))
+            .map(ProjectMembership::getMember)
+            .filter(member -> !member.equals(commenter))
+            .toList();
+
+        for (Member assignee : assignees) {
+            try {
+                notificationSenderService.saveAndSendNotification(
+                    assignee,
+                    NotificationType.COMMENT_CREATED.title(),
+                    NotificationType.COMMENT_CREATED.message(
+                        task.getTitle(), commenter.getName(), commentContent
+                    )
+                );
+            } catch (Exception e) {
+                log.error("Failed to send comment notification to member: " + assignee.getId(), e);
+            }
+        }
     }
 
     private boolean isCursorNotMine(Notification cursor, Member member) {
