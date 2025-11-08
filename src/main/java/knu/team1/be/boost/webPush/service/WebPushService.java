@@ -1,5 +1,6 @@
 package knu.team1.be.boost.webPush.service;
 
+import java.util.Optional;
 import java.util.UUID;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
 import knu.team1.be.boost.common.exception.BusinessException;
@@ -90,19 +91,32 @@ public class WebPushService {
                 ErrorCode.MEMBER_NOT_FOUND, "memberId: " + session.userId()
             ));
 
-        WebPushSubscription existingSubscriptionForDevice =
-            webPushRepository.findByMemberIdAndDeviceInfo(member.getId(), session.deviceInfo())
-                .orElse(null);
+        // 삭제된 것도 포함해서 조회 (새로 만들지 말고 재활성화 가능하게)
+        Optional<WebPushSubscription> existingOpt =
+            webPushRepository.findByMemberIdAndDeviceInfoIncludingDeleted(
+                member.getId(), session.deviceInfo());
 
-        boolean isAlreadySubscribedOnDevice = (existingSubscriptionForDevice != null);
+        if (existingOpt.isPresent()) {
+            WebPushSubscription existing = existingOpt.get();
 
-        if (isAlreadySubscribedOnDevice) {
-            existingSubscriptionForDevice.updateSubscription(
-                registerDto.webPushUrl(),
-                registerDto.publicKey(),
-                registerDto.authKey()
-            );
+            if (existing.isDeleted()) {
+                // 이미 soft delete 된 구독이라면 재활성화
+                existing.reactivate();
+                existing.updateSubscription(
+                    registerDto.webPushUrl(),
+                    registerDto.publicKey(),
+                    registerDto.authKey()
+                );
+            } else {
+                // 이미 활성화된 상태라면 그냥 업데이트 (또는 예외로 바꿔도 OK)
+                existing.updateSubscription(
+                    registerDto.webPushUrl(),
+                    registerDto.publicKey(),
+                    registerDto.authKey()
+                );
+            }
         } else {
+            // 완전히 새로운 구독
             WebPushSubscription subscription = WebPushSubscription.builder()
                 .token(registerDto.token())
                 .deviceInfo(session.deviceInfo())
