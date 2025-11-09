@@ -1,4 +1,4 @@
-package knu.team1.be.boost.security;
+package knu.team1.be.boost.security.config;
 
 import java.util.List;
 import knu.team1.be.boost.security.filter.JwtAuthFilter;
