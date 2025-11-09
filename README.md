@@ -230,11 +230,11 @@
     │   │       ├── BoostApplication.java # 🚀 메인 애플리케이션
     │   │       │
     │   │       ├── 🧩 [feature_domain]/
-    │   │       │   ├── controller/     # 1. API 엔드포인트 (API Interface + Controller)
-    │   │       │   ├── service/        # 2. 비즈니스 로직
-    │   │       │   ├── repository/     # 3. DB 데이터 접근 (JPA Repository)
-    │   │       │   ├── dto/            # 4. 데이터 전송 객체 (Request/Response DTOs)
-    │   │       │   ├── entity/         # 5. DB 테이블과 매핑 (JPA Entity)
+    │   │       │   ├── controller/     # API 엔드포인트 (API Interface + Controller)
+    │   │       │   ├── service/        # 비즈니스 로직
+    │   │       │   ├── repository/     # DB 데이터 접근 (JPA Repository)
+    │   │       │   ├── dto/            # 데이터 전송 객체 (Request/Response DTOs)
+    │   │       │   ├── entity/         # DB 테이블과 매핑 (JPA Entity)
     │   │       │   └── ...             # (필요시 exception, scheduler 등)
     │   │       │
     │   │       ├── 🛡️ security/           # Spring Security (공통 보안 설정)
@@ -245,9 +245,9 @@
     │   │       │
     │   │       └── 🌍 common/             # 공통 모듈 (여러 도메인에서 사용)
     │   │           ├── config/
-    │   │           ├── entity/         # (공통 엔티티 속성)
-    │   │           ├── exception/      # (공통 예외 처리)
-    │   │           └── policy/         # (공통 접근 정책)
+    │   │           ├── entity/         # 공통 엔티티 속성
+    │   │           ├── exception/      # 공통 예외 처리
+    │   │           └── policy/         # 공통 접근 정책
     │   │
     │   └── 📁 resources/
     │       ├── application.yml         # 📋 공통 설정
