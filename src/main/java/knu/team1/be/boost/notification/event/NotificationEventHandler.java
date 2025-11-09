@@ -21,27 +21,27 @@ public class NotificationEventHandler {
     private final NotificationService notificationService;
     private final WebPushClient webPushClient;
 
-    @Async
+    @Async("notificationExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleTaskReviewEvent(TaskReviewEvent event) {
         notificationService.notifyTaskReview(event.projectId(), event.taskId(),
             NotificationType.REVIEW);
     }
 
-    @Async
+    @Async("notificationExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleTaskReReviewEvent(TaskReReviewEvent event) {
         notificationService.notifyTaskReview(event.projectId(), event.taskId(),
             NotificationType.RE_REVIEW);
     }
 
-    @Async
+    @Async("notificationExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleTaskApproveEvent(TaskApproveEvent event) {
         notificationService.notifyTaskApprove(event.projectId(), event.taskId());
     }
 
-    @Async
+    @Async("notificationExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleCommentCreatedEvent(CommentCreatedEvent event) {
         notificationService.notifyCommentCreated(
@@ -55,7 +55,7 @@ public class NotificationEventHandler {
     }
 
 
-    @Async
+    @Async("notificationExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleNotificationSavedEvent(NotificationSavedEvent event) {
         webPushClient.sendNotification(event.member(), event.title(), event.message());
