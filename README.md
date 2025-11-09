@@ -243,9 +243,9 @@
     │   │       │   └── util/           # (JwtUtil)
     │   │       │
     │   │       └── 🌍 common/             # 공통 모듈 (여러 도메인에서 사용)
-    │   │           ├── config/         # (Config)
+    │   │           ├── config/
     │   │           ├── entity/         # (공통 엔티티 속성)
-    │   │           ├── exception/      # (공통 접근 정책)
+    │   │           ├── exception/      # (공통 예외 처리)
     │   │           └── policy/         # (공통 접근 정책)
     │   │
     │   └── 📁 resources/
