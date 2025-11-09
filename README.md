@@ -242,7 +242,7 @@ GitHub Actions를 통해 AWS ECS에 자동 배포되는 파이프라인입니다
 > 저희 프로젝트를 진행하면서 서비스 품질 향상과 성능 개선을 위해 진행한 기술적 시도 및 과정을 정리했습니다.
 
 <details>
-<summary>Refresh Token 보안 강화 및 Stateless 로그아웃 전략</summary>
+<summary><b>Refresh Token 보안 강화 및 Stateless 로그아웃 전략</b></summary>
 
 ### Refresh Token의 안전한 저장 및 XSS 방어
 
@@ -329,7 +329,7 @@ JWT는 서버가 상태를 저장하지 않는 Stateless를 전제로 합니다.
 </details>
 
 <details>
-<summary>Task 조회 성능 개선을 위한 데이터베이스 인덱스 도입</summary>
+<summary><b>Task 조회 성능 개선을 위한 데이터베이스 인덱스 도입</b></summary>
 
 ### 1. 시나리오
 
@@ -392,7 +392,7 @@ JWT는 서버가 상태를 저장하지 않는 Stateless를 전제로 합니다.
 </details>
 
 <details>
-<summary>Task 엔티티 낙관적 락(Optimistic Lock) 도입</summary>
+<summary><b>Task 엔티티 낙관적 락(Optimistic Lock) 도입</b></summary>
 
 ### 1. 동시성 문제 시나리오
 여러 리뷰어가 동시에 같은 Task를 승인할 때 Lost Update 문제 발생
@@ -430,7 +430,7 @@ Task 엔티티에 @Version 필드 추가
 </details>
 
 <details>
-<summary>웹 푸시 알림 시스템 설계 및 비동기 이벤트 처리</summary>
+<summary><b>웹 푸시 알림 시스템 설계 및 비동기 이벤트 처리</b></summary>
 
 ### 배경
 
@@ -445,13 +445,7 @@ Task 엔티티에 @Version 필드 추가
 - Chrome, Edge, Firefox 등 대부분의 브라우저 지원(IOS의 경우 웹앱으로 사용 가능)
 - 협업 시 팀원들에게 자료 확인·검토 알림을 빠르게 전달 가능
 
-<br>
-<br>
-
 ---
-
-<br>
-<br>
 
 ### 웹 푸시 알림 등록 흐름
 ```mermaid
@@ -480,10 +474,10 @@ sequenceDiagram
     Server-->>Client: 상태: register
     Client->>Server: 웹 푸시 구독 정보 등록 요청
     Server-->>Client: 구독 정보 저장 완료 (DB 저장)
-
 ```
+
 <details>
-<summary>알림 등록 과정 설명</summary>
+<summary><b>알림 등록 과정 설명</b></summary>
 
 1. **세션 발급 (`create` 상태)**  
    - 클라이언트가 웹 푸시를 요청하면 서버는 TTL 5분짜리 세션을 생성한다.  
@@ -508,13 +502,7 @@ sequenceDiagram
 
 </details>
 
-<br>
-<br>
-
 ---
-
-<br>
-<br>
 
 ### 웹 푸시 알림 전송 흐름
 ```mermaid
@@ -544,8 +532,9 @@ sequenceDiagram
     SW->>SW: 알림(Notification) 표시
 
 ```
+
 <details>
-<summary>알림 전송 흐름 설명</summary>
+<summary><b>알림 전송 흐름 설명</b></summary>
 
 1. **구독 정보 저장 과정은 위의 웹 푸시 알림 등록 과정을 축약한 것 입니다.**  
 
@@ -565,17 +554,11 @@ sequenceDiagram
 
 </details>
 
-<br>
-<br>
-
 ---
-
-<br>
-<br>
 
 ### 웹 푸시 구현중 고민한 부분
 <details>
-<summary>Polling vs WebSocket 선택 이유</summary>
+<summary><b>Polling vs WebSocket 선택 이유</b></summary>
 
 - **고민한 이유**  
   모바일에서 QR 코드를 스캔해 연결된 후, 프론트에서 **자동 페이지 리다이렉트**를 구현하고자 했습니다.  
@@ -595,10 +578,12 @@ sequenceDiagram
   현재는 빠른 구현과 안정성을 위해 Polling을 선택하고,  
   나중에 필요에 따라 WebSocket으로 전환하도록 하였습니다.  
 
+---
+
 </details>
 
 <details>
-<summary>알림 전송 로직 설계 및 비동기 처리 이유</summary>
+<summary><b>알림 전송 로직 설계 및 비동기 처리 이유</b></summary>
 
 - **목적**
     
@@ -641,6 +626,8 @@ sequenceDiagram
 
 ```
 
+<br/>
+
 #### 1. Task 상태 변경 및 이벤트 발행
 
 - **알림 발송이 필요한 특정 서비스(`TaskService.Java`)**
@@ -656,7 +643,8 @@ if (request.status() == TaskStatus.REVIEW) {
     특정 서비스 로직이 실행된 이후, 조건에 만족되면 **알림 발송이 필요하다면 알림 이벤트를 발행**합니다.
     
     예를 들어 Task 상태가 `REVIEW`로 변경되면, `TaskReviewEvent`가 발행됩니다.
-    
+
+<br/>
 
 #### 2. 이벤트 리스너 비동기 처리
 
@@ -665,7 +653,7 @@ if (request.status() == TaskStatus.REVIEW) {
     ```java
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void **handleTaskReviewEvent**(TaskReviewEvent event) {
+    public void handleTaskReviewEvent(TaskReviewEvent event) {
         notificationService.notifyTaskReview(event.projectId(), event.taskId(), NotificationType.REVIEW);
     }
     ```
@@ -675,17 +663,19 @@ if (request.status() == TaskStatus.REVIEW) {
     - 알림 발송 실패가 Task 업데이트에 영향을 주면 **비즈니스 일관성이 깨질 것이라고 판단하였습니다.**
     - 따라서 **`@Async` + `AFTER_COMMIT`** 조합으로 **트랜잭션 커밋 후 별도 스레드에서 실행하도록 설계하였습니다.**
 
+<br/>
+
 #### 3. 알림 저장 및 발송 분리
 
 - **`NotificationService.Java`**
     
     ```java
     @Transactional(readOnly = true)
-    public void **notifyTaskReview**(UUID projectId, UUID taskId, NotificationType type) {
+    public void notifyTaskReview(UUID projectId, UUID taskId, NotificationType type) {
         // ...프로젝트 및 태스크 조회
         for (Member member : members) {
             try {
-                notificationSenderService.**saveAndSendNotification**(member, type.title(), type.message(task.getTitle()));
+                notificationSenderService.saveAndSendNotification(member, type.title(), type.message(task.getTitle()));
             } catch (Exception e) {
                 log.error("Failed to send review notification to member: {}", member.getId(), e);
             }
@@ -698,13 +688,15 @@ if (request.status() == TaskStatus.REVIEW) {
 - **설계 의도**
     - 한 명의 알림 발송 실패가 다른 사람에게 영향 주지 않도록 **각 멤버별 독립 실행을 하기 위해서 따로 트랜잭션을 독립적인 단위로 실행하고자 하였습니다. 아래에서 더 자세한 설명하도록 하겠습니다.**
 
+<br/>
+
 #### 4. Notification 저장 및 전송 이벤트 발행
 
 - **`NotificationSenderService.Java`**
     
     ```java
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void **saveAndSendNotification**(Member member, String title, String message) {
+    public void saveAndSendNotification(Member member, String title, String message) {
         Notification notification = Notification.create(member, title, message);
         notificationRepository.save(notification);
     
@@ -723,6 +715,8 @@ if (request.status() == TaskStatus.REVIEW) {
     - 기존 Task 알림 루프나 다른 멤버의 알림과 **트랜잭션을 공유할 필요 없음**
     - 실패 시 rollback 범위를 최소화하여 **부분 성공 허용**
 
+<br/>
+
 #### 5. 푸시 전송 이벤트 처리
 
 - **`NotificationEventHandler.Java`**
@@ -730,7 +724,7 @@ if (request.status() == TaskStatus.REVIEW) {
 ```java
 @Async
 @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-public void **handleNotificationSavedEvent**(NotificationSavedEvent event) {
+public void handleNotificationSavedEvent(NotificationSavedEvent event) {
     webPushClient.sendNotification(event.member(), event.title(), event.message());
 }
 ```
@@ -741,6 +735,8 @@ public void **handleNotificationSavedEvent**(NotificationSavedEvent event) {
 - **결과**
     - 알림 저장 → 커밋 후 → 별도 스레드에서 Web Push 전송
     - 네트워크 오류나 푸시 실패 시에도 데이터 무결성은 보장됨
+
+<br/>
 
 #### 6. 설계 의도 정리
 
@@ -765,8 +761,6 @@ public void **handleNotificationSavedEvent**(NotificationSavedEvent event) {
     → 알림 전송 실패가 핵심 비즈니스 로직에 영향을 주지 않도록 하고, 핵심 도메인 로직의 안정성을 보호했습니다.
 
 </details>
-
-<br/>
 
 ---
 
