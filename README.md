@@ -207,6 +207,7 @@
 <br/>
 
 ## 📂 폴더 구조
+```
 📁 boost/
 ├── 📁 .github/              # (GitHub Actions - CI/CD 설정)
 ├── 📁 build/                # (빌드 결과물)
@@ -261,6 +262,7 @@
                 └── 🧪 [feature_domain]/   # 도메인별 테스트 코드
                     ├── controller/     # (ExampleControllerTest)
                     └── service/        # (ExampleServiceTest)
+```
 
 <br/>
 <br/>
