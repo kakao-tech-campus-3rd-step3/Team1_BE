@@ -448,33 +448,7 @@ Task 엔티티에 @Version 필드 추가
 ---
 
 ### 웹 푸시 알림 등록 흐름
-```mermaid
-sequenceDiagram
-    participant Client as 💻 브라우저 클라이언트
-    participant Server as 🖥️ 서버
-    participant Mobile as 📱 모바일 기기
-
-    Note over Client, Server: 1️⃣ 세션 발급 (create 상태)
-    Client->>Server: 웹 푸시 요청
-    Server-->>Client: TTL 5분짜리 세션 발급<br/>상태: create
-
-    Note over Client: 2️⃣ QR 코드 생성 및 표시
-    Client->>Client: 세션 기반 QR 코드 생성 및 사용자에게 표시
-
-    Note over Mobile, Server: 3️⃣ 모바일 연결 (connect 상태 전환)
-    Mobile->>Server: QR 코드 스캔 후 세션 연결 요청
-    Server-->>Mobile: 세션 상태 변경 → connect
-
-    Note over Mobile, Server: 4️⃣ 웹 푸시 등록 및 저장 (register 상태 전환)
-    Mobile->>Server: 알림 설정 버튼 클릭
-    Server-->>Mobile: 웹 푸시 등록 완료<br/>세션 상태 변경 → register
-
-    Note over Client, Server: 5️⃣ 브라우저 구독 등록
-    Client->>Server: 주기적 polling으로 세션 상태 확인
-    Server-->>Client: 상태: register
-    Client->>Server: 웹 푸시 구독 정보 등록 요청
-    Server-->>Client: 구독 정보 저장 완료 (DB 저장)
-```
+<img width="878" height="1182" alt="image" src="https://github.com/user-attachments/assets/08bb2e1b-07d0-4195-92da-3be1d64a38a6" />
 
 <details>
 <summary><b>알림 등록 과정 설명</b></summary>
@@ -505,33 +479,7 @@ sequenceDiagram
 ---
 
 ### 웹 푸시 알림 전송 흐름
-```mermaid
-sequenceDiagram
-    participant Browser as 🌐 브라우저
-    participant SW as 🧩 Service Worker
-    participant Server as 🖥️ 웹 서버
-    participant PushService as ☁️ 브라우저 푸시 서버
-
-    Note over Browser, Server: 1️⃣ 구독 정보 저장
-    Browser->>Server: 구독 정보 전송
-    Server-->>Browser: 저장 완료 응답
-
-    Note over Browser, Server: 2️⃣ 알림 전송 요청
-    Browser->>Server: "알림 보내기" 요청(payload 포함)
-    Server-->>Browser: 요청 수신 확인
-
-    Note over Server, PushService: 3️⃣ 서버에서 푸시 서버로 메시지 전송
-    Server->>PushService: 구독 정보 + 메시지(payload) 전송
-    PushService-->>Server: 전송 완료 확인
-
-    Note over PushService, Browser: 4️⃣ 브라우저로 전달
-    PushService->>Browser: 푸시 메시지 전달
-    Browser->>SW: Service Worker로 메시지 전달
-
-    Note over SW: 5️⃣ 알림 표시
-    SW->>SW: 알림(Notification) 표시
-
-```
+<img width="1027" height="1024" alt="image" src="https://github.com/user-attachments/assets/6bf69e0f-a194-4d18-97d3-db46a6d0b540" />
 
 <details>
 <summary><b>알림 전송 흐름 설명</b></summary>
@@ -592,39 +540,8 @@ sequenceDiagram
     으로 처리하여, 서비스의 **안정성과 응답성**을 동시에 확보하였습니다.
     
 
-```mermaid
-sequenceDiagram
-    participant Controller as 🎯 Controller
-    participant Service as 🧩 Service Layer
-    participant Publisher as 📢 EventPublisher
-    participant Listener as 🧭 EventListener
-    participant Notifier as 💬 NotificationService
-    participant Sender as 🚀 NotificationSenderService
-    participant NotiPublisher as 📢 NotificationEventPublisher
-    participant EventHandler as 🔔 NotificationEventListener
-    participant Push as ☁️ WebPushClient
+<img width="2696" height="1110" alt="image" src="https://github.com/user-attachments/assets/48c6791f-a4a6-4752-b512-9af5d4a39ea4" />
 
-    Note over Controller, Service: 1️⃣ 특정 서비스 로직 실행 (예: 상태 변경, 승인 처리 등)
-    Controller->>Service: 요청 처리
-    Service->>Publisher: 도메인 Event 발행
-
-    Note over Publisher, Listener: 2️⃣ 이벤트 수신 및 비동기 후처리 시작
-    Publisher-->>Listener: Event 전달
-    Listener->>Notifier: 알림 생성 및 발송 요청 (notify 메서드 호출)
-
-    Note over Notifier, Sender: 3️⃣ 알림 저장 및 발송 이벤트 발행
-    Notifier->>Sender: saveAndSendNotification(member, title, message)
-    Sender->>Sender: Notification 엔티티 저장 (REQUIRES_NEW)
-    Sender->>NotiPublisher: NotificationSavedEvent 발행
-
-    Note over NotiPublisher, EventHandler: 4️⃣ 비동기 푸시 전송 이벤트 전달
-    NotiPublisher-->>EventHandler: NotificationSavedEvent 전달
-    EventHandler-->>Push: sendNotification(member, title, message)
-
-    Note over Push: 5️⃣ 웹 푸시 전송 및 표시
-    Push->>Push: Service Worker를 통해 알림 표시
-
-```
 
 <br/>
 
