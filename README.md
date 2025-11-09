@@ -234,7 +234,8 @@
     │   │       │   ├── service/        # 2. 비즈니스 로직
     │   │       │   ├── repository/     # 3. DB 데이터 접근 (JPA Repository)
     │   │       │   ├── dto/            # 4. 데이터 전송 객체 (Request/Response DTOs)
-    │   │       │   └── entity/         # 5. DB 테이블과 매핑 (JPA Entity)
+    │   │       │   ├── entity/         # 5. DB 테이블과 매핑 (JPA Entity)
+    │   │       │   └── ...             # (필요시 exception, scheduler 등)
     │   │       │
     │   │       ├── 🛡️ security/           # Spring Security (공통 보안 설정)
     │   │       │   ├── SecurityConfig.java
