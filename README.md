@@ -268,7 +268,7 @@ GitHub Actions를 통해 AWS ECS에 자동 배포되는 파이프라인입니다
   |------|------|------|
   | `project` | `Project` | 소속된 프로젝트 |
   | `member` | `Member` | 참여 중인 멤버 |
-  | `role` | `ProjectRole` | 프로젝트 내 역할 (예: LEADER, MEMBER 등) |
+  | `role` | `ProjectRole` | 프로젝트 내 역할 (예: OWNER, MEMBER 등) |
   | `notificationEnabled` | `boolean` | 알림 수신 여부 |
   - `SoftDeletableEntity` 상속 (프로젝트 탈퇴 시 논리 삭제)  
   - `Project`와 `Member` 사이의 관계를 나타내는 **중간 엔티티**  
