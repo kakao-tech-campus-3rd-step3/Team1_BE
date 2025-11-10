@@ -799,6 +799,18 @@ public void handleNotificationSavedEvent(NotificationSavedEvent event) {
 <br/>
 <br/>
 
+## 🧪 Test Coverage (Jacoco)
+
+![Jacoco Coverage](https://img.shields.io/badge/Jacoco%20Coverage-84%25-brightgreen?style=for-the-badge&logo=java&logoColor=white)
+  <img width="1205" height="797" alt="image" src="https://github.com/user-attachments/assets/32cb5869-d0c8-4742-941c-dc1ab59468e9" />
+
+> Jacoco를 활용하여 테스트 코드 커버리지를 측정하고 관리하여 코드의 품질을 향상시켰고 84%의 테스트 커버리지를 달성하였습니다.
+> - 단위 테스트 기반 커버리지 측정
+
+<br/>
+<br/>
+
+
 ## 📂 폴더 구조
 ```
 📁 boost/
