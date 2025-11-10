@@ -57,11 +57,9 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            // todo: production 환경에서 enable 전환 필요
             .csrf(csrf -> csrf.disable())
             .sessionManagement(
                 session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            // todo: production 환경에서 enable 전환 필요
             .headers(headers -> headers
                 .frameOptions(frame -> frame.disable()) // swagger를 위해 disable
             )
