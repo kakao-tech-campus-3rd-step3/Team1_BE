@@ -231,6 +231,27 @@ GitHub Actions를 통해 AWS ECS에 자동 배포되는 파이프라인입니다
 <br/>
 <br/>
 
+## 🔐 인증 및 인가 플로우
+> 카카오 로그인부터 토큰 재발급, 로그아웃까지의 전체 인증 흐름을 시각적으로 정리했습니다.
+<details> <summary><b>카카오 로그인 (OAuth2 인가 코드 플로우)</b></summary>
+  <img width="1822" height="1428" alt="image" src="https://github.com/user-attachments/assets/327c3515-d1a4-4ee9-a6e1-f8f4bd646b91" />
+</details>
+
+<details> <summary><b>인가 (Authorization) - 일반 API 요청 처리 흐름</b></summary>
+  <img width="1364" height="753" alt="image" src="https://github.com/user-attachments/assets/fdaf735f-d09b-4562-b1a2-d66e3434635f" />
+</details>
+
+<details> <summary><b>토큰 재발급 (Refresh Token 쿠키 기반)</b></summary>
+  <img width="1376" height="1030" alt="image" src="https://github.com/user-attachments/assets/a48cd2af-c68a-4843-8684-e4823505d818" />
+</details>
+
+<details> <summary><b>로그아웃 (Refresh Token 삭제)</b></summary>
+  <img width="1490" height="720" alt="image" src="https://github.com/user-attachments/assets/a98187dc-f9fc-4ddc-8cf7-3c7d57ae37b9" />
+</details>
+
+<br/>
+<br/>
+
 ## 📊 ERD
 <img width="3276" height="3516" alt="image" src="https://github.com/user-attachments/assets/830aeacd-a3b1-4c07-bbfd-a400f5843e97" />
 
