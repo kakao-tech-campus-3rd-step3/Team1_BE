@@ -234,6 +234,98 @@ GitHub Actions를 통해 AWS ECS에 자동 배포되는 파이프라인입니다
 ## 📊 ERD
 <img width="3276" height="3516" alt="image" src="https://github.com/user-attachments/assets/830aeacd-a3b1-4c07-bbfd-a400f5843e97" />
 
+<details>
+<summary><b>ERD 핵심 요소 설명</b></summary>
+
+- **`BaseEntity`**  
+  | 필드 | 타입 | 설명 |
+  |------|------|------|
+  | `id` | `UUID` | 기본 키 (자동 생성) |
+  | `createdAt` | `LocalDateTime` | 생성 시각 (`@CreatedDate`) |
+  | `updatedAt` | `LocalDateTime` | 마지막 수정 시각 (`@LastModifiedDate`) |
+  - 모든 엔티티의 기본 클래스  
+  - JPA Auditing으로 생성/수정 시각 자동 관리  
+  - 삭제/복구가 필요 없는 엔티티에서 사용  
+
+  <br/>
+
+- **`SoftDeletableEntity`**  
+  | 필드 | 타입 | 설명 |
+  |------|------|------|
+  | `deleted` | `boolean` | 삭제 여부 (`true`면 논리 삭제 상태) |
+  | `deletedAt` | `LocalDateTime` | 삭제된 시각 |
+  - `BaseEntity` 확장 클래스  
+  - 물리 삭제 대신 논리 삭제(soft delete) 처리  
+  - `reactivate()`로 복구 가능  
+  - 삭제/복구가 필요한 엔티티에서 상속을 받아서 사용  
+
+  <br/>
+
+---
+
+- **`ProjectMembership`**  
+  | 필드 | 타입 | 설명 |
+  |------|------|------|
+  | `project` | `Project` | 소속된 프로젝트 |
+  | `member` | `Member` | 참여 중인 멤버 |
+  | `role` | `ProjectRole` | 프로젝트 내 역할 (예: LEADER, MEMBER 등) |
+  | `notificationEnabled` | `boolean` | 알림 수신 여부 |
+  - `SoftDeletableEntity` 상속 (프로젝트 탈퇴 시 논리 삭제)  
+  - `Project`와 `Member` 사이의 관계를 나타내는 **중간 엔티티**  
+  - 단순 N:M 매핑이 아닌, 역할/알림 설정을 함께 관리
+
+  <br/>
+
+- **`ProjectJoinCode`**  
+  | 필드 | 타입 | 설명 |
+  |------|------|------|
+  | `joinCode` | `String` | 프로젝트 참여 초대 코드 |
+  | `project` | `Project` | 관련된 프로젝트 |
+  | `status` | `CodeStatus` | 코드 상태 (ACTIVE, EXPIRED, REVOKED 등) |
+  | `expiresAt` | `LocalDateTime` | 코드 만료 시각 |
+  - `BaseEntity` 상속 (삭제 대신 상태 전환으로 관리)  
+  - 프로젝트 초대 링크/코드 관리용 엔티티  
+  - 상태 및 만료 시간 기반으로 유효성 검증 (`isActive`, `isExpired`)  
+
+  <br/>
+
+- **`BoostingScore`**  
+  | 필드 | 타입 | 설명 |
+  |------|------|------|
+  | `projectMembership` | `ProjectMembership` | 점수가 귀속되는 프로젝트-멤버 관계 |
+  | `taskScore` | `Integer` | 작업(Task) 수행 점수 |
+  | `commentScore` | `Integer` | 댓글(Comment) 활동 점수 |
+  | `approveScore` | `Integer` | 승인(Approve) 관련 점수 |
+  | `totalScore` | `Integer` | 총합 점수 |
+  | `calculatedAt` | `LocalDateTime` | 점수 계산 시각 |
+  
+  - 멤버의 프로젝트 내 활동 점수를 관리 (`ProjectMembership` 단위로 누적)
+  - (작업/댓글/승인)에 따라 **1시간마다 스케줄링으로 자동 갱신**되어 최신 점수를 유지 
+
+  <br/>
+
+- **`WebPushSubscription`**  
+  | 필드 | 타입 | 설명 |
+  |------|------|------|
+  | `member` | `Member` | 구독한 사용자 |
+  | `token` | `String` | 브라우저 푸시 토큰 (고유) |
+  | `deviceInfo` | `String` | 디바이스 정보 (중복 방지용) |
+  | `webPushUrl` | `String` | 푸시 엔드포인트 URL |
+  | `publicKey` | `String` | 클라이언트 공개 키 |
+  | `authKey` | `String` | 인증 키 |
+  
+  - `SoftDeletableEntity` 상속  
+  - 사용자별 웹 푸시 구독 정보 저장
+    - webPushUrl: 브라우저가 푸시 서버(Google FCM 등)에 등록할 때 제공하는 고유 엔드포인트 URL
+    - publicKey: 푸시 메시지 암호화를 위한 브라우저 측 공개 키 (서버는 이걸로 암호화함)
+    - authKey: 메시지 무결성과 인증을 보장하기 위한 추가 키
+
+---
+
+</details>
+
+
+
 <br/>
 <br/>
 
