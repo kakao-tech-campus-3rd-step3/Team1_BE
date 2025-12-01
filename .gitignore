@@ -59,4 +59,3 @@ out/
 *.pem
 *.key
 *.crt
-src/main/resources/application-dev-env.yaml
