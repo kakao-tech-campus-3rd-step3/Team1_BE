@@ -33,9 +33,7 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew clean bootJar -x test
 
-      # ----------------------------------------------------------------
       # 1. QA 배포 (develop 브랜치)
-      # ----------------------------------------------------------------
       - name: [ QA ] Copy JAR to Server
         if: github.ref == 'refs/heads/develop'
         uses: appleboy/scp-action@master
@@ -73,9 +71,7 @@ jobs:
             docker build -t boost-app:qa .
             docker run -d -p 8080:8080 --env-file .env --name qa-server boost-app:qa
 
-      # ----------------------------------------------------------------
       # 2. Production 배포 (main 브랜치) - Blue/Green (무중단)
-      # ----------------------------------------------------------------
       - name: [ PROD ] Copy JAR to Server
         if: github.ref == 'refs/heads/main'
         uses: appleboy/scp-action@master
