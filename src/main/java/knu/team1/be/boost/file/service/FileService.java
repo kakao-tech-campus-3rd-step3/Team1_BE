@@ -16,7 +16,7 @@ import knu.team1.be.boost.file.dto.ProjectFileSummaryResponseDto;
 import knu.team1.be.boost.file.entity.File;
 import knu.team1.be.boost.file.entity.FileType;
 import knu.team1.be.boost.file.entity.vo.StorageKey;
-import knu.team1.be.boost.file.infra.s3.PresignedUrlFactory;
+import knu.team1.be.boost.file.infra.oci.PresignedUrlFactory;
 import knu.team1.be.boost.file.repository.FileRepository;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
@@ -48,10 +48,10 @@ public class FileService {
     private final AccessPolicy accessPolicy;
     private final PresignedUrlFactory presignedUrlFactory;
 
-    @Value("${boost.aws.bucket}")
+    @Value("${boost.oci.bucket}")
     private String bucket;
 
-    @Value("${boost.aws.upload.expire-seconds}")
+    @Value("${boost.oci.upload.expire-seconds}")
     private int expireSeconds;
 
     @Value("${boost.file.max-upload-size}")

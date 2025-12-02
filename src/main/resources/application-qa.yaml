@@ -1,21 +1,21 @@
 spring:
   config:
     activate:
-      on-profile: dev
+      on-profile: qa
 
   h2:
     console:
       enabled: true
 
   datasource:
-    url: jdbc:h2:mem:testdb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    url: 127.0.0.1
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${QA_DB_USERNAME}
+    password: ${QA_DB_PASSWORD}
 
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
@@ -50,10 +50,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,env,loggers
-      path-mapping:
-        env: actuator/env
-        loggers: actuator/loggers
+        include: health,info
   endpoint:
     health:
       show-details: always
@@ -65,3 +62,9 @@ webpush:
 
 llm:
   prompt: ${LLM_PROMPT}
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true

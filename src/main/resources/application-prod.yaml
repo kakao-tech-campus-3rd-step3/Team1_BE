@@ -8,10 +8,10 @@ spring:
       enabled: false
 
   datasource:
-    url: ${RDS_URL}
+    url: 10.0.1.24
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: ${RDS_USERNAME}
-    password: ${RDS_PASSWORD}
+    username: ${PROD_DB_USERNAME}
+    password: ${PROD_DB_PASSWORD}
 
   jpa:
     hibernate:
@@ -38,12 +38,13 @@ jwt:
   secret: ${JWT_SECRET_KEY}
 
 boost:
-  aws:
-    bucket: ${AWS_S3_BUCKET}
-    region: ${AWS_REGION}
+  oci:
+    bucket: ${OCI_BUCKET}
+    namespace: ${OCI_NAMESPACE}
+    region: ${OCI_REGION}
     credentials:
-      access-key: ${AWS_ACCESS_KEY}
-      secret-key: ${AWS_SECRET_KEY}
+      access-key: ${OCI_ACCESS_KEY}
+      secret-key: ${OCI_SECRET_KEY}
 
 management:
   endpoints:
@@ -61,3 +62,9 @@ webpush:
 
 llm:
   prompt: ${LLM_PROMPT}
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false

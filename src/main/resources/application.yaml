@@ -57,7 +57,7 @@ jwt:
   refresh-token-expire-time: 7d
 
 boost:
-  aws:
+  oci:
     upload:
       expire-seconds: 900
   file:

@@ -1,4 +1,4 @@
-package knu.team1.be.boost.file.infra.s3;
+package knu.team1.be.boost.file.infra.oci;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.ServerSideEncryption;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
@@ -37,7 +36,6 @@ public class PresignedUrlFactory {
                 .bucket(bucket)
                 .key(key)
                 .contentType(contentType)
-                .serverSideEncryption(ServerSideEncryption.AES256)
                 .build();
 
             return s3Presigner.presignPutObject(b -> b
@@ -46,7 +44,7 @@ public class PresignedUrlFactory {
         } catch (SdkException e) {
             throw new BusinessException(
                 ErrorCode.STORAGE_SERVICE_ERROR,
-                "S3 upload presigned URL creation fail. key: " + key
+                "OCI upload presigned URL creation fail. key: " + key
             );
         }
     }
@@ -80,7 +78,7 @@ public class PresignedUrlFactory {
         } catch (SdkException e) {
             throw new BusinessException(
                 ErrorCode.STORAGE_SERVICE_ERROR,
-                "S3 download presigned URL creation fail. key: " + key
+                "OCI download presigned URL creation fail. key: " + key
             );
         }
     }
@@ -124,3 +122,4 @@ public class PresignedUrlFactory {
         return s;
     }
 }
+

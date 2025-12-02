@@ -34,7 +34,7 @@ import knu.team1.be.boost.file.entity.FileStatus;
 import knu.team1.be.boost.file.entity.FileType;
 import knu.team1.be.boost.file.entity.vo.FileMetadata;
 import knu.team1.be.boost.file.entity.vo.StorageKey;
-import knu.team1.be.boost.file.infra.s3.PresignedUrlFactory;
+import knu.team1.be.boost.file.infra.oci.PresignedUrlFactory;
 import knu.team1.be.boost.file.repository.FileRepository;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
