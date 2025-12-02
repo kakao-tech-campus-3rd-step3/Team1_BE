@@ -10,8 +10,8 @@ spring:
   datasource:
     url: 10.0.1.24
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: ${PROD_DB_USERNAME}
-    password: ${PROD_DB_PASSWORD}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
 
   jpa:
     hibernate:
@@ -39,7 +39,7 @@ jwt:
 
 boost:
   oci:
-    bucket: ${OCI_BUCKET}
+    bucket: ${OCI_PROD_BUCKET}
     namespace: ${OCI_NAMESPACE}
     region: ${OCI_REGION}
     credentials:

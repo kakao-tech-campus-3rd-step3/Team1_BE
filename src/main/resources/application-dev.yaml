@@ -39,7 +39,7 @@ jwt:
 
 boost:
   oci:
-    bucket: ${OCI_BUCKET}
+    bucket: ${OCI_QA_BUCKET}
     namespace: ${OCI_NAMESPACE}
     region: ${OCI_REGION}
     credentials:
