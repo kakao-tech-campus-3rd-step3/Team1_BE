@@ -61,7 +61,7 @@ jobs:
             # 2. Dockerfile 생성 (이미지 굽기용)
             echo "FROM eclipse-temurin:21-jre" > Dockerfile
             echo "COPY *.jar app.jar" >> Dockerfile
-            echo "ENTRYPOINT [\"java\",\"-jar\",\"/app.jar\"]" >> Dockerfile
+            echo "ENTRYPOINT [\"java\",\"-jar\",\"/app.jar\",\"--spring.profiles.active=qa\"]" >> Dockerfile
 
             # 3. 기존 컨테이너 중지 및 삭제
             docker stop qa-server || true
@@ -99,7 +99,7 @@ jobs:
             # 2. Dockerfile 생성
             echo "FROM openjdk:21-jdk-slim" > Dockerfile
             echo "COPY *.jar app.jar" >> Dockerfile
-            echo "ENTRYPOINT [\"java\",\"-jar\",\"/app.jar\"]" >> Dockerfile
+            echo "ENTRYPOINT [\"java\",\"-jar\",\"/app.jar\",\"--spring.profiles.active=prod\"]" >> Dockerfile
 
             # 3. 현재 실행 중인 포트 확인 (Nginx 설정에서 grep)
             # upstream backend { server 127.0.0.1:xxxx; } 에서 xxxx 추출
