@@ -8,7 +8,8 @@ spring:
       enabled: false
 
   datasource:
-    url: 10.0.1.24
+    url: ${PROD_DB_URL}
+
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
