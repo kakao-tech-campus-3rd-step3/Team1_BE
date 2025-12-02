@@ -56,7 +56,7 @@ jobs:
             cd ${{ env.DEPLOY_PATH }}
 
             # 1. .env 파일 생성 (Secret 내용을 파일로 저장)
-            echo "${{ secrets.ENV_QA }}" > .env
+            echo "${{ secrets.ENV }}" > .env
 
             # 2. Dockerfile 생성 (이미지 굽기용)
             echo "FROM eclipse-temurin:21-jre" > Dockerfile
@@ -94,7 +94,7 @@ jobs:
             cd ${{ env.DEPLOY_PATH }}
 
             # 1. .env 파일 생성
-            echo "${{ secrets.ENV_PROD }}" > .env
+            echo "${{ secrets.ENV }}" > .env
 
             # 2. Dockerfile 생성
             echo "FROM openjdk:21-jdk-slim" > Dockerfile
