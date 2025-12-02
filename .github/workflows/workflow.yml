@@ -69,7 +69,7 @@ jobs:
 
             # 4. 이미지 빌드 & 실행
             docker build -t boost-app:qa .
-            docker run -d -p 8080:8080 --env-file .env --name qa-server boost-app:qa
+            docker run -d -p 8080:8080 --network db_default --env-file .env --name qa-server boost-app:qa
 
       # 2. Production 배포 (main 브랜치) - Blue/Green (무중단)
       - name: (PROD) Copy JAR to Server
