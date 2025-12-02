@@ -31,10 +31,10 @@ public class Memo extends SoftDeletableEntity {
     @JoinColumn(name = "project_id", nullable = false)
     private Project project;
 
-    @Column(nullable = false, length = 100)
+    @Column(name = "title", nullable = false, length = 100)
     private String title;
 
-    @Column(nullable = false, length = 10000)
+    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;
 
     public void update(String title, String content) {

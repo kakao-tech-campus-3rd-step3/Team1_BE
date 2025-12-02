@@ -37,7 +37,7 @@ public class WebPushSubscription extends SoftDeletableEntity {
     @Column(name = "token", nullable = false, unique = true)
     private String token;
 
-    @Column(name = "device_info")
+    @Column(name = "device_info", nullable = false)
     private String deviceInfo;
 
     @Column(name = "web_push_url", nullable = false)
@@ -49,7 +49,13 @@ public class WebPushSubscription extends SoftDeletableEntity {
     @Column(name = "auth_key", nullable = false)
     private String authKey;
 
-    public void updateSubscription(String webPushUrl, String publicKey, String authKey) {
+    public void updateSubscription(
+        String token,
+        String webPushUrl,
+        String publicKey,
+        String authKey
+    ) {
+        this.token = token;
         this.webPushUrl = webPushUrl;
         this.publicKey = publicKey;
         this.authKey = authKey;

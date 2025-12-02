@@ -10,6 +10,7 @@ import knu.team1.be.boost.comment.dto.CommentUpdateRequestDto;
 import knu.team1.be.boost.comment.dto.FileInfoRequestDto;
 import knu.team1.be.boost.comment.entity.Comment;
 import knu.team1.be.boost.comment.entity.vo.FileInfo;
+import knu.team1.be.boost.comment.event.CommentEventPublisher;
 import knu.team1.be.boost.comment.repository.CommentRepository;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
@@ -35,6 +36,8 @@ public class CommentService {
 
     private final AccessPolicy accessPolicy;
 
+    private final CommentEventPublisher commentEventPublisher;
+
     public List<CommentResponseDto> findCommentsByTaskId(
         UUID projectId,
         UUID memberId,
@@ -42,7 +45,7 @@ public class CommentService {
     ) {
         accessPolicy.ensureProjectMember(projectId, memberId);
 
-        List<Comment> comments = commentRepository.findAllByTaskId(taskId);
+        List<Comment> comments = commentRepository.findAllByTaskIdOrderByCreatedAtAsc(taskId);
         return comments.stream()
             .map(CommentResponseDto::from)
             .collect(Collectors.toList());
@@ -79,6 +82,16 @@ public class CommentService {
             .build();
 
         Comment savedComment = commentRepository.save(comment);
+
+        commentEventPublisher.publishCommentCreatedEvent(
+            projectId,
+            taskId,
+            memberId,
+            requestDto.content(),
+            requestDto.isAnonymous(),
+            requestDto.persona() != null ? requestDto.persona().name() : null
+        );
+
         return CommentResponseDto.from(savedComment);
     }
 

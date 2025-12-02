@@ -11,7 +11,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import knu.team1.be.boost.auth.dto.UserPrincipalDto;
-import knu.team1.be.boost.comment.entity.Comment;
 import knu.team1.be.boost.comment.repository.CommentRepository;
 import knu.team1.be.boost.comment.repository.CommentRepository.CommentCount;
 import knu.team1.be.boost.common.exception.BusinessException;
@@ -34,13 +33,11 @@ import knu.team1.be.boost.task.dto.MemberTaskStatusCountResponseDto;
 import knu.team1.be.boost.task.dto.MyTaskStatusCountResponseDto;
 import knu.team1.be.boost.task.dto.ProjectTaskStatusCount;
 import knu.team1.be.boost.task.dto.ProjectTaskStatusCountResponseDto;
-import knu.team1.be.boost.task.dto.TaskApproveEvent;
 import knu.team1.be.boost.task.dto.TaskApproveResponseDto;
 import knu.team1.be.boost.task.dto.TaskCreateRequestDto;
 import knu.team1.be.boost.task.dto.TaskDetailResponseDto;
 import knu.team1.be.boost.task.dto.TaskMemberSectionResponseDto;
 import knu.team1.be.boost.task.dto.TaskResponseDto;
-import knu.team1.be.boost.task.dto.TaskReviewEvent;
 import knu.team1.be.boost.task.dto.TaskSortBy;
 import knu.team1.be.boost.task.dto.TaskSortDirection;
 import knu.team1.be.boost.task.dto.TaskStatusRequestDto;
@@ -48,9 +45,9 @@ import knu.team1.be.boost.task.dto.TaskStatusSectionDto;
 import knu.team1.be.boost.task.dto.TaskUpdateRequestDto;
 import knu.team1.be.boost.task.entity.Task;
 import knu.team1.be.boost.task.entity.TaskStatus;
+import knu.team1.be.boost.task.event.TaskEventPublisher;
 import knu.team1.be.boost.task.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -68,8 +65,10 @@ public class TaskService {
     private final ProjectRepository projectRepository;
     private final ProjectMembershipRepository projectMembershipRepository;
 
-    private final ApplicationEventPublisher eventPublisher;
     private final AccessPolicy accessPolicy;
+    private final TaskEventPublisher taskEventPublisher;
+
+    private static final int RE_REVIEW_COOLDOWN_MINUTES = 10;
 
     @Transactional
     public TaskResponseDto createTask(
@@ -90,6 +89,13 @@ public class TaskService {
         Set<Member> assignees = findAssignees(request.assignees());
 
         accessPolicy.ensureAssigneesAreProjectMembers(project.getId(), assignees);
+
+        validateRequiredReviewerCount(
+            project.getId(),
+            assignees.size(),
+            request.requiredReviewerCount(),
+            user.id()
+        );
 
         Task task = Task.create(
             project,
@@ -137,6 +143,14 @@ public class TaskService {
 
         accessPolicy.ensureAssigneesAreProjectMembers(project.getId(), assignees);
 
+        validateRequiredReviewerCount(
+            project.getId(),
+            assignees.size(),
+            request.requiredReviewerCount(),
+            user.id()
+        );
+        validateCanMarkDone(project, task, request.status());
+
         task.update(
             request.title(),
             request.description(),
@@ -148,7 +162,18 @@ public class TaskService {
             assignees
         );
 
-        return TaskResponseDto.from(task);
+        if (request.status() == TaskStatus.REVIEW) {
+            taskEventPublisher.publishTaskReviewEvent(project.getId(), task.getId());
+        }
+
+        if (request.status() == TaskStatus.DONE) {
+            taskEventPublisher.publishTaskApproveEvent(project.getId(), task.getId());
+        }
+
+        int commentCount = (int) commentRepository.countByTaskId(task.getId());
+        int fileCount = (int) fileRepository.countByTaskId(task.getId());
+
+        return TaskResponseDto.from(task, fileCount, commentCount);
     }
 
     @Transactional
@@ -197,13 +222,22 @@ public class TaskService {
         accessPolicy.ensureProjectMember(project.getId(), user.id());
         accessPolicy.ensureTaskAssignee(task.getId(), user.id());
 
+        validateCanMarkDone(project, task, request.status());
+
         task.changeStatus(request.status());
 
         if (request.status() == TaskStatus.REVIEW) {
-            eventPublisher.publishEvent(TaskReviewEvent.from(project, task));
+            taskEventPublisher.publishTaskReviewEvent(project.getId(), task.getId());
         }
 
-        return TaskResponseDto.from(task);
+        if (request.status() == TaskStatus.DONE) {
+            taskEventPublisher.publishTaskApproveEvent(project.getId(), task.getId());
+        }
+
+        int commentCount = (int) commentRepository.countByTaskId(task.getId());
+        int fileCount = (int) fileRepository.countByTaskId(task.getId());
+
+        return TaskResponseDto.from(task, fileCount, commentCount);
     }
 
     @Transactional(readOnly = true)
@@ -234,7 +268,6 @@ public class TaskService {
             }
         }
 
-        List<Comment> comments = commentRepository.findAllByTaskId(task.getId());
         List<File> files = fileRepository.findAllByTask(task);
         List<Member> projectMembers = projectMembershipRepository.findAllByProjectId(
                 project.getId())
@@ -245,7 +278,6 @@ public class TaskService {
         return TaskDetailResponseDto.from(
             task,
             approvedByMe,
-            comments,
             files,
             projectMembers
         );
@@ -261,12 +293,30 @@ public class TaskService {
                 ErrorCode.MEMBER_NOT_FOUND, "memberId: " + user.id()
             ));
 
+        List<Project> projects = projectMembershipRepository.findAllByMemberId(member.getId())
+            .stream()
+            .map(ProjectMembership::getProject)
+            .toList();
+
+        if (projects.isEmpty()) {
+            return MyTaskStatusCountResponseDto.from(
+                member.getId(), 0, 0, 0, 0
+            );
+        }
+
         ProjectTaskStatusCount count;
         if (search != null && !search.trim().isEmpty()) {
             String searchPattern = "%" + search.trim() + "%";
-            count = taskRepository.countMyTasksWithSearchGrouped(member.getId(), searchPattern);
+            count = taskRepository.countMyTasksWithSearchGrouped(
+                member.getId(),
+                projects,
+                searchPattern
+            );
         } else {
-            count = taskRepository.countMyTasksGrouped(member.getId());
+            count = taskRepository.countMyTasksGrouped(
+                member.getId(),
+                projects
+            );
         }
 
         return MyTaskStatusCountResponseDto.from(
@@ -536,13 +586,68 @@ public class TaskService {
                 ErrorCode.MEMBER_NOT_FOUND, "memberId: " + user.id()
             ));
 
-        task.approve(member, projectMembers);
-
-        if (task.getStatus() == TaskStatus.DONE) {
-            eventPublisher.publishEvent(TaskApproveEvent.from(project, task));
-        }
+        task.approve(member);
 
         return TaskApproveResponseDto.from(task, projectMembers);
+    }
+
+    @Transactional
+    public void requestReReview(
+        UUID projectId,
+        UUID taskId,
+        UserPrincipalDto user
+    ) {
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
+            ));
+
+        Task task = taskRepository.findById(taskId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.TASK_NOT_FOUND, "taskId: " + taskId
+            ));
+
+        task.ensureTaskInProject(project.getId());
+
+        accessPolicy.ensureProjectMember(project.getId(), user.id());
+        accessPolicy.ensureTaskAssignee(task.getId(), user.id());
+
+        if (task.getStatus() != TaskStatus.REVIEW) {
+            throw new BusinessException(
+                ErrorCode.TASK_RE_REVIEW_NOT_ALLOWED, "taskId: " + taskId
+            );
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        validateReReviewCooldown(task, now, user.id());
+        task.requestReReview(now);
+
+        taskEventPublisher.publishTaskReReviewEvent(project.getId(), task.getId());
+    }
+
+    private void validateCanMarkDone(Project project, Task task, TaskStatus newStatus) {
+        if (newStatus != TaskStatus.DONE) {
+            return;
+        }
+
+        Integer requiredReviewerCount = task.getRequiredReviewerCount();
+        if (requiredReviewerCount <= 0) {
+            return;
+        }
+
+        List<Member> projectMembers = projectMembershipRepository.findAllByProjectId(
+                project.getId())
+            .stream()
+            .map(ProjectMembership::getMember)
+            .toList();
+
+        int requiredApprovals = task.getRequiredApprovalsCount(projectMembers);
+
+        if (task.getApprovers().size() < requiredApprovals) {
+            throw new BusinessException(
+                ErrorCode.INSUFFICIENT_APPROVALS, "taskId: " + task.getId()
+            );
+        }
     }
 
     private Map<UUID, Long> getFileCounts(List<Task> tasks) {
@@ -765,4 +870,35 @@ public class TaskService {
             }
         }
     }
+
+    private void validateReReviewCooldown(Task task, LocalDateTime now, UUID userId) {
+        if (task.getReReviewRequestedAt() == null) {
+            return;
+        }
+
+        LocalDateTime lastRequestedAt = task.getReReviewRequestedAt();
+        if (lastRequestedAt.isAfter(now.minusMinutes(RE_REVIEW_COOLDOWN_MINUTES))) {
+            throw new BusinessException(
+                ErrorCode.TASK_RE_REVIEW_COOLDOWN,
+                "userId: " + userId + ", lastRequestedAt: " + lastRequestedAt
+            );
+        }
+    }
+
+    private void validateRequiredReviewerCount(
+        UUID projectId,
+        int assigneeCount,
+        int requiredReviewerCount,
+        UUID userId
+    ) {
+        int totalMembers = projectMembershipRepository.countByProjectId(projectId);
+        int availableReviewers = totalMembers - assigneeCount;
+
+        if (requiredReviewerCount > availableReviewers) {
+            throw new BusinessException(
+                ErrorCode.INVALID_REQUIRED_REVIEWER_COUNT, "userId: " + userId
+            );
+        }
+    }
+
 }

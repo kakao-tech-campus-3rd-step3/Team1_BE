@@ -32,6 +32,8 @@ public class SwaggerConfig {
             .info(info)
             .components(
                 new Components().addSecuritySchemes("bearerAuth", securityScheme)
+            ).addServersItem(
+                new Server().url("https://qa.boost.ai.kr").description("QA Server")
             )
             .addServersItem(
                 new Server().url("https://api.boost.ai.kr").description("Production Server")

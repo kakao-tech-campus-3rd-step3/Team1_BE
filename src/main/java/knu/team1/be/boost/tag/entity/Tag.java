@@ -13,7 +13,6 @@ import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.project.entity.Project;
 import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -22,11 +21,10 @@ import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
-@EqualsAndHashCode(of = "id")
 @Table(name = "tags", uniqueConstraints = {
     @UniqueConstraint(
-        name = "uk_project_tag_name_deleted_at",
-        columnNames = {"project_id", "name", "deleted_at"}
+        name = "uk_project_tag_name",
+        columnNames = {"project_id", "name"}
     )
 })
 @SuperBuilder
@@ -39,7 +37,7 @@ public class Tag extends SoftDeletableEntity {
     @JoinColumn(name = "project_id", nullable = false)
     private Project project;
 
-    @Column(nullable = false, length = 50)
+    @Column(name = "name", nullable = false, length = 50)
     private String name;
 
     public static Tag create(Project project, String name) {

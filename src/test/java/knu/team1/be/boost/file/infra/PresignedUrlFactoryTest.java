@@ -10,7 +10,7 @@ import static org.mockito.Mockito.when;
 import java.util.function.Consumer;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
-import knu.team1.be.boost.file.infra.s3.PresignedUrlFactory;
+import knu.team1.be.boost.file.infra.oci.PresignedUrlFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

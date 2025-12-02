@@ -1,7 +1,9 @@
 package knu.team1.be.boost.common.exception;
 
 import io.jsonwebtoken.JwtException;
+import jakarta.persistence.OptimisticLockException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -68,6 +71,28 @@ public class GlobalExceptionHandler {
             "입력값이 올바르지 않습니다.",
             URI.create(req.getRequestURI()),
             Map.of("errors", errors)
+        );
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ProblemDetail handleConstraintValidation(
+        ConstraintViolationException e,
+        HttpServletRequest req
+    ) {
+        List<Map<String, String>> violations = e.getConstraintViolations().stream()
+            .map(v -> Map.of(
+                "property", v.getPropertyPath().toString(),
+                "message", v.getMessage()
+            ))
+            .toList();
+
+        log.warn("[400 BAD_REQUEST] Constraint violation: {}", e.toString(), e);
+
+        return ErrorResponses.of(
+            HttpStatus.BAD_REQUEST,
+            "요청 파라미터가 유효하지 않습니다.",
+            URI.create(req.getRequestURI()),
+            Map.of("violations", violations)
         );
     }
 
@@ -189,6 +214,17 @@ public class GlobalExceptionHandler {
         log.warn("[{} {}] {}", status.value(), status.getReasonPhrase(), e.toString(), e);
 
         return ErrorResponses.of(status, e.getMessage(), instance(req));
+    }
+
+    // 409: 낙관적 락 충돌
+    @ExceptionHandler({
+        OptimisticLockException.class,
+        ObjectOptimisticLockingFailureException.class
+    })
+    public ProblemDetail handleOptimisticLock(Exception e, HttpServletRequest req) {
+        log.warn("[409 CONFLICT] Optimistic lock conflict detected: {}", e.getMessage());
+
+        return ErrorResponses.forBusiness(ErrorCode.OPTIMISTIC_LOCK_CONFLICT, instance(req));
     }
 
     // 500: 그외 모든 예외

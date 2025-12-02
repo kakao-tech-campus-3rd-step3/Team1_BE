@@ -1,4 +1,4 @@
-package knu.team1.be.boost.security;
+package knu.team1.be.boost.security.config;
 
 import java.util.List;
 import knu.team1.be.boost.security.filter.JwtAuthFilter;
@@ -48,16 +48,18 @@ public class SecurityConfig {
                     // 헬스체크 경로 (Spring Actuator)
                     "/health",
                     "/health/**",
-                    "/actuator/**"
+                    "/actuator/**",
+
+                    // 웹 푸시 디바이스 연결 경로
+                    "/api/web-push/sessions/connect",
+                    "/api/web-push/subscriptions"
                 ).permitAll()
                 .anyRequest().authenticated()
             )
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            // todo: production 환경에서 enable 전환 필요
             .csrf(csrf -> csrf.disable())
             .sessionManagement(
                 session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            // todo: production 환경에서 enable 전환 필요
             .headers(headers -> headers
                 .frameOptions(frame -> frame.disable()) // swagger를 위해 disable
             )
@@ -74,7 +76,12 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOriginPatterns(
-            List.of("https://boost.ai.kr", "https://api.boost.ai.kr", "http://localhost:5173"));
+            List.of(
+                "https://boost.ai.kr",
+                "https://api.boost.ai.kr",
+                "https://qa.boost.ai.kr",
+                "http://localhost:5173"
+            ));
         configuration.setAllowedMethods(
             List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));

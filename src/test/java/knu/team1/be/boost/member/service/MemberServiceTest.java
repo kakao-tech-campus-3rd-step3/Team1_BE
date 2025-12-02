@@ -17,6 +17,10 @@ import knu.team1.be.boost.member.dto.MemberResponseDto;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.entity.vo.OauthInfo;
 import knu.team1.be.boost.member.repository.MemberRepository;
+import knu.team1.be.boost.notification.repository.NotificationRepository;
+import knu.team1.be.boost.projectMembership.entity.ProjectRole;
+import knu.team1.be.boost.projectMembership.repository.ProjectMembershipRepository;
+import knu.team1.be.boost.webPush.repository.WebPushRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,6 +36,15 @@ public class MemberServiceTest {
 
     @Mock
     private MemberRepository memberRepository;
+
+    @Mock
+    private WebPushRepository webPushRepository;
+
+    @Mock
+    private NotificationRepository notificationRepository;
+
+    @Mock
+    private ProjectMembershipRepository projectMembershipRepository;
 
     // 테스트용 임시 ID 및 데이터
     private final UUID testUserId = UUID.fromString("a1b2c3d4-e5f6-7890-1234-567890abcdef");
@@ -144,11 +157,16 @@ public class MemberServiceTest {
     void deleteMember_Success() {
         // given
         given(memberRepository.findById(testUserId)).willReturn(Optional.of(testMember));
+        given(projectMembershipRepository.existsByMemberIdAndRole(testUserId, ProjectRole.OWNER))
+            .willReturn(false);
 
         // when
         userService.deleteMember(testUserId);
 
         // then
+        verify(projectMembershipRepository).softDeleteAllByMemberId(testUserId);
+        verify(notificationRepository).softDeleteAllByMemberId(testUserId);
+        verify(webPushRepository).softDeleteAllByMemberId(testUserId);
         verify(memberRepository).delete(testMember);
     }
 

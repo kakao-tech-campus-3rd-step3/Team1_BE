@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nl.martijndwars.webpush.Notification;
 import nl.martijndwars.webpush.PushService;
+import nl.martijndwars.webpush.Urgency;
 import nl.martijndwars.webpush.Utils;
 import org.apache.http.HttpResponse;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -43,7 +44,7 @@ public class WebPushClient {
         pushService = new PushService();
         pushService.setPublicKey(Utils.loadPublicKey(publicKey));
         pushService.setPrivateKey(Utils.loadPrivateKey(privateKey));
-        pushService.setSubject("boost@boost.com");
+        pushService.setSubject("mailto:boost@boost.com");
     }
 
     public void sendNotification(Member member, String title, String message) {
@@ -55,12 +56,14 @@ public class WebPushClient {
                 payload.put("title", title);
                 payload.put("body", message);
 
-                Notification notification = new Notification(
-                    sub.getWebPushUrl(),
-                    sub.getPublicKey(),
-                    sub.getAuthKey(),
-                    payload.toString().getBytes(StandardCharsets.UTF_8)
-                );
+                Notification notification = Notification.builder()
+                    .endpoint(sub.getWebPushUrl())
+                    .userPublicKey(sub.getPublicKey())
+                    .userAuth(sub.getAuthKey())
+                    .payload(payload.toString().getBytes(StandardCharsets.UTF_8))
+                    .urgency(Urgency.HIGH)
+                    .ttl(60 * 60 * 24)
+                    .build();
 
                 HttpResponse response = pushService.send(notification);
                 int statusCode = response.getStatusLine().getStatusCode();

@@ -13,6 +13,12 @@ spring:
           model: gpt-4.1-mini
           temperature: 0.7
           max-tokens: 500
+    retry:
+      backoff:
+        initial-interval: 1s
+        multiplier: 2
+      max-attempts: 3
+
 
   security:
     oauth2:
@@ -51,7 +57,7 @@ jwt:
   refresh-token-expire-time: 7d
 
 boost:
-  aws:
+  oci:
     upload:
       expire-seconds: 900
   file:
@@ -60,6 +66,15 @@ ai:
   comment:
     transform:
       timeout-seconds: 10
+
+boosting-score:
+  task:
+    todo: 1
+    progress: 2
+    review: 3
+    done: 5
+  comment-score: 1
+  approve-score: 3
 
 management:
   endpoints:

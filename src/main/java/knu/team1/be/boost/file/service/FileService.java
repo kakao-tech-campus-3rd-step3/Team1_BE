@@ -12,10 +12,11 @@ import knu.team1.be.boost.file.dto.FileCompleteResponseDto;
 import knu.team1.be.boost.file.dto.FilePresignedUrlResponseDto;
 import knu.team1.be.boost.file.dto.FileRequestDto;
 import knu.team1.be.boost.file.dto.ProjectFileListResponseDto;
+import knu.team1.be.boost.file.dto.ProjectFileSummaryResponseDto;
 import knu.team1.be.boost.file.entity.File;
 import knu.team1.be.boost.file.entity.FileType;
 import knu.team1.be.boost.file.entity.vo.StorageKey;
-import knu.team1.be.boost.file.infra.s3.PresignedUrlFactory;
+import knu.team1.be.boost.file.infra.oci.PresignedUrlFactory;
 import knu.team1.be.boost.file.repository.FileRepository;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
@@ -47,10 +48,10 @@ public class FileService {
     private final AccessPolicy accessPolicy;
     private final PresignedUrlFactory presignedUrlFactory;
 
-    @Value("${boost.aws.bucket}")
+    @Value("${boost.oci.bucket}")
     private String bucket;
 
-    @Value("${boost.aws.upload.expire-seconds}")
+    @Value("${boost.oci.upload.expire-seconds}")
     private int expireSeconds;
 
     @Value("${boost.file.max-upload-size}")
@@ -193,6 +194,24 @@ public class FileService {
         );
 
         return ProjectFileListResponseDto.from(project.getId(), files, safeLimit);
+    }
+
+    @Transactional(readOnly = true)
+    public ProjectFileSummaryResponseDto getProjectFileSummary(
+        UUID projectId,
+        UUID userId
+    ) {
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
+            ));
+
+        accessPolicy.ensureProjectMember(project.getId(), userId);
+
+        long totalCount = fileRepository.countByProject(projectId);
+        long totalSize = fileRepository.sumSizeByProject(projectId);
+
+        return ProjectFileSummaryResponseDto.from(totalCount, totalSize);
     }
 
     @Transactional

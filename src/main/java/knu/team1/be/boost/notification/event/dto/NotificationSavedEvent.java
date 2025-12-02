@@ -1,4 +1,4 @@
-package knu.team1.be.boost.notification.dto;
+package knu.team1.be.boost.notification.event.dto;
 
 import knu.team1.be.boost.member.entity.Member;
 

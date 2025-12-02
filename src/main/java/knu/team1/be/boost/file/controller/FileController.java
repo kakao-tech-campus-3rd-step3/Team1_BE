@@ -11,6 +11,7 @@ import knu.team1.be.boost.file.dto.FileCompleteResponseDto;
 import knu.team1.be.boost.file.dto.FilePresignedUrlResponseDto;
 import knu.team1.be.boost.file.dto.FileRequestDto;
 import knu.team1.be.boost.file.dto.ProjectFileListResponseDto;
+import knu.team1.be.boost.file.dto.ProjectFileSummaryResponseDto;
 import knu.team1.be.boost.file.service.FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -66,6 +67,18 @@ public class FileController implements FileApi {
             projectId,
             cursor,
             limit,
+            user.id()
+        );
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<ProjectFileSummaryResponseDto> getProjectFileSummary(
+        @PathVariable UUID projectId,
+        @AuthenticationPrincipal UserPrincipalDto user
+    ) {
+        ProjectFileSummaryResponseDto response = fileService.getProjectFileSummary(
+            projectId,
             user.id()
         );
         return ResponseEntity.ok(response);

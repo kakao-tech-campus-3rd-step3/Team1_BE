@@ -36,6 +36,10 @@ public record CommentResponseDto(
     LocalDateTime updatedAt
 ) {
 
+    private static final String ANONYMOUS_NAME = "익명";
+    private static final String ANONYMOUS_AVATAR = "0000";
+    private static final String ANONYMOUS_BACKGROUND_COLOR = "#99a1af";
+
     public static CommentResponseDto from(Comment comment) {
         return new CommentResponseDto(
             comment.getId(),
@@ -62,22 +66,27 @@ public record CommentResponseDto(
         String name,
 
         @Schema(description = "회원 아바타", example = "1111")
-        String avatar
+        String avatar,
+
+        @Schema(description = "회원 배경색", example = "#FF5733")
+        String backgroundColor
     ) {
 
         public static AuthorInfoResponseDto from(Member member) {
             return new AuthorInfoResponseDto(
                 member.getId(),
                 member.getName(),
-                member.getAvatar()
+                member.getAvatar(),
+                member.getBackgroundColor()
             );
         }
 
         public static AuthorInfoResponseDto anonymous(Member member) {
             return new AuthorInfoResponseDto(
                 member.getId(),
-                "익명",
-                "0000"
+                ANONYMOUS_NAME,
+                ANONYMOUS_AVATAR,
+                ANONYMOUS_BACKGROUND_COLOR
             );
         }
     }

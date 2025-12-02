@@ -10,6 +10,8 @@ public enum ErrorCode {
     // Member 관련
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "Member not found", "해당 사용자를 찾을 수 없습니다."),
     MEMBER_ALREADY_JOINED(HttpStatus.CONFLICT, "Member already joined", "이미 참여한 멤버입니다."),
+    MEMBER_HAS_OWNED_PROJECTS(HttpStatus.CONFLICT, "Member has owned projects",
+        "소유한 프로젝트가 있어 탈퇴할 수 없습니다. 프로젝트를 먼저 삭제해주세요."),
 
     // Project 관련
     PROJECT_NOT_FOUND(HttpStatus.NOT_FOUND, "Project not found", "해당 프로젝트를 찾을 수 없습니다."),
@@ -19,6 +21,8 @@ public enum ErrorCode {
     PROJECT_OWNER_ONLY(HttpStatus.FORBIDDEN, "Project owner only", "프로젝트 소유자만 수행할 수 있습니다."),
     PROJECT_OWNER_CANNOT_LEAVE(HttpStatus.FORBIDDEN, "Project owner cannot leave",
         "프로젝트 소유자는 프로젝트를 나갈 수 없습니다."),
+    CANNOT_KICK_YOURSELF(HttpStatus.BAD_REQUEST, "Cannot kick yourself", "자기 자신을 추방할 수 없습니다."),
+    CANNOT_KICK_OWNER(HttpStatus.FORBIDDEN, "Cannot kick owner", "프로젝트 소유자를 추방할 수 없습니다."),
 
     // Project Join Code 관련
     EXPIRED_JOIN_CODE(HttpStatus.BAD_REQUEST, "Expired join code", "만료된 참가 코드입니다."),
@@ -31,6 +35,16 @@ public enum ErrorCode {
     INVALID_SORT_OPTION(HttpStatus.BAD_REQUEST, "Invalid sort option", "올바르지 않은 정렬 옵션입니다."),
     INVALID_APPROVER(HttpStatus.FORBIDDEN, "Invalid approver", "담당자는 승인할 수 없습니다."),
     ALREADY_APPROVED(HttpStatus.CONFLICT, "Already approved", "이미 승인한 사용자입니다."),
+    INSUFFICIENT_APPROVALS(HttpStatus.BAD_REQUEST, "Insufficient approvals",
+        "승인 수가 부족하여 완료 상태로 변경할 수 없습니다."),
+    TASK_RE_REVIEW_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "Task re-review not allowed",
+        "현재 상태에서는 재검토 요청을 보낼 수 없습니다."),
+    TASK_RE_REVIEW_COOLDOWN(HttpStatus.BAD_REQUEST, "Task re-review cooldown",
+        "재검토 요청은 10분 간격으로만 가능합니다."),
+    OPTIMISTIC_LOCK_CONFLICT(HttpStatus.CONFLICT, "Optimistic lock conflict",
+        "다른 사용자가 먼저 수정했습니다. 새로고침 후 다시 시도해주세요."),
+    INVALID_REQUIRED_REVIEWER_COUNT(HttpStatus.BAD_REQUEST, "Invalid required reviewer count",
+        "요청한 리뷰어 수가 가능한 인원을 초과했습니다."),
 
     // Tag 관련
     TAG_NOT_FOUND(HttpStatus.NOT_FOUND, "Tag not found", "해당 태그를 찾을 수 없습니다."),
@@ -92,7 +106,12 @@ public enum ErrorCode {
     WEB_PUSH_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Web-Push service error",
         "웹 푸시 전송 중 오류가 발생했습니다."),
     INVALID_WEB_PUSH_STATE_TRANSITION(HttpStatus.CONFLICT, "Invalid WebPush session transition",
-        "웹 푸시 세션 상태 전환이 올바르지 않습니다.");
+        "웹 푸시 세션 상태 전환이 올바르지 않습니다."),
+
+    // Boosting Score 관련
+    BOOSTING_SCORE_CALCULATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR,
+        "Boosting score calculation failed",
+        "공헌도 점수 계산 중 오류가 발생했습니다.");
 
     private final HttpStatus httpStatus;
     private final String errorMessage;

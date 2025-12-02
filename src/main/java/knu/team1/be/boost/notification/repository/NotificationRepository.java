@@ -7,6 +7,7 @@ import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.notification.entity.Notification;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -27,4 +28,27 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
         @Param("cursorId") UUID cursorId,
         Pageable pageable
     );
+
+    long countByMember(Member member);
+
+    long countByMemberAndIsReadFalse(Member member);
+
+    @Modifying
+    @Query("""
+        UPDATE Notification n
+        SET n.isRead = true
+        WHERE n.member = :member
+            AND n.isRead = false
+            AND n.deleted = false
+        """
+    )
+    void markAllAsReadByMember(@Param("member") Member member);
+
+    @Modifying
+    @Query("""
+        UPDATE Notification n
+        SET n.deleted = true, n.deletedAt = CURRENT_TIMESTAMP
+        WHERE n.member.id = :memberId AND n.deleted = false
+        """)
+    void softDeleteAllByMemberId(@Param("memberId") UUID memberId);
 }

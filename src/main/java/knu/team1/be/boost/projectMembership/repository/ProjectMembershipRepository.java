@@ -30,15 +30,23 @@ public interface ProjectMembershipRepository extends JpaRepository<ProjectMember
 
     int countByProjectIdAndMemberIdIn(UUID projectId, Collection<UUID> memberIds);
 
+    int countByProjectId(UUID projectId);
+
     boolean existsByProjectIdAndMemberIdAndRole(UUID projectId, UUID memberId, ProjectRole role);
 
     @EntityGraph(attributePaths = {"project"})
     List<ProjectMembership> findAllByMemberId(UUID memberId);
-    
+
     @EntityGraph(attributePaths = {"member"})
     List<ProjectMembership> findAllByProjectId(UUID projectId);
 
     @Modifying
     @Query("UPDATE ProjectMembership pm SET pm.deleted = true, pm.deletedAt = CURRENT_TIMESTAMP WHERE pm.project.id = :projectId")
     void softDeleteAllByProjectId(@Param("projectId") UUID projectId);
+
+    @Modifying
+    @Query("UPDATE ProjectMembership pm SET pm.deleted = true, pm.deletedAt = CURRENT_TIMESTAMP WHERE pm.member.id = :memberId")
+    void softDeleteAllByMemberId(@Param("memberId") UUID memberId);
+
+    boolean existsByMemberIdAndRole(UUID memberId, ProjectRole role);
 }

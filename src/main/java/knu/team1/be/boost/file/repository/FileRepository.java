@@ -17,7 +17,7 @@ public interface FileRepository extends JpaRepository<File, UUID> {
 
     @Query("""
             SELECT f FROM File f
-            JOIN f.task t
+            JOIN FETCH f.task t
             WHERE t.project = :project
               AND f.status = knu.team1.be.boost.file.entity.FileStatus.COMPLETED
               AND (
@@ -35,6 +35,14 @@ public interface FileRepository extends JpaRepository<File, UUID> {
     );
 
     @Query("""
+            SELECT COUNT(f)
+            FROM File f
+            WHERE f.task.id = :taskId
+                AND f.status = knu.team1.be.boost.file.entity.FileStatus.COMPLETED
+        """)
+    long countByTaskId(@Param("taskId") UUID taskId);
+
+    @Query("""
             SELECT f.task.id AS taskId, COUNT(f) AS count
             FROM File f
             WHERE f.task.id IN :taskIds
@@ -49,4 +57,20 @@ public interface FileRepository extends JpaRepository<File, UUID> {
 
         Long getCount();
     }
+
+    @Query("""
+            SELECT COUNT(f)
+            FROM File f
+            WHERE f.task.project.id = :projectId
+              AND f.status = knu.team1.be.boost.file.entity.FileStatus.COMPLETED
+        """)
+    long countByProject(@Param("projectId") UUID projectId);
+
+    @Query("""
+            SELECT COALESCE(SUM(f.metadata.sizeBytes), 0)
+            FROM File f
+            WHERE f.task.project.id = :projectId
+              AND f.status = knu.team1.be.boost.file.entity.FileStatus.COMPLETED
+        """)
+    long sumSizeByProject(@Param("projectId") UUID projectId);
 }

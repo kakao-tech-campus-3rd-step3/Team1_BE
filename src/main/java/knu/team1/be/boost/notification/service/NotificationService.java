@@ -1,45 +1,34 @@
 package knu.team1.be.boost.notification.service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
 import knu.team1.be.boost.common.policy.AccessPolicy;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.member.repository.MemberRepository;
+import knu.team1.be.boost.notification.dto.NotificationCountResponseDto;
 import knu.team1.be.boost.notification.dto.NotificationListResponseDto;
 import knu.team1.be.boost.notification.dto.NotificationReadResponseDto;
-import knu.team1.be.boost.notification.dto.NotificationSavedEvent;
 import knu.team1.be.boost.notification.dto.ProjectNotificationResponseDto;
 import knu.team1.be.boost.notification.entity.Notification;
+import knu.team1.be.boost.notification.event.dto.NotificationType;
 import knu.team1.be.boost.notification.repository.NotificationRepository;
 import knu.team1.be.boost.project.entity.Project;
 import knu.team1.be.boost.project.repository.ProjectRepository;
 import knu.team1.be.boost.projectMembership.entity.ProjectMembership;
 import knu.team1.be.boost.projectMembership.repository.ProjectMembershipRepository;
-import knu.team1.be.boost.task.dto.TaskApproveEvent;
-import knu.team1.be.boost.task.dto.TaskReviewEvent;
 import knu.team1.be.boost.task.entity.Task;
 import knu.team1.be.boost.task.repository.TaskRepository;
-import knu.team1.be.boost.task.repository.TaskRepository.DueTask;
-import knu.team1.be.boost.webPush.service.WebPushClient;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class NotificationService {
@@ -52,9 +41,8 @@ public class NotificationService {
 
     private final AccessPolicy accessPolicy;
 
-    private final WebPushClient webPushClient;
+    private final NotificationSenderService notificationSenderService;
 
-    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional(readOnly = true)
     public NotificationListResponseDto getNotifications(
@@ -93,6 +81,19 @@ public class NotificationService {
         return NotificationListResponseDto.from(notifications, safeLimit);
     }
 
+    @Transactional(readOnly = true)
+    public NotificationCountResponseDto getNotificationCount(UUID userId) {
+        Member member = memberRepository.findById(userId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.MEMBER_NOT_FOUND, "memberId: " + userId
+            ));
+
+        long totalCount = notificationRepository.countByMember(member);
+        long unreadCount = notificationRepository.countByMemberAndIsReadFalse(member);
+
+        return NotificationCountResponseDto.from(totalCount, unreadCount);
+    }
+
     @Transactional
     public NotificationReadResponseDto markAsRead(
         UUID notificationId,
@@ -107,6 +108,18 @@ public class NotificationService {
         notification.markAsRead();
 
         return NotificationReadResponseDto.from(notification);
+    }
+
+    @Transactional
+    public void markAllAsRead(
+        UUID userId
+    ) {
+        Member member = memberRepository.findById(userId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.MEMBER_NOT_FOUND, "memberId: " + userId
+            ));
+
+        notificationRepository.markAllAsReadByMember(member);
     }
 
     @Transactional
@@ -139,121 +152,135 @@ public class NotificationService {
         );
     }
 
-    @Transactional
-    public void notifyTaskReview(Project project, Task task) {
-        Set<Member> assignees = task.getAssignees();
+    @Transactional(readOnly = true)
+    public void notifyTaskReview(UUID projectId, UUID taskId, NotificationType type) {
+        Project project = projectRepository.findByIdWithMemberships(projectId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
+            ));
+
+        Task task = taskRepository.findByIdWithAssignees(taskId)
+            .orElseThrow(
+                () -> new BusinessException(
+                    ErrorCode.TASK_NOT_FOUND, "taskId: " + taskId
+                ));
 
         List<Member> members = project.getProjectMemberships().stream()
             .filter(ProjectMembership::isNotificationEnabled)
             .map(ProjectMembership::getMember)
-            .filter(member -> !assignees.contains(member))
+            .filter(member -> !task.getAssignees().contains(member))
             .toList();
 
         for (Member member : members) {
-            saveAndSendNotification(
-                member,
-                "작업 검토 요청",
-                String.format("[%s] 작업이 검토 중 상태로 변경되었습니다.", task.getTitle())
-            );
+            try {
+                notificationSenderService.saveAndSendNotification(
+                    member,
+                    type.title(),
+                    type.message(task.getTitle())
+                );
+            } catch (Exception e) {
+                log.error("Failed to send review notification to member: " + member.getId(), e);
+            }
         }
     }
 
-    @Transactional
-    public void notifyTaskApprove(Project project, Task task) {
+    @Transactional(readOnly = true)
+    public void notifyTaskApprove(UUID projectId, UUID taskId) {
+        Project project = projectRepository.findByIdWithMemberships(projectId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
+            ));
+
+        Task task = taskRepository.findByIdWithAssignees(taskId)
+            .orElseThrow(
+                () -> new BusinessException(
+                    ErrorCode.TASK_NOT_FOUND, "taskId: " + taskId
+                ));
+
         List<Member> assignees = project.getProjectMemberships().stream()
             .filter(
-                pm -> pm.isNotificationEnabled() && task.getAssignees().contains(pm.getMember())
-            )
+                pm -> pm.isNotificationEnabled() && task.getAssignees().contains(pm.getMember()))
             .map(ProjectMembership::getMember)
             .toList();
 
         for (Member assignee : assignees) {
-            saveAndSendNotification(
-                assignee,
-                "작업 승인 완료",
-                String.format("[%s] 작업이 모든 승인자를 통해 승인되었습니다.", task.getTitle())
-            );
+            try {
+                notificationSenderService.saveAndSendNotification(
+                    assignee,
+                    NotificationType.APPROVED.title(),
+                    NotificationType.APPROVED.message(task.getTitle())
+                );
+            } catch (Exception e) {
+                log.error("Failed to send approval notification to member: " + assignee.getId(), e);
+            }
         }
     }
 
-    @Scheduled(cron = "0 0 8 * * *", zone = "Asia/Seoul")
-    @Transactional
-    public void notifyDueTomorrowTasks() {
-        LocalDate tomorrow = LocalDate.now().plusDays(1);
-        List<DueTask> dueTasks = taskRepository.findDueTasksByMember(tomorrow);
-
-        Map<UUID, Map<UUID, List<DueTask>>> groupedDueTask = dueTasks.stream()
-            .collect(Collectors.groupingBy(
-                DueTask::getMemberId,
-                Collectors.groupingBy(DueTask::getProjectId)
-            ));
-        String formattedDate = tomorrow.format(DateTimeFormatter.ofPattern("MM월 dd일"));
-
-        groupedDueTask.forEach((memberId, projectTasks) -> {
-            Member member = findMember(memberId);
-            String message = buildNotificationMessage(projectTasks);
-            String title = formattedDate + " 마감 임박 작업";
-            saveAndSendNotification(member, title, message);
-        });
-    }
-
-    @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handleTaskReviewEvent(TaskReviewEvent event) {
-        notifyTaskReview(event.project(), event.task());
-    }
-
-    @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handleTaskApproveEvent(TaskApproveEvent event) {
-        notifyTaskApprove(event.project(), event.task());
-    }
-
-    @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handleNotificationSavedEvent(NotificationSavedEvent event) {
-        webPushClient.sendNotification(event.member(), event.title(), event.message());
-    }
-
-    private void saveAndSendNotification(Member member, String title, String message) {
-        Notification notification = Notification.create(member, title, message);
-
-        notificationRepository.save(notification);
-
-        if (member.isNotificationEnabled()) {
-            eventPublisher.publishEvent(NotificationSavedEvent.from(member, title, message));
-        }
-    }
-
-    private String buildNotificationMessage(Map<UUID, List<DueTask>> projectTasks) {
-        StringBuilder message = new StringBuilder();
-
-        projectTasks.forEach((projectId, tasks) -> {
-            String projectName = tasks.getFirst().getProjectName();
-            String taskTitles = tasks.stream()
-                .map(DueTask::getTaskTitle)
-                .collect(Collectors.joining(", "));
-
-            message.append("[")
-                .append(projectName)
-                .append("] ")
-                .append(taskTitles)
-                .append("\n");
-        });
-
-        return message.toString().trim();
-    }
-
-    private Member findMember(UUID memberId) {
-        return memberRepository.findById(memberId)
+    @Transactional(readOnly = true)
+    public void notifyCommentCreated(
+        UUID projectId,
+        UUID taskId,
+        UUID commenterId,
+        String commentContent,
+        boolean isAnonymous,
+        String personaName
+    ) {
+        Project project = projectRepository.findByIdWithMemberships(projectId)
             .orElseThrow(() -> new BusinessException(
-                ErrorCode.MEMBER_NOT_FOUND,
-                "memberId: " + memberId
+                ErrorCode.PROJECT_NOT_FOUND, "projectId: " + projectId
             ));
+
+        Task task = taskRepository.findByIdWithAssignees(taskId)
+            .orElseThrow(
+                () -> new BusinessException(
+                    ErrorCode.TASK_NOT_FOUND, "taskId: " + taskId
+                ));
+
+        Member commenter = memberRepository.findById(commenterId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.MEMBER_NOT_FOUND, "memberId: " + commenterId
+            ));
+
+        String displayName = resolveDisplayName(isAnonymous, personaName, commenter);
+
+        List<Member> assignees = project.getProjectMemberships().stream()
+            .filter(
+                pm -> pm.isNotificationEnabled() && task.getAssignees().contains(pm.getMember()))
+            .map(ProjectMembership::getMember)
+            .filter(member -> !member.equals(commenter))
+            .toList();
+
+        for (Member assignee : assignees) {
+            try {
+                notificationSenderService.saveAndSendNotification(
+                    assignee,
+                    NotificationType.COMMENT_CREATED.title(),
+                    NotificationType.COMMENT_CREATED.message(
+                        task.getTitle(),
+                        displayName,
+                        commentContent
+                    )
+                );
+            } catch (Exception e) {
+                log.error("Failed to send comment notification to member: " + assignee.getId(), e);
+            }
+        }
     }
 
     private boolean isCursorNotMine(Notification cursor, Member member) {
         return !cursor.getMember().equals(member);
     }
+
+    private String resolveDisplayName(boolean isAnonymous, String personaName, Member commenter) {
+        if (isAnonymous) {
+            if (personaName != null && !personaName.isBlank()) {
+                return personaName;
+            }
+            return "익명";
+        }
+
+        return commenter.getName();
+    }
+
 
 }

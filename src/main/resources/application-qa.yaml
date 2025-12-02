@@ -1,0 +1,70 @@
+spring:
+  config:
+    activate:
+      on-profile: qa
+
+  h2:
+    console:
+      enabled: true
+
+  datasource:
+    url: ${QA_DB_URL}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-id: ${KAKAO_CLIENT_ID}
+            client-secret: ${KAKAO_CLIENT_SECRET}
+            redirect-uri: ${ALLOWED_REDIRECT_URIS}
+
+jwt:
+  secret: ${JWT_SECRET_KEY}
+
+boost:
+  oci:
+    bucket: ${OCI_QA_BUCKET}
+    namespace: ${OCI_NAMESPACE}
+    region: ${OCI_REGION}
+    credentials:
+      access-key: ${OCI_ACCESS_KEY}
+      secret-key: ${OCI_SECRET_KEY}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+webpush:
+  vapid:
+    public-key: ${VAPID_PUBLIC_KEY}
+    private-key: ${VAPID_PRIVATE_KEY}
+
+llm:
+  prompt: ${LLM_PROMPT}
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true

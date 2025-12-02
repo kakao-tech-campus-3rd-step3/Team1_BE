@@ -3,6 +3,7 @@ package knu.team1.be.boost.task.repository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import knu.team1.be.boost.member.entity.Member;
 import knu.team1.be.boost.project.entity.Project;
@@ -27,6 +28,16 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     )
     void detachTagFromAllTasks(@Param("tagId") UUID tagId);
 
+    @Modifying(clearAutomatically = true)
+    @Query(
+        value = "UPDATE task_tags SET tag_id = :newTagId WHERE tag_id = :oldTagId",
+        nativeQuery = true
+    )
+    void transferTagToAnotherTag(
+        @Param("oldTagId") UUID oldTagId,
+        @Param("newTagId") UUID newTagId
+    );
+
     @Query("""
             SELECT new knu.team1.be.boost.task.dto.ProjectTaskStatusCount(
                 COALESCE(SUM(CASE WHEN t.status = knu.team1.be.boost.task.entity.TaskStatus.TODO THEN 1 ELSE 0 END), 0L),
@@ -37,8 +48,12 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
             FROM Task t
             JOIN t.assignees a
             WHERE a.id = :memberId
+              AND t.project IN :projects
         """)
-    ProjectTaskStatusCount countMyTasksGrouped(@Param("memberId") UUID memberId);
+    ProjectTaskStatusCount countMyTasksGrouped(
+        @Param("memberId") UUID memberId,
+        @Param("projects") List<Project> projects
+    );
 
     @Query("""
             SELECT new knu.team1.be.boost.task.dto.ProjectTaskStatusCount(
@@ -78,10 +93,12 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
             FROM Task t
             JOIN t.assignees a
             WHERE a.id = :memberId
+              AND t.project IN :projects
               AND (LOWER(t.title) LIKE LOWER(:searchPattern) OR LOWER(t.description) LIKE LOWER(:searchPattern))
         """)
     ProjectTaskStatusCount countMyTasksWithSearchGrouped(
         @Param("memberId") UUID memberId,
+        @Param("projects") List<Project> projects,
         @Param("searchPattern") String searchPattern
     );
 
@@ -538,4 +555,35 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
 
         String getTaskTitle();
     }
+
+    @Query("""
+        SELECT t
+        FROM Task t
+        JOIN t.assignees a
+        WHERE t.project.id = :projectId
+        AND a.id = :memberId
+        """)
+    List<Task> findAllByProjectIdAndAssigneesId(
+        @Param("projectId") UUID projectId,
+        @Param("memberId") UUID memberId
+    );
+
+    @Query("""
+        SELECT COUNT(t)
+        FROM Task t
+        JOIN t.approvers a
+        WHERE t.project.id = :projectId
+        AND a.id = :memberId
+        """)
+    Long countByProjectIdAndApproversId(
+        @Param("projectId") UUID projectId,
+        @Param("memberId") UUID memberId
+    );
+
+    @Query("""
+            SELECT t FROM Task t
+            LEFT JOIN FETCH t.assignees
+            WHERE t.id = :taskId
+        """)
+    Optional<Task> findByIdWithAssignees(UUID taskId);
 }

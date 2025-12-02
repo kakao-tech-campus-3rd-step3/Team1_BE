@@ -8,13 +8,12 @@ import knu.team1.be.boost.ai.dto.AiCommentTransformRequestDto;
 import knu.team1.be.boost.ai.dto.AiCommentTransformResponseDto;
 import knu.team1.be.boost.common.exception.BusinessException;
 import knu.team1.be.boost.common.exception.ErrorCode;
-import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
 public class AiCommentTransformService {
 
     private final ChatClient chatClient;
@@ -22,6 +21,14 @@ public class AiCommentTransformService {
 
     @Value("${ai.comment.transform.timeout-seconds:10}")
     private long timeoutSeconds;
+
+    public AiCommentTransformService(
+        ChatClient chatClient,
+        @Qualifier("aiTaskExecutor") Executor aiTaskExecutor
+    ) {
+        this.chatClient = chatClient;
+        this.aiTaskExecutor = aiTaskExecutor;
+    }
 
     public AiCommentTransformResponseDto transformComment(AiCommentTransformRequestDto requestDto) {
         String originalText = requestDto.text();

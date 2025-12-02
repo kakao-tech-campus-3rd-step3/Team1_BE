@@ -5,12 +5,15 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -32,32 +35,49 @@ import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
-@Table(name = "tasks")
+@Table(
+    name = "tasks",
+    indexes = {
+        @Index(name = "idx_tasks_project_status_created", columnList = "project_id, status, created_at, id"),
+        @Index(name = "idx_tasks_project_status_duedate", columnList = "project_id, status, due_date, id"),
+        @Index(name = "idx_tasks_duedate_status", columnList = "due_date, status")
+    }
+)
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@SQLDelete(sql = "UPDATE tasks SET deleted = true, deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
+@SQLDelete(sql = "UPDATE tasks SET deleted = true, deleted_at = CURRENT_TIMESTAMP WHERE id = ? AND version = ?")
 @SQLRestriction("deleted = false")
 public class Task extends SoftDeletableEntity {
+
+    @Version
+    @Column(name = "version")
+    private Long version;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "project_id", nullable = false)
     private Project project;
 
-    @Column(nullable = false, length = 100)
+    @Column(name = "title", nullable = false, length = 100)
     private String title;
 
-    @Column(length = 2000)
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "status", nullable = false)
     private TaskStatus status;
 
+    @Column(name = "due_date", nullable = false)
     private LocalDate dueDate;
 
+    @Column(name = "urgent", nullable = false)
     private Boolean urgent;
 
+    @Column(name = "required_reviewer_count", nullable = false)
     private Integer requiredReviewerCount;
+
+    @Column(name = "re_review_requested_at")
+    private LocalDateTime reReviewRequestedAt;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
@@ -72,7 +92,8 @@ public class Task extends SoftDeletableEntity {
     @JoinTable(
         name = "task_assignees",
         joinColumns = @JoinColumn(name = "task_id"),
-        inverseJoinColumns = @JoinColumn(name = "member_id")
+        inverseJoinColumns = @JoinColumn(name = "member_id"),
+        indexes = @Index(name = "idx_task_assignees_member_task", columnList = "member_id, task_id")
     )
     @Builder.Default
     private Set<Member> assignees = new LinkedHashSet<>();
@@ -134,7 +155,7 @@ public class Task extends SoftDeletableEntity {
         this.status = taskStatus;
     }
 
-    public void approve(Member member, List<Member> projectMembers) {
+    public void approve(Member member) {
         if (assignees.contains(member)) {
             throw new BusinessException(
                 ErrorCode.INVALID_APPROVER, "memberId: " + member.getId()
@@ -148,12 +169,10 @@ public class Task extends SoftDeletableEntity {
         }
 
         approvers.add(member);
+    }
 
-        int requiredApprovals = getRequiredApprovalsCount(projectMembers);
-
-        if (approvers.size() >= requiredApprovals) {
-            this.status = TaskStatus.DONE;
-        }
+    public void requestReReview(LocalDateTime now) {
+        this.reReviewRequestedAt = now;
     }
 
     public int getRequiredApprovalsCount(List<Member> projectMembers) {
