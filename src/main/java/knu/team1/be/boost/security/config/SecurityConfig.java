@@ -76,7 +76,12 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOriginPatterns(
-            List.of("https://boost.ai.kr", "https://api.boost.ai.kr", "http://localhost:5173"));
+            List.of(
+                "https://boost.ai.kr",
+                "https://api.boost.ai.kr",
+                "https://qa.boost.ai.kr",
+                "http://localhost:5173"
+            ));
         configuration.setAllowedMethods(
             List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
