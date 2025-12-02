@@ -59,7 +59,7 @@ jobs:
             echo "${{ secrets.ENV_QA }}" > .env
 
             # 2. Dockerfile 생성 (이미지 굽기용)
-            echo "FROM openjdk:21-jdk-slim" > Dockerfile
+            echo "FROM eclipse-temurin:21-jre" > Dockerfile
             echo "COPY *.jar app.jar" >> Dockerfile
             echo "ENTRYPOINT [\"java\",\"-jar\",\"/app.jar\"]" >> Dockerfile
 
