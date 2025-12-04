@@ -97,7 +97,7 @@ jobs:
             echo "${{ secrets.ENV }}" > .env
 
             # 2. Dockerfile 생성
-            echo "FROM openjdk:21-jdk-slim" > Dockerfile
+            echo "FROM eclipse-temurin:21-jre" > Dockerfile
             echo "COPY *.jar app.jar" >> Dockerfile
             echo "ENTRYPOINT [\"java\",\"-jar\",\"/app.jar\",\"--spring.profiles.active=prod\"]" >> Dockerfile
 
